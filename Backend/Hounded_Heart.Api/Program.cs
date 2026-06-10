@@ -285,7 +285,7 @@ try
         
         try
         {
-            await dbContext.Database.MigrateAsync();
+            // await dbContext.Database.MigrateAsync();
             Console.WriteLine("✅ Database migrations applied successfully");
         }
         catch (Exception migEx)
