@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20260206063922_AddRituals.cs" />
+    <Compile Remove="Migrations\20260206063922_AddRituals.Designer.cs" />
+    <Compile Remove="Migrations\20260206065639_SeedRituals.cs" />
+    <Compile Remove="Migrations\20260206065639_SeedRituals.Designer.cs" />
+    <Compile Remove="Migrations\20260407100510_AddBaselineTrackingFields.cs" />
+    <Compile Remove="Migrations\20260407100510_AddBaselineTrackingFields.Designer.cs" />
+    <Compile Remove="Migrations\20260413063019_SyncWithCopilotBranch.cs" />
+    <Compile Remove="Migrations\20260413063019_SyncWithCopilotBranch.Designer.cs" />
+  </ItemGroup>
+
+</Project>

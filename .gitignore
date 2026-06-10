@@ -1,0 +1,226 @@
+################################################################################
+# Combined .gitignore for HoundHeart Project
+# Backend: .NET/C# + Frontend: Vite/React
+################################################################################
+
+#==============================================================================
+# BACKEND (.NET/C#) - Backend folder
+#==============================================================================
+
+# Visual Studio
+.vs/
+**/.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Build results - Backend specific paths
+Backend/**/[Dd]ebug/
+Backend/**/[Dd]ebugPublic/
+Backend/**/[Rr]elease/
+Backend/**/[Rr]eleases/
+Backend/**/x64/
+Backend/**/x86/
+Backend/**/[Aa][Rr][Mm]/
+Backend/**/[Aa][Rr][Mm]64/
+Backend/**/bld/
+Backend/**/[Bb]in/
+Backend/**/[Oo]bj/
+Backend/**/[Ll]og/
+Backend/**/[Ll]ogs/
+
+# .NET Core
+Backend/**/project.lock.json
+Backend/**/project.fragment.lock.json
+Backend/**/artifacts/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Visual Studio cache/options
+*.rsuser
+
+# ReSharper
+Backend/**/_ReSharper*/
+Backend/**/*.[Rr]e[Ss]harper
+Backend/**/*.DotSettings.user
+
+# Test Results
+Backend/**/[Tt]est[Rr]esult*/
+Backend/**/[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Azure Functions
+local.settings.json
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+
+# Application specific - protect sensitive config
+Backend/**/appsettings.json
+Backend/**/appsettings.Development.json
+Backend/**/appsettings.Local.json
+Backend/**/appsettings.*.local.json
+Backend/**/appsettings.*.secrets.json
+!Backend/**/appsettings.example.json
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+*.mdf
+*.ldf
+
+#==============================================================================
+# FRONTEND (Vite + React + Node.js) - Frontend folder
+#==============================================================================
+
+# Dependencies
+Frontend/**/node_modules/
+Frontend/**/jspm_packages/
+Frontend/**/bower_components/
+
+# Build output
+Frontend/**/dist/
+Frontend/**/dist-ssr/
+Frontend/**/build/
+Frontend/**/.cache/
+
+# Logs
+Frontend/**/npm-debug.log*
+Frontend/**/yarn-debug.log*
+Frontend/**/yarn-error.log*
+Frontend/**/pnpm-debug.log*
+Frontend/**/lerna-debug.log*
+
+# Environment variables
+Frontend/**/.env
+Frontend/**/.env.local
+Frontend/**/.env.development.local
+Frontend/**/.env.test.local
+Frontend/**/.env.production.local
+Frontend/**/.env.*.local
+
+# Vite
+Frontend/**/.vite/
+Frontend/**/vite.config.js.timestamp-*
+Frontend/**/vite.config.ts.timestamp-*
+
+# Hot reload
+Frontend/**/*.hot-update.js
+Frontend/**/*.hot-update.json
+
+# Coverage
+Frontend/**/coverage/
+Frontend/**/*.lcov
+Frontend/**/.nyc_output
+
+# TypeScript
+Frontend/**/*.tsbuildinfo
+
+# Optional npm cache directory
+Frontend/**/.npm
+
+# Optional eslint cache
+Frontend/**/.eslintcache
+
+# Optional REPL history
+Frontend/**/.node_repl_history
+
+# Yarn
+Frontend/**/.yarn/cache
+Frontend/**/.yarn/unplugged
+Frontend/**/.yarn/build-state.yml
+Frontend/**/.yarn/install-state.gz
+Frontend/**/.pnp.*
+
+#==============================================================================
+# COMMON
+#==============================================================================
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.iml
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Secrets & Keys
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+credentials.json
+.env
+.env.*
+*.secret
+*.secrets
+!.env.example
+!.env.sample
+!**/.env.example
+!**/.env.sample
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log
+
+# Generic build outputs (all folders)
+**/bin/
+**/obj/
+
+# Test and coverage artifacts
+**/TestResults/
+**/coverage/
+**/*.opencover.xml
+
+# Build and publish artifacts
+**/build_output/
+**/build_verify/
+**/publish/
+
+# Old gitignore backup
+.gitignore_backend
+

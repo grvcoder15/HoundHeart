@@ -1,0 +1,6 @@
+@Hounded_Heart.Api_HostAddress = http://localhost:5182
+
+GET {{Hounded_Heart.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
