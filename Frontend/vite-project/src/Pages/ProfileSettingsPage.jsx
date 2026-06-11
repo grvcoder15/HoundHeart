@@ -4,6 +4,8 @@ import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
 import apiService from '../services/apiService';
 import toastService from '../services/toastService';
 
+const DEVICE_API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const ProfileSettingsPage = () => {
   console.log('ProfileSettingsPage component rendered');
   const navigate = useNavigate();
@@ -153,7 +155,7 @@ const ProfileSettingsPage = () => {
       
       console.log('Making API call to connect PetPace:', requestBody);
       
-      const response = await fetch('http://localhost:5182/api/devices/connect', {
+      const response = await fetch(`${DEVICE_API_BASE_URL}/devices/connect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -218,7 +220,7 @@ const ProfileSettingsPage = () => {
       
       console.log('Making API call to connect Human Watch:', requestBody);
       
-      const response = await fetch('http://localhost:5182/api/devices/connect', {
+      const response = await fetch(`${DEVICE_API_BASE_URL}/devices/connect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -499,7 +501,7 @@ const ProfileSettingsPage = () => {
         const userId = apiService.getCurrentUserId();
         if (!userId) return;
         
-        const response = await fetch(`http://localhost:5182/api/devices/status/${userId}`);
+        const response = await fetch(`${DEVICE_API_BASE_URL}/devices/status/${userId}`);
         if (response.ok) {
           const result = await response.json();
           const connections = result.data || [];

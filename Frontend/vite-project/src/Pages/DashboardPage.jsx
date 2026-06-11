@@ -10,7 +10,7 @@ import toast from '../services/toastService';
 const deepEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // ── Wellness API Constant ─────────────
-const WELLNESS_API_BASE = "http://localhost:5182";
+const WELLNESS_API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
 
 const formatLocalDate = (d) => {
   const y = d.getFullYear();
