@@ -23,7 +23,7 @@ import AdminLayout from '../components/AdminLayout';
 // Constants
 const userId = "95c35506-b5fd-45c2-8689-00030ba0a8f2";
 const dogId = "3D695674-82F0-475A-B065-A33C9CB34426";
-const API_BASE = "http://localhost:5182";
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
 
 // Deep comparison utility
 const deepEqual = (obj1, obj2) => {
