@@ -101,6 +101,7 @@ builder.Services.AddHostedService<LaunchInviteService>();
 builder.Services.AddHostedService<DailyVitalsSummaryService>();
 builder.Services.AddHostedService<FitbitPollingService>();
 builder.Services.AddHostedService<FitBarkSyncService>();
+builder.Services.AddHostedService<DatabaseInitializationService>();
 
 builder.Services.AddCors(options =>
 {
@@ -144,55 +145,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 var app = builder.Build();
-
-// Test database connection on startup
-try
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var canConnect = await dbContext.Database.CanConnectAsync();
-        if (canConnect)
-        {
-            Console.WriteLine("✅ Database connection successful!");
-
-            // Backward-compatible schema guard for environments created before tier rollout.
-            if (dbContext.Database.IsNpgsql())
-            {
-                await dbContext.Database.ExecuteSqlRawAsync(@"
-                    ALTER TABLE ""Users""
-                    ADD COLUMN IF NOT EXISTS ""TierLevel"" character varying(20) NOT NULL DEFAULT 'free';
-                ");
-
-                await dbContext.Database.ExecuteSqlRawAsync(@"
-                    UPDATE ""Users""
-                    SET ""TierLevel"" = 'free'
-                    WHERE ""TierLevel"" IS NULL OR btrim(""TierLevel"") = '';
-                ");
-            }
-
-            // Seed Database
-            try 
-            {
-                await Hounded_Heart.Api.Data.DbInitializer.Initialize(dbContext);
-                Console.WriteLine("✅ Database seeded successfully!");
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"⚠️ Seeding failed: {ex.Message}");
-            }
-        }
-        else
-        {
-            Console.WriteLine("⚠️ Warning: Database connection failed. The API will start but database operations will fail.");
-        }
-    }
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"⚠️ Warning: Database connection test failed: {ex.Message}");
-    Console.WriteLine("The API will start but database operations may fail.");
-}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -239,51 +191,5 @@ app.MapGet("/api/health", () =>
         timestamp = DateTime.UtcNow
     });
 });
-
-// Apply pending migrations on startup
-try
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
-        // Ensure IsEmailVerified column exists (for email verification feature)
-        try
-        {
-            await dbContext.Database.ExecuteSqlRawAsync(
-                @"DO $$
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1 FROM information_schema.columns 
-                        WHERE table_name = 'Users' AND column_name = 'IsEmailVerified'
-                    ) THEN
-                        ALTER TABLE ""Users"" ADD COLUMN ""IsEmailVerified"" BOOLEAN NOT NULL DEFAULT false;
-                    END IF;
-                END $$;"
-            );
-            Console.WriteLine("✅ IsEmailVerified column verified");
-        }
-        catch (Exception colEx)
-        {
-            Console.WriteLine($"⚠️ Column check error (may be expected): {colEx.Message}");
-        }
-        
-        try
-        {
-            // await dbContext.Database.MigrateAsync();
-            Console.WriteLine("✅ Database migrations applied successfully");
-        }
-        catch (Exception migEx)
-        {
-            Console.WriteLine($"⚠️ Migration error (schema may be partially out of sync): {migEx.Message}");
-            // Continue anyway - the raw SQL column addition already happened
-        }
-    }
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"❌ Critical error in database initialization: {ex.Message}");
-    // Don't throw - let the app continue
-}
 
 app.Run();
