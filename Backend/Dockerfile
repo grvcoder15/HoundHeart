@@ -25,7 +25,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
-
 ENTRYPOINT ["dotnet", "out/Hounded_Heart.Api.dll"]
