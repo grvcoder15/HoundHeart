@@ -230,29 +230,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Add a health check endpoint
-app.MapGet("/api/health", async (AppDbContext dbContext) =>
+// Add a health check endpoint (liveness only — no DB check to avoid timeouts)
+app.MapGet("/api/health", () =>
 {
-    try
+    return Results.Ok(new
     {
-        var canConnect = await dbContext.Database.CanConnectAsync();
-        return Results.Ok(new
-        {
-            status = "healthy",
-            database = canConnect ? "connected" : "disconnected",
-            timestamp = DateTime.UtcNow
-        });
-    }
-    catch (Exception ex)
-    {
-        return Results.Ok(new
-        {
-            status = "unhealthy",
-            database = "error",
-            error = ex.Message,
-            timestamp = DateTime.UtcNow
-        });
-    }
+        status = "healthy",
+        timestamp = DateTime.UtcNow
+    });
 });
 
 // Apply pending migrations on startup
