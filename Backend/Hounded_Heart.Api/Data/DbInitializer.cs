@@ -125,6 +125,50 @@ namespace Hounded_Heart.Api.Data
                 await context.CheckIns.AddAsync(newCheckIn);
                 await context.SaveChangesAsync();
             }
+
+            // Seed Healing Circles if empty
+            if (!await context.HealingCircles.AnyAsync())
+            {
+                var circles = new List<HealingCircle>
+                {
+                    new HealingCircle
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Full Moon Healing Circle",
+                        Time = DateTime.UtcNow.AddDays(3).ToString("o"), // ISO-8601 string for robust parsing
+                        Description = "Join us for a guided meditation session to harness the full moon's energy with your canine companion.",
+                        ParticipantsCount = 15,
+                        MaxParticipants = 200,
+                        IsPremium = false,
+                        CreatedOn = DateTime.UtcNow
+                    },
+                    new HealingCircle
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Chakra Alignment Workshop",
+                        Time = DateTime.UtcNow.AddDays(5).ToString("o"),
+                        Description = "Premium members exclusive workshop on aligning your chakras with your dog's energy centers.",
+                        ParticipantsCount = 8,
+                        MaxParticipants = 100,
+                        IsPremium = true,
+                        CreatedOn = DateTime.UtcNow
+                    },
+                    new HealingCircle
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Community Gratitude Gathering",
+                        Time = DateTime.UtcNow.AddDays(8).ToString("o"),
+                        Description = "Share your gratitude stories and celebrate the bonds we've strengthened this month.",
+                        ParticipantsCount = 23,
+                        MaxParticipants = 300,
+                        IsPremium = false,
+                        CreatedOn = DateTime.UtcNow
+                    }
+                };
+
+                await context.HealingCircles.AddRangeAsync(circles);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

@@ -332,10 +332,10 @@ const AdminDashboardPage = () => {
 
     // These values now come from API
     const stats = [
-        { title: 'Active Members', value: String(dashboardData.activeMembers).padStart(5, ' '), icon: <Users size={22} />, trend: '+12% this month', color: '#6366f1', delay: 0.1 },
-        { title: 'Stories Shared', value: String(dashboardData.storiesShared).padStart(5, ' '), icon: <Heart size={22} />, trend: '+9% this month', color: '#ec4899', delay: 0.2 },
-        { title: 'Healing Circles', value: String(dashboardData.healingCircles).padStart(5, ' '), icon: <Calendar size={22} />, trend: '+23% this month', color: '#f97316', delay: 0.3 },
-        { title: 'Avg. Bond Growth', value: dashboardData.avgBondGrowth, icon: <TrendingUp size={22} />, trend: '+2% this month', color: '#22c55e', delay: 0.4 },
+        { title: 'Active Members', value: String(dashboardData.activeMembers || 0).padStart(5, ' '), icon: <Users size={22} />, trend: dashboardData.activeMembersTrend || '0% this month', color: '#6366f1', delay: 0.1 },
+        { title: 'Stories Shared', value: String(dashboardData.storiesShared || 0).padStart(5, ' '), icon: <Heart size={22} />, trend: dashboardData.storiesSharedTrend || '0% this month', color: '#ec4899', delay: 0.2 },
+        { title: 'Healing Circles', value: String(dashboardData.healingCircles || 0).padStart(5, ' '), icon: <Calendar size={22} />, trend: dashboardData.healingCirclesTrend || '0% this month', color: '#f97316', delay: 0.3 },
+        { title: 'Avg. Bond Growth', value: dashboardData.avgBondGrowth || '0%', icon: <TrendingUp size={22} />, trend: dashboardData.avgBondGrowthTrend || '0% this month', color: '#22c55e', delay: 0.4 },
     ];
 
     return (

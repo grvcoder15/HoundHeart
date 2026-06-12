@@ -33,22 +33,33 @@ namespace Hounded_Heart.Api.Controllers
                 var startDate = fromDate.HasValue ? fromDate.Value.Date : DateTime.MinValue;
                 var endDate = toDate.HasValue ? toDate.Value.Date.AddDays(1) : DateTime.MaxValue;
 
-                // Active Members: Count of active users created within date range
+                // For trend calculations, calculate previous period
+                var prevStartDate = startDate == DateTime.MinValue ? DateTime.MinValue : startDate.AddMonths(-1);
+                var prevEndDate = startDate == DateTime.MinValue ? DateTime.MinValue : startDate;
+
+                // Active Members
                 var activeMembers = await _context.Users
                     .CountAsync(u => !u.IsDeleted && u.IsActive && u.CreatedOn >= startDate && u.CreatedOn < endDate);
+                var prevActiveMembers = await _context.Users
+                    .CountAsync(u => !u.IsDeleted && u.IsActive && u.CreatedOn >= prevStartDate && u.CreatedOn < prevEndDate);
 
-                // Stories Shared: Count of published community posts within date range
+                // Stories Shared
                 var storiesShared = await _context.CommunityPosts
                     .CountAsync(p => !p.IsDeleted && 
                         (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
                         p.CreatedOn >= startDate && p.CreatedOn < endDate);
+                var prevStoriesShared = await _context.CommunityPosts
+                    .CountAsync(p => !p.IsDeleted && 
+                        (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
+                        p.CreatedOn >= prevStartDate && p.CreatedOn < prevEndDate);
 
-                // Healing Circles: Count of healing circles created within date range
+                // Healing Circles
                 var healingCircles = await _context.HealingCircles
                     .CountAsync(hc => hc.CreatedOn >= startDate && hc.CreatedOn < endDate);
+                var prevHealingCircles = await _context.HealingCircles
+                    .CountAsync(hc => hc.CreatedOn >= prevStartDate && hc.CreatedOn < prevEndDate);
 
-                // Avg Bond Growth: Calculate average engagement from posts within date range
-                // (Total Likes + Total Comments) / Number of Posts * 2
+                // Avg Bond Growth
                 var posts = await _context.CommunityPosts
                     .Where(p => !p.IsDeleted && 
                         (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
@@ -64,12 +75,38 @@ namespace Hounded_Heart.Api.Controllers
                     avgBondGrowth = Math.Min(100, Math.Max(0, averageEngagement * 2));
                 }
 
+                var prevPosts = await _context.CommunityPosts
+                    .Where(p => !p.IsDeleted && 
+                        (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
+                        p.CreatedOn >= prevStartDate && p.CreatedOn < prevEndDate)
+                    .Select(p => new { p.LikeCount, p.CommentCount })
+                    .ToListAsync();
+                
+                double prevAvgBondGrowth = 0;
+                if (prevPosts.Any())
+                {
+                    var totalEngagement = prevPosts.Sum(p => p.LikeCount + p.CommentCount);
+                    var averageEngagement = (double)totalEngagement / prevPosts.Count;
+                    prevAvgBondGrowth = Math.Min(100, Math.Max(0, averageEngagement * 2));
+                }
+
+                string CalculateTrend(double current, double previous)
+                {
+                    if (previous == 0) return current > 0 ? "+100% this month" : "0% this month";
+                    double diff = ((current - previous) / previous) * 100;
+                    return diff >= 0 ? $"+{diff:F1}% this month" : $"{diff:F1}% this month";
+                }
+
                 var stats = new
                 {
                     activeMembers = activeMembers,
+                    activeMembersTrend = CalculateTrend(activeMembers, prevActiveMembers),
                     storiesShared = storiesShared,
+                    storiesSharedTrend = CalculateTrend(storiesShared, prevStoriesShared),
                     healingCircles = healingCircles,
-                    avgBondGrowth = avgBondGrowth > 0 ? $"+{avgBondGrowth:F1}%" : "0%"
+                    healingCirclesTrend = CalculateTrend(healingCircles, prevHealingCircles),
+                    avgBondGrowth = avgBondGrowth > 0 ? $"+{avgBondGrowth:F1}%" : "0%",
+                    avgBondGrowthTrend = CalculateTrend(avgBondGrowth, prevAvgBondGrowth)
                 };
 
                 return Ok(ResponseHelper.Success(stats, "Dashboard stats retrieved successfully.", 200));
@@ -99,22 +136,23 @@ namespace Hounded_Heart.Api.Controllers
                 var monthlyData = new System.Collections.Generic.List<dynamic>();
                 var currentDate = DateTime.SpecifyKind(new DateTime(startDate.Year, startDate.Month, 1), DateTimeKind.Utc);
 
-                while (currentDate < endDate)
+                while (currentDate <= endDate)
                 {
                     var nextMonth = currentDate.AddMonths(1);
                     
-                    var memberCount = await _context.Users
+                    var actualMembers = await _context.Users
                         .CountAsync(u => !u.IsDeleted && u.IsActive && u.CreatedOn >= currentDate && u.CreatedOn < nextMonth);
-                    
-                    var postCount = await _context.CommunityPosts
-                        .CountAsync(p => !p.IsDeleted && (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
-                                   p.CreatedOn >= currentDate && p.CreatedOn < nextMonth);
+                        
+                    var actualPosts = await _context.CommunityPosts
+                        .CountAsync(p => !p.IsDeleted && 
+                            (p.ModerationStatus == "published" || p.ModerationStatus == null) &&
+                            p.CreatedOn >= currentDate && p.CreatedOn < nextMonth);
 
                     monthlyData.Add(new
                     {
                         month = currentDate.ToString("MMM"),
-                        members = memberCount,
-                        posts = postCount
+                        members = actualMembers,
+                        posts = actualPosts
                     });
 
                     currentDate = nextMonth;
