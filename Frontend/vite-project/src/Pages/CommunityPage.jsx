@@ -796,15 +796,15 @@ const CommunityPage = () => {
         <Navbar currentPage="community" onUpgrade={handleUpgrade} />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 py-6 relative z-10">
           {/* Community Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-12"
+            className="mb-4"
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">
+            <h1 className="text-lg font-bold text-gray-900 mb-2 tracking-tight">
               Community
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl leading-relaxed">
@@ -816,7 +816,7 @@ const CommunityPage = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-20"
+            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-20"
           >
             {[
               { label: 'Active Members', value: stats.activeMembers, icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', color: 'bg-[#9333ea]' },
@@ -829,7 +829,7 @@ const CommunityPage = () => {
                 variants={itemVariants}
                 className="relative group"
               >
-                <div className={`relative ${stat.color} rounded-[1.5rem] p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-white flex items-center gap-5 border border-white/10`}>
+                <div className={`relative ${stat.color} rounded-[1.5rem] p-4 shadow-lg hover:shadow-xl transition-all duration-300 text-white flex items-center gap-5 border border-white/10`}>
                   <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={stat.icon} />
@@ -837,7 +837,7 @@ const CommunityPage = () => {
                   </div>
                   <div>
                     <div className="text-[11px] font-black uppercase tracking-[0.1em] opacity-80 mb-1">{stat.label}</div>
-                    <div className="text-3xl font-black tracking-tight leading-none">
+                    <div className="text-lg font-black tracking-tight leading-none">
                       {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
                     </div>
                   </div>
@@ -851,22 +851,22 @@ const CommunityPage = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-6 mb-12"
+            className="space-y-4 mb-4"
           >
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Upcoming Healing Circles</h2>
+            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Upcoming Healing Circles</h2>
             {loadingCircles ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[1, 2, 3].map((n) => (
-                  <div key={n} className="bg-white/50 rounded-[1.5rem] p-6 animate-pulse border border-gray-100">
+                  <div key={n} className="bg-white/50 rounded-[1.5rem] p-4 animate-pulse border border-gray-100">
                     <div className="h-6 bg-gray-200 rounded-md mb-4 w-3/4"></div>
                     <div className="h-4 bg-gray-100 rounded-md mb-3"></div>
-                    <div className="h-4 bg-gray-100 rounded-md mb-6 w-1/2"></div>
+                    <div className="h-4 bg-gray-100 rounded-md mb-4 w-1/2"></div>
                     <div className="h-10 bg-purple-200 rounded-lg"></div>
                   </div>
                 ))}
               </div>
             ) : circlesData.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {circlesData.map((circle) => {
                   const circleDate = circle.time ? new Date(circle.time) : null;
                   const isUpcoming = circleDate && circleDate > new Date();
@@ -880,7 +880,7 @@ const CommunityPage = () => {
                       className="relative group"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                      <div className="relative bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                      <div className="relative bg-white rounded-[1.5rem] p-4 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                         {/* Circle Header */}
                         <div className="mb-4">
                           {isJoined && (
@@ -971,14 +971,14 @@ const CommunityPage = () => {
                 })}
               </div>
             ) : (
-              <div className="bg-white/50 backdrop-blur-sm rounded-[2rem] p-12 text-center border border-gray-100">
-                <div className="text-5xl mb-4">🕉️</div>
+              <div className="bg-white/50 backdrop-blur-sm rounded-[2rem] p-4 text-center border border-gray-100">
+                <div className="text-lg mb-4">🕉️</div>
                 <p className="text-gray-600 font-medium">No healing circles available yet. Check back soon!</p>
               </div>
             )}
           </motion.div>
-          <motion.div variants={itemVariants} className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mt-12 mb-12 relative z-10">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
+          <motion.div variants={itemVariants} className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 mt-4 mb-4 relative z-10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
               <div className="flex-1 relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -997,7 +997,7 @@ const CommunityPage = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="h-full flex items-center space-x-3 px-8 py-4 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 shadow-none"
+                  className="h-full flex items-center space-x-3 px-4 py-4 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 shadow-none"
                 >
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -1041,7 +1041,7 @@ const CommunityPage = () => {
                   whileHover={{ y: -4, scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-8 py-3 rounded-full text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group/cat ${selectedCategory === cat
+                  className={`px-4 py-3 rounded-full text-[13px] font-bold uppercase tracking-wider transition-all duration-300 relative overflow-hidden group/cat ${selectedCategory === cat
                     ? 'text-white shadow-md'
                     : 'bg-gray-100 text-gray-500 hover:text-purple-600 hover:bg-gray-200'
                     }`}
@@ -1077,22 +1077,22 @@ const CommunityPage = () => {
                 >
                   <div className="relative bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm overflow-hidden">
                     <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-xl font-black text-gray-900 tracking-tight flex items-center">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-black text-gray-900 tracking-tight flex items-center">
                           <span className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-4 shadow-inner">
-                            <span className="animate-pulse text-xl">✨</span>
+                            <span className="animate-pulse text-lg">✨</span>
                           </span>
                           Share Your Divine Moment
                         </h3>
                       </div>
 
-                      <div className="space-y-8">
+                      <div className="space-y-4">
                         <div className="relative group/textarea">
                           <textarea
                             value={newPost}
                             onChange={(e) => setNewPost(e.target.value)}
                             placeholder="What beautiful miracle did you encounter today?"
-                            className="w-full p-8 bg-gray-50 border border-gray-100 rounded-[2rem] resize-none focus:ring-2 focus:ring-purple-500/10 focus:bg-white transition-all text-lg text-gray-800 placeholder:text-gray-400 font-medium tracking-tight"
+                            className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[2rem] resize-none focus:ring-2 focus:ring-purple-500/10 focus:bg-white transition-all text-lg text-gray-800 placeholder:text-gray-400 font-medium tracking-tight"
                             rows="3"
                           />
                         </div>
@@ -1114,7 +1114,7 @@ const CommunityPage = () => {
                                 ? 'bg-white border-purple-500 shadow-lg shadow-purple-500/10'
                                 : 'bg-white border-transparent hover:bg-gray-50'}`}
                             >
-                              <span className="text-2xl mb-2">{mood.emoji}</span>
+                              <span className="text-lg mb-2">{mood.emoji}</span>
                               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{mood.label}</span>
                             </motion.button>
                           ))}
@@ -1163,22 +1163,22 @@ const CommunityPage = () => {
             {/* Dynamic Feed Posts Section */}
             <div className="custom-scrollbar overflow-y-auto pr-4" style={{ maxHeight: '900px' }}>
               {loadingPosts && posts.length === 0 ? (
-                <div className="space-y-8">
+                <div className="space-y-4">
                   {[1, 2, 3].map((n) => (
-                    <div key={n} className="premium-card rounded-[20px] overflow-hidden bg-white/50 backdrop-blur-sm border border-white/40 p-6 animate-pulse">
-                      <div className="flex items-center space-x-4 mb-6">
+                    <div key={n} className="premium-card rounded-[20px] overflow-hidden bg-white/50 backdrop-blur-sm border border-white/40 p-4 animate-pulse">
+                      <div className="flex items-center space-x-4 mb-4">
                         <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                         <div className="space-y-2">
                           <div className="w-32 h-4 bg-gray-200 rounded-md"></div>
                           <div className="w-20 h-2 bg-gray-100 rounded-md"></div>
                         </div>
                       </div>
-                      <div className="space-y-3 mb-6">
+                      <div className="space-y-3 mb-4">
                         <div className="w-full h-4 bg-gray-200 rounded-md"></div>
                         <div className="w-[90%] h-4 bg-gray-200 rounded-md"></div>
                         <div className="w-[40%] h-4 bg-gray-100 rounded-md"></div>
                       </div>
-                      <div className="w-full aspect-[16/9] bg-gray-200 rounded-2xl mb-6"></div>
+                      <div className="w-full aspect-[16/9] bg-gray-200 rounded-2xl mb-4"></div>
                       <div className="flex space-x-6">
                         <div className="w-16 h-6 bg-gray-100 rounded-full"></div>
                         <div className="w-16 h-6 bg-gray-100 rounded-full"></div>
@@ -1192,9 +1192,9 @@ const CommunityPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="premium-card rounded-[3rem] p-24 text-center border-white/40 shadow-inner bg-white/30 backdrop-blur-3xl"
                 >
-                  <div className="text-7xl mb-10 animate-bounce">🌿</div>
-                  <h3 className="text-3xl text-gray-900 font-black tracking-tighter mb-4">No moments shared yet</h3>
-                  <p className="text-lg text-gray-500 font-bold max-w-md mx-auto mb-12 leading-relaxed">Be the first to inspire the community with your story of connection and spirituality.</p>
+                  <div className="text-7xl mb-4 animate-bounce">🌿</div>
+                  <h3 className="text-lg text-gray-900 font-black tracking-tighter mb-4">No moments shared yet</h3>
+                  <p className="text-lg text-gray-500 font-bold max-w-md mx-auto mb-4 leading-relaxed">Be the first to inspire the community with your story of connection and spirituality.</p>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -1206,7 +1206,7 @@ const CommunityPage = () => {
                 </motion.div>
               ) : (
                 <>
-                  <div className="space-y-8 pb-12">
+                  <div className="space-y-4 pb-12">
                     <AnimatePresence mode="popLayout">
                       {filteredPosts.map((post) => (
                         <motion.div
@@ -1216,7 +1216,7 @@ const CommunityPage = () => {
                           whileInView={{ opacity: 1, y: 0, scale: 1 }}
                           viewport={{ once: true }}
                           whileHover={{ y: -12, scale: 1.01 }}
-                          className="relative group/post mb-12"
+                          className="relative group/post mb-4"
                         >
                           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-indigo-500/5 blur-3xl opacity-0 group-hover/post:opacity-100 transition-opacity duration-1000"></div>
 
@@ -1224,7 +1224,7 @@ const CommunityPage = () => {
                             {/* Inner Glass Highlight */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
                             {/* Header section */}
-                            <div className="p-6 flex items-center justify-between">
+                            <div className="p-4 flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm">
                                   {post.author?.profilePhoto || post.Author?.profilePhoto ? (
@@ -1310,33 +1310,33 @@ const CommunityPage = () => {
                               </div>
                             </div>
 
-                            <div className="px-8 py-4">
+                            <div className="px-4 py-4">
                               {editingPostId === post.postId ? (
-                                <div className="mb-6 space-y-4">
+                                <div className="mb-4 space-y-4">
                                   <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
-                                    className="w-full p-6 bg-white/40 backdrop-blur-md border border-purple-200/50 rounded-2xl resize-none focus:ring-4 focus:ring-purple-500/10 focus:bg-white transition-all text-gray-700 font-medium text-lg leading-relaxed"
+                                    className="w-full p-4 bg-white/40 backdrop-blur-md border border-purple-200/50 rounded-2xl resize-none focus:ring-4 focus:ring-purple-500/10 focus:bg-white transition-all text-gray-700 font-medium text-lg leading-relaxed"
                                     rows="3"
                                   />
                                   <div className="flex justify-end space-x-4">
                                     <button
                                       onClick={() => { setEditingPostId(null); setEditContent(''); }}
-                                      className="px-6 py-2.5 text-sm font-black text-gray-400 hover:text-gray-600 transition-all uppercase tracking-widest"
+                                      className="px-4 py-2.5 text-sm font-black text-gray-400 hover:text-gray-600 transition-all uppercase tracking-widest"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                       onClick={() => handleEditPost(post.postId)}
-                                      className="px-8 py-2.5 text-sm font-black text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg hover:shadow-purple-200/50 transition-all uppercase tracking-widest"
+                                      className="px-4 py-2.5 text-sm font-black text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg hover:shadow-purple-200/50 transition-all uppercase tracking-widest"
                                     >
                                       Save Divine Changes
                                     </button>
                                   </div>
                                 </div>
                               ) : (
-                                <div className="text-gray-900 text-lg leading-[1.8] mb-6 font-medium tracking-tight">
-                                  <span className="font-black text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-indigo-600 mr-2 opacity-60 text-2xl leading-none">@</span>
+                                <div className="text-gray-900 text-lg leading-[1.8] mb-4 font-medium tracking-tight">
+                                  <span className="font-black text-transparent bg-clip-text bg-gradient-to-br from-purple-600 to-indigo-600 mr-2 opacity-60 text-lg leading-none">@</span>
                                   {post.content}
                                 </div>
                               )}
@@ -1352,7 +1352,7 @@ const CommunityPage = () => {
                               </div>
                             )}
 
-                            <div className="flex flex-wrap gap-3 px-8 py-6 border-t border-white/10 bg-black/[0.02]">
+                            <div className="flex flex-wrap gap-3 px-4 py-6 border-t border-white/10 bg-black/[0.02]">
                               {computePostTags(post).map((tag, i) => (
                                 <span
                                   key={i}
@@ -1364,7 +1364,7 @@ const CommunityPage = () => {
                             </div>
 
                             {/* Engagement Section */}
-                            <div className="px-8 py-6 flex items-center justify-between border-t border-white/10 bg-black/5 backdrop-blur-3xl">
+                            <div className="px-4 py-6 flex items-center justify-between border-t border-white/10 bg-black/5 backdrop-blur-3xl">
                               <div className="flex items-center space-x-12">
                                 <motion.button
                                   whileHover={{ scale: 1.25 }}
@@ -1408,10 +1408,10 @@ const CommunityPage = () => {
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: 'auto' }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  className="px-6 pb-8 pt-8 border-t border-gray-100 bg-[#fafafa]"
+                                  className="px-4 pb-8 pt-8 border-t border-gray-100 bg-[#fafafa]"
                                 >
                                   {/* Comment Section Header */}
-                                  <div className="flex items-center justify-between mb-8 px-2">
+                                  <div className="flex items-center justify-between mb-4 px-2">
                                     <div className="flex items-center space-x-2">
                                       <h4 className="text-[17px] font-bold text-gray-900">Comments</h4>
                                       <span className="bg-[#ff6b00] text-white px-2.5 py-0.5 rounded-full text-[11px] font-bold">{post.commentCount}</span>
@@ -1426,7 +1426,7 @@ const CommunityPage = () => {
                                   </div>
 
                                   {/* Rich Comment Input */}
-                                  <div className="mb-10 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-[#ff6b00]/10 focus-within:border-[#ff6b00]/30 transition-all">
+                                  <div className="mb-4 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-[#ff6b00]/10 focus-within:border-[#ff6b00]/30 transition-all">
                                     <textarea
                                       value={commentTexts[post.postId] || ''}
                                       onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.postId]: e.target.value }))}
@@ -1559,7 +1559,7 @@ const CommunityPage = () => {
 
                                                 {/* Replies Section */}
                                                 {replies.length > 0 && (
-                                                  <div className="mt-8 space-y-8">
+                                                  <div className="mt-4 space-y-4">
                                                     {replies.map(reply => (
                                                       <div key={reply.commentId} className="flex space-x-3 group/reply relative">
                                                         {/* L-shaped connection line */}
@@ -1679,10 +1679,10 @@ const CommunityPage = () => {
                 className="bg-white rounded-2xl w-full max-w-sm shadow-2xl"
               >
                 {/* Compact Modal Header */}
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 rounded-t-2xl">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-4 rounded-t-2xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="text-2xl">⭐</span>
+                      <span className="text-lg">⭐</span>
                       <h3 className="text-white font-bold text-lg">Upgrade to Premium</h3>
                     </div>
                     <button
@@ -1697,13 +1697,13 @@ const CommunityPage = () => {
                 </div>
 
                 {/* Compact Modal Content */}
-                <div className="px-6 py-5">
-                  <p className="text-gray-700 text-center mb-6 font-medium">
+                <div className="px-4 py-5">
+                  <p className="text-gray-700 text-center mb-4 font-medium">
                     You've reached your free limit. Upgrade to Premium for unlimited access!
                   </p>
 
                   {/* Quick Features List */}
-                  <div className="bg-purple-50 rounded-lg p-4 mb-6 space-y-2">
+                  <div className="bg-purple-50 rounded-lg p-4 mb-4 space-y-2">
                     <div className="flex items-center space-x-2 text-sm text-gray-700">
                       <span className="text-green-500">✓</span>
                       <span>Unlimited community posts & circles</span>
@@ -1719,9 +1719,9 @@ const CommunityPage = () => {
                   </div>
 
                   {/* Pricing Quick View */}
-                  <div className="bg-gray-50 rounded-lg p-3 mb-6 text-center text-sm">
+                  <div className="bg-gray-50 rounded-lg p-3 mb-4 text-center text-sm">
                     <div className="text-gray-600">Start from</div>
-                    <div className="text-2xl font-bold text-purple-600">$19.99/mo</div>
+                    <div className="text-lg font-bold text-purple-600">$19.99/mo</div>
                   </div>
 
                   {/* Action Buttons */}
@@ -1764,17 +1764,17 @@ const CommunityPage = () => {
                   exit={{ scale: 0.9, y: 20, opacity: 0 }}
                   className="bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl relative"
                 >
-                  <h3 className="text-xl font-bold mb-4">Report Content</h3>
+                  <h3 className="text-lg font-bold mb-4">Report Content</h3>
                   <textarea
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     placeholder="Why are you reporting this?"
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl resize-none focus:ring-2 focus:ring-[#9333ea] transition-all mb-6"
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl resize-none focus:ring-2 focus:ring-[#9333ea] transition-all mb-4"
                     rows="4"
                   />
                   <div className="flex justify-end space-x-3">
-                    <button onClick={() => setReportModal({ isOpen: false, postId: null, commentId: null })} className="px-6 py-2 text-gray-500 font-bold">Cancel</button>
-                    <button onClick={handleReportContent} disabled={!reportReason.trim()} className="px-6 py-2 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all">Report</button>
+                    <button onClick={() => setReportModal({ isOpen: false, postId: null, commentId: null })} className="px-4 py-2 text-gray-500 font-bold">Cancel</button>
+                    <button onClick={handleReportContent} disabled={!reportReason.trim()} className="px-4 py-2 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all">Report</button>
                   </div>
                 </motion.div>
               </motion.div>
@@ -1797,13 +1797,13 @@ const CommunityPage = () => {
                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
                 className="bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl relative"
               >
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM9 19c-4.35 0-8 1.79-8 4v3h16v-3c0-2.21-3.65-4-8-4z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Join Healing Circle?</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Join Healing Circle?</h3>
                   <p className="text-gray-600 font-medium">Are you sure you want to join <span className="text-purple-600 font-bold">{joinCircleModal.circleName}</span>?</p>
                 </div>
                 <div className="flex justify-center gap-3 pt-4">
@@ -1812,7 +1812,7 @@ const CommunityPage = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleCancelJoinCircle}
                     disabled={joiningCircle}
-                    className="px-8 py-3 text-gray-700 font-bold rounded-xl border-2 border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+                    className="px-4 py-3 text-gray-700 font-bold rounded-xl border-2 border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
                   >
                     Cancel
                   </motion.button>
@@ -1821,7 +1821,7 @@ const CommunityPage = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleConfirmJoinCircle}
                     disabled={joiningCircle}
-                    className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-purple-500/20"
+                    className="px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-purple-500/20"
                   >
                     {joiningCircle ? 'Joining...' : 'Yes, Join'}
                   </motion.button>
@@ -1846,13 +1846,13 @@ const CommunityPage = () => {
                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
                 className="bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl relative"
               >
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Leave Healing Circle?</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Leave Healing Circle?</h3>
                   <p className="text-gray-600 font-medium">Are you sure you want to leave <span className="text-red-600 font-bold">{leaveCircleModal.circleName}</span>?</p>
                 </div>
                 <div className="flex justify-center gap-3 pt-4">
@@ -1861,7 +1861,7 @@ const CommunityPage = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleCancelLeaveCircle}
                     disabled={leavingCircle}
-                    className="px-8 py-3 text-gray-700 font-bold rounded-xl border-2 border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+                    className="px-4 py-3 text-gray-700 font-bold rounded-xl border-2 border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
                   >
                     Cancel
                   </motion.button>
@@ -1870,7 +1870,7 @@ const CommunityPage = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleConfirmLeaveCircle}
                     disabled={leavingCircle}
-                    className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-red-500/20"
+                    className="px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-red-500/20"
                   >
                     {leavingCircle ? 'Leaving...' : 'Yes, Leave'}
                   </motion.button>
@@ -1887,7 +1887,7 @@ const CommunityPage = () => {
               initial={{ opacity: 0, y: 20, x: 0 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className={`fixed bottom-8 right-8 z-[2000] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 max-w-sm backdrop-blur-lg ${
+              className={`fixed bottom-8 right-8 z-[2000] px-4 py-4 rounded-2xl shadow-2xl flex items-center gap-3 max-w-sm backdrop-blur-lg ${
                 toast.type === 'success'
                   ? 'bg-green-500/90 text-white border border-green-400/30'
                   : 'bg-red-500/90 text-white border border-red-400/30'
@@ -1914,7 +1914,7 @@ const CommunityPage = () => {
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="fixed bottom-8 right-8 w-16 h-16 bg-[#9333ea] text-white rounded-full flex items-center justify-center shadow-2xl z-[100] ring-4 ring-white lg:hidden"
         >
-          <span className="text-3xl font-light">+</span>
+          <span className="text-lg font-light">+</span>
         </motion.button >
       </div >
     </>

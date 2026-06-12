@@ -6,7 +6,9 @@ import apiService from '../services/apiService';
 const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showUpcomingDropdown, setShowUpcomingDropdown] = useState(false);
   const profileDropdownRef = React.useRef(null);
+  const upcomingDropdownRef = React.useRef(null);
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -42,21 +44,22 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
 
   const hasPaidAccess = membershipTier === 'plus' || membershipTier === 'premium';
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
       }
+      if (upcomingDropdownRef.current && !upcomingDropdownRef.current.contains(event.target)) {
+        setShowUpcomingDropdown(false);
+      }
     };
 
-    if (showProfileDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showProfileDropdown]);
+  }, []);
 
   // Load user data on component mount
   useEffect(() => {
@@ -246,29 +249,47 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
             </button>
           ))}
 
-          {/* Separator */}
-          <div className="w-px h-6 bg-gray-300"></div>
-
-          {/* Coming Soon Items */}
-          <div className="flex items-center space-x-4">
-            {comingSoonItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => navigate(item.path)}
-                className="relative text-gray-500 hover:text-orange-500 transition-colors text-sm group"
-                title="Coming Soon - Phase 2 Feature"
-              >
-                {item.name}
-                <span className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 bg-orange-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none transition-opacity z-10">
-                  Coming Soon
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* User Actions */}
         <div className="flex items-center space-x-4">
+
+          {/* Upcoming Dropdown */}
+          <div className="relative" ref={upcomingDropdownRef}>
+            <button
+              onClick={() => setShowUpcomingDropdown(!showUpcomingDropdown)}
+              className="flex items-center space-x-1 text-gray-600 hover:text-purple-600 transition-colors text-sm font-medium px-2 py-1 rounded-lg hover:bg-gray-50"
+            >
+              <span>Upcoming</span>
+              <svg
+                className={`w-3.5 h-3.5 transition-transform ${showUpcomingDropdown ? 'rotate-180' : ''}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showUpcomingDropdown && (
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Coming Soon</p>
+                </div>
+                {comingSoonItems.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => { navigate(item.path); setShowUpcomingDropdown(false); }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-between group"
+                  >
+                    <span>{item.name}</span>
+                    <span className="text-[10px] bg-orange-100 text-orange-500 font-semibold px-1.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                      Soon
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Upgrade Button */}
           {hasPaidAccess ? (
             <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg">

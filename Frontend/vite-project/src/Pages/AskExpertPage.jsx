@@ -342,37 +342,37 @@ const AskExpertPage = () => {
       <Navbar currentPage="ask-expert" onUpgrade={handleUpgrade} />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Page Title */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-4">
           <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-purple-600 mb-4">Ask Our Expert</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-lg font-bold text-purple-600 mb-4">Ask Our Expert</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Get personalized spiritual wellness guidance for you and your companion
           </p>
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl p-8">
-              <div className="flex items-center space-x-2 mb-6">
-                <h2 className="text-2xl font-bold text-purple-600">Share Your Spiritual Journey</h2>
+            <div className="bg-white rounded-xl p-4">
+              <div className="flex items-center space-x-2 mb-4">
+                <h2 className="text-lg font-bold text-purple-600">Share Your Spiritual Journey</h2>
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2 2m0 0l2 2m-2-2l-2 2m2-2v4m-4 0h4m5-16l2 2m0 0l2 2m-2-2l-2 2m2-2v4m-4 0h4" />
                 </svg>
               </div>
 
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-600 mb-4">
                 Our certified spiritual wellness experts are here to guide you and your beloved companion on your journey together.
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
@@ -499,7 +499,7 @@ const AskExpertPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+                  className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -522,9 +522,9 @@ const AskExpertPage = () => {
           </div>
 
           {/* Right Column - Information Panels */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Response Time Panel */}
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl p-4">
               <div className="flex items-center space-x-3 mb-4">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -553,7 +553,7 @@ const AskExpertPage = () => {
             </div>
 
             {/* Expert Team Panel */}
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl p-4">
               <div className="flex items-center space-x-3 mb-4">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -572,7 +572,7 @@ const AskExpertPage = () => {
             </div>
 
             {/* Premium Members Panel */}
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl p-4">
               <div className="flex items-center space-x-3 mb-4">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -623,8 +623,8 @@ const AskExpertPage = () => {
 
         {/* Question History Section */}
         <div className="mt-16 pt-8 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Your Previous Questions</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">Your Previous Questions</h2>
             <button
               onClick={fetchQuestionHistory}
               className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center space-x-1"
@@ -637,12 +637,12 @@ const AskExpertPage = () => {
           </div>
 
           {isLoadingHistory ? (
-            <div className="text-center py-12">
+            <div className="text-center py-6">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading your journey history...</p>
             </div>
           ) : userQuestions.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-12 text-center">
+            <div className="bg-gray-50 rounded-xl p-4 text-center">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -652,9 +652,9 @@ const AskExpertPage = () => {
               <p className="text-gray-600">Your journey with our experts will appear here once you submit your first question.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {userQuestions.map((q) => (
-                <div key={q.id || q.Id || Math.random()} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div key={q.id || q.Id || Math.random()} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${q.priority === 'High Priority' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                       }`}>
@@ -692,10 +692,10 @@ const AskExpertPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             {/* Gradient Header */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl">💎</span>
+                  <span className="text-lg">💎</span>
                   <h3 className="text-white font-bold text-lg">Upgrade to Premium</h3>
                 </div>
                 <button
@@ -710,13 +710,13 @@ const AskExpertPage = () => {
             </div>
 
             {/* Content */}
-            <div className="px-6 py-6">
-              <p className="text-gray-700 font-medium mb-6 text-center">
+            <div className="px-4 py-6">
+              <p className="text-gray-700 font-medium mb-4 text-center">
                 You've used your 2 free expert questions!
               </p>
 
               {/* Premium Feature List */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -744,10 +744,10 @@ const AskExpertPage = () => {
               </div>
 
               {/* Pricing */}
-              <div className="bg-purple-50 rounded-lg p-4 mb-6 text-center border border-purple-100">
+              <div className="bg-purple-50 rounded-lg p-4 mb-4 text-center border border-purple-100">
                 <p className="text-sm text-gray-600 mb-1">Get Premium for</p>
                 <div className="flex items-center justify-center space-x-2">
-                  <span className="text-3xl font-bold text-purple-600">$19.99</span>
+                  <span className="text-lg font-bold text-purple-600">$19.99</span>
                   <span className="text-gray-600 text-sm">/month</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Or $199.99/year - Save 17%</p>
@@ -778,14 +778,14 @@ const AskExpertPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-auto">
             {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-yellow-400 border-2 border-white rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-orange-600">Upgrade to Premium</h2>
+                <h2 className="text-lg font-bold text-orange-600">Upgrade to Premium</h2>
               </div>
               <button
                 onClick={handleClosePricingModal}
@@ -798,14 +798,14 @@ const AskExpertPage = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6">
+            <div className="p-4">
               {/* Subtitle */}
-              <p className="text-center text-gray-600 mb-8">
+              <p className="text-center text-gray-600 mb-4">
                 Unlock the full potential of your spiritual journey with your dog
               </p>
 
               {/* Pricing Toggle */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-4">
                 <div className="flex items-center space-x-4">
                   <span className={`text-sm font-medium ${!isYearlyPlan ? 'text-gray-900' : 'text-gray-500'}`}>
                     Monthly
@@ -834,16 +834,16 @@ const AskExpertPage = () => {
               </div>
 
               {/* Pricing Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {/* Monthly Plan */}
-                <div className={`border-2 rounded-xl p-6 ${!isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+                <div className={`border-2 rounded-xl p-4 ${!isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{monthlyPlan.name || monthlyPlan.Name}</h3>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">${monthlyPlan.price || monthlyPlan.Price}<span className="text-lg font-normal">/month</span></div>
+                  <div className="text-lg font-bold text-gray-900 mb-1">${monthlyPlan.price || monthlyPlan.Price}<span className="text-lg font-normal">/month</span></div>
                   <p className="text-sm text-gray-600">Billed monthly, cancel anytime</p>
                 </div>
 
                 {/* Yearly Plan */}
-                <div className={`border-2 rounded-xl p-6 relative ${isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+                <div className={`border-2 rounded-xl p-4 relative ${isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                   {isYearlyPlan && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-medium">
@@ -852,7 +852,7 @@ const AskExpertPage = () => {
                     </div>
                   )}
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{yearlyPlan.name || yearlyPlan.Name}</h3>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">${yearlyPlan.price || yearlyPlan.Price}<span className="text-lg font-normal">/year</span></div>
+                  <div className="text-lg font-bold text-gray-900 mb-1">${yearlyPlan.price || yearlyPlan.Price}<span className="text-lg font-normal">/year</span></div>
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-lg text-gray-500 line-through">${((monthlyPlan.price || monthlyPlan.Price) * 12).toFixed(2)}</span>
                     <span className="text-sm text-green-600 font-medium">Save ${(((monthlyPlan.price || monthlyPlan.Price) * 12) - (yearlyPlan.price || yearlyPlan.Price)).toFixed(2)}</span>
@@ -862,9 +862,9 @@ const AskExpertPage = () => {
               </div>
 
               {/* Premium Features */}
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">Premium Features</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-center text-gray-900 mb-4">Premium Features</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Left Column */}
                   <div className="space-y-4">
                     {/* Unlimited Chakra Rituals */}
@@ -974,9 +974,9 @@ const AskExpertPage = () => {
               </div>
 
               {/* Testimonials Section */}
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">What Our Premium Members Say</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-center text-gray-900 mb-4">What Our Premium Members Say</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <div className="flex justify-center mb-3">
                       {[...Array(5)].map((_, i) => (
@@ -1017,11 +1017,11 @@ const AskExpertPage = () => {
               <div className="flex justify-center space-x-4">
                 <button
                   onClick={handleClosePricingModal}
-                  className="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                  className="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
                 >
                   Maybe Later
                 </button>
-                <button className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button className="px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
                   {isYearlyPlan ? 'Start Yearly Plan' : 'Start Monthly Plan'}
                 </button>
               </div>

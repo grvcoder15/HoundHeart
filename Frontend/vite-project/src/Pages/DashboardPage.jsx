@@ -2367,7 +2367,7 @@ const DashboardPage = () => {
       <Navbar currentPage="dashboard" onUpgrade={handleUpgrade} onChangePassword={handleOpenChangePassword} />
       {showChangePasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-8 relative animate-fadeIn space-y-6">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-4 md:p-4 relative animate-fadeIn space-y-4">
             <button
               onClick={handleCloseChangePassword}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -2378,7 +2378,7 @@ const DashboardPage = () => {
             </button>
 
             <div className="text-center space-y-1">
-              <h3 className="text-2xl font-semibold text-gray-900">Change Password</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
               <p className="text-sm text-gray-500">Update your password to keep your account secure.</p>
             </div>
 
@@ -2523,7 +2523,7 @@ const DashboardPage = () => {
                 <button
                   type="submit"
                   disabled={isUpdatingPassword}
-                  className={`px-6 py-2 rounded-lg font-semibold text-white transition-all duration-300 ${isUpdatingPassword
+                  className={`px-4 py-2 rounded-lg font-semibold text-white transition-all duration-300 ${isUpdatingPassword
                     ? 'bg-gradient-to-r from-purple-400 to-pink-400 cursor-not-allowed opacity-80'
                     : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
                     }`}
@@ -2537,29 +2537,29 @@ const DashboardPage = () => {
       )}
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Welcome Section */}
         <div
           id="welcome-section"
           data-animate
-          className={`mb-8 transition-all duration-1000 delay-200 ${isVisible['welcome-section'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`mb-4 transition-all duration-1000 delay-200 ${isVisible['welcome-section'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome back, {userData.name}</h1>
-          <p className="text-xl text-gray-600">Continue strengthening your spiritual bond with {userData.dogName}</p>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">Welcome back, {userData.name}</h1>
+          <p className="text-lg text-gray-600">Continue strengthening your spiritual bond with {userData.dogName}</p>
         </div>
 
         {/* Navigation Tabs */}
         <div
           id="nav-tabs"
           data-animate
-          className={`mb-8 transition-all duration-1000 delay-300 ${isVisible['nav-tabs'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`mb-4 transition-all duration-1000 delay-300 ${isVisible['nav-tabs'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
         >
           <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 w-full">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex-1 px-6 py-3 rounded-md transition-colors ${activeTab === 'overview'
+              className={`flex-1 px-4 py-3 rounded-md transition-colors ${activeTab === 'overview'
                 ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -2568,7 +2568,7 @@ const DashboardPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('bond-building')}
-              className={`flex-1 px-6 py-3 rounded-md transition-colors ${activeTab === 'bond-building'
+              className={`flex-1 px-4 py-3 rounded-md transition-colors ${activeTab === 'bond-building'
                 ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -2577,7 +2577,7 @@ const DashboardPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('wellness')}
-              className={`flex-1 px-6 py-3 rounded-md transition-colors ${activeTab === 'wellness'
+              className={`flex-1 px-4 py-3 rounded-md transition-colors ${activeTab === 'wellness'
                 ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -2586,7 +2586,7 @@ const DashboardPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('meditation')}
-              className={`flex-1 px-6 py-3 rounded-md transition-colors ${activeTab === 'meditation'
+              className={`flex-1 px-4 py-3 rounded-md transition-colors ${activeTab === 'meditation'
                 ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                 : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -2595,7 +2595,7 @@ const DashboardPage = () => {
             </button>
             {/* <button
               onClick={() => setActiveTab('insights')}
-              className={`flex-1 px-6 py-3 rounded-md transition-colors ${activeTab === 'insights'
+              className={`flex-1 px-4 py-3 rounded-md transition-colors ${activeTab === 'insights'
                   ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                   : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -2612,10 +2612,10 @@ const DashboardPage = () => {
             <div
               id="stats-panel"
               data-animate
-              className={`bg-white rounded-2xl shadow-lg p-8 mb-8 transition-all duration-1000 delay-400 ${isVisible['stats-panel'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`bg-white rounded-2xl shadow-lg p-4 mb-4 transition-all duration-1000 delay-400 ${isVisible['stats-panel'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Bonded Score */}
                 <div className="text-center">
                   {/* Circular Progress Indicator */}
@@ -2655,7 +2655,7 @@ const DashboardPage = () => {
                     {/* Center content with score - shows bondedScore value */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        <div className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                           {bondedScore}%
                         </div>
                       </div>
@@ -2667,7 +2667,7 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-900">This Week's Progress</span>
@@ -2716,7 +2716,7 @@ const DashboardPage = () => {
                       />
                     ) : (
                       <div className="w-20 h-20 bg-gradient-to-br from-amber-300 to-amber-400 rounded-full flex items-center justify-center">
-                        <span className="text-amber-700 text-2xl">🐕</span>
+                        <span className="text-amber-700 text-lg">🐕</span>
                       </div>
                     )}
                   </div>
@@ -2733,16 +2733,16 @@ const DashboardPage = () => {
             <div
               id="quick-actions"
               data-animate
-              className={`mb-8 transition-all duration-1000 delay-600 ${isVisible['quick-actions'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`mb-4 transition-all duration-1000 delay-600 ${isVisible['quick-actions'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Chakra Sync - Plus/Premium */}
                 <button
                   onClick={() => hasChakraSyncAccess ? handleQuickAction('chakra-sync') : handleUpgrade()}
                   title={hasChakraSyncAccess ? 'Open Chakra Sync' : 'Plus/Premium Feature - Upgrade to access'}
-                  className={`bg-white text-gray-800 p-6 rounded-xl shadow-sm relative transition-all duration-300 ${hasChakraSyncAccess
+                  className={`bg-white text-gray-800 p-4 rounded-xl shadow-sm relative transition-all duration-300 ${hasChakraSyncAccess
                     ? 'hover:shadow-lg transform hover:scale-105 border-2 border-transparent'
                     : 'opacity-50 cursor-not-allowed'
                     }`}
@@ -2755,7 +2755,7 @@ const DashboardPage = () => {
                   )}
 
                   <div className="text-center">
-                    <div className={`w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white text-2xl shadow-md ${hasChakraSyncAccess ? '' : 'opacity-60'}`}>
+                    <div className={`w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white text-lg shadow-md ${hasChakraSyncAccess ? '' : 'opacity-60'}`}>
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
@@ -2768,7 +2768,7 @@ const DashboardPage = () => {
                 {/* Daily Check-in */}
                 <button
                   onClick={() => handleQuickAction('daily-checkin')}
-                  className={`bg-white text-gray-800 p-6 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-sm border-2 ${isCheckInDoneToday ? 'border-green-400' : 'border-transparent'}`}
+                  className={`bg-white text-gray-800 p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-sm border-2 ${isCheckInDoneToday ? 'border-green-400' : 'border-transparent'}`}
                 >
                   <div className="text-center relative">
                     {isCheckInDoneToday && (
@@ -2778,7 +2778,7 @@ const DashboardPage = () => {
                         </svg>
                       </div>
                     )}
-                    <div className={`w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br ${isCheckInDoneToday ? 'from-green-500 to-green-600' : 'from-pink-500 to-pink-600'} text-white text-2xl shadow-md`}>
+                    <div className={`w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br ${isCheckInDoneToday ? 'from-green-500 to-green-600' : 'from-pink-500 to-pink-600'} text-white text-lg shadow-md`}>
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
@@ -2791,7 +2791,7 @@ const DashboardPage = () => {
                 {/* Add Memory */}
                 <button
                   onClick={() => handleQuickAction('add-memory')}
-                  className="bg-white text-gray-800 p-6 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-sm relative"
+                  className="bg-white text-gray-800 p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-sm relative"
                 >
                   {!hasUnlimitedMemories && (
                     <div className="absolute top-3 right-3 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
@@ -2800,7 +2800,7 @@ const DashboardPage = () => {
                   )}
 
                   <div className="text-center">
-                    <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white text-2xl shadow-md">
+                    <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white text-lg shadow-md">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
@@ -2816,19 +2816,19 @@ const DashboardPage = () => {
             <div
               id="bottom-section"
               data-animate
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-8 transition-all duration-1000 delay-800 ${isVisible['bottom-section'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-4 transition-all duration-1000 delay-800 ${isVisible['bottom-section'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
             >
               {/* Recent Memories */}
-              <div className="bg-white rounded-2xl shadow-lg p-8">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 border-2 border-white rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900">Recent Memories</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Recent Memories</h3>
                   </div>
                   <button
                     onClick={handleViewAll}
@@ -2848,7 +2848,7 @@ const DashboardPage = () => {
                   // Show loading state
                   if (isLoadingEntries) {
                     return (
-                      <div className="text-center py-12">
+                      <div className="text-center py-6">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading memories...</p>
                       </div>
@@ -2925,16 +2925,16 @@ const DashboardPage = () => {
 
                   // Show empty state with create button if no memories
                   return (
-                    <div className="text-center py-12">
+                    <div className="text-center py-6">
                       <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                       </div>
-                      <p className="text-gray-600 mb-6">No memories yet. Start journaling!</p>
+                      <p className="text-gray-600 mb-4">No memories yet. Start journaling!</p>
                       <button
                         onClick={handleCreateEntry}
-                        className="border border-purple-500 text-purple-500 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-300"
+                        className="border border-purple-500 text-purple-500 px-4 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-300"
                       >
                         Create First Entry
                       </button>
@@ -2945,7 +2945,7 @@ const DashboardPage = () => {
 
               {/* Premium Status Card */}
               {currentSubscription && currentSubscription.planName ? (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-8 border border-purple-100">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-4 border border-purple-100">
                   <div className="flex items-center space-x-3 mb-5">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -2953,7 +2953,7 @@ const DashboardPage = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">{currentSubscription.planName}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{currentSubscription.planName}</h3>
                       <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
                     </div>
                   </div>
@@ -2998,17 +2998,17 @@ const DashboardPage = () => {
                   </button>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-lg p-8">
-                  <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-lg p-4">
+                  <div className="flex items-center space-x-3 mb-4">
                     <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900">Unlock Premium</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Unlock Premium</h3>
                   </div>
 
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-4 mb-4">
                     <div className="flex items-center">
                       <div className="flex items-center space-x-3">
                         <div className="w-6 h-6 flex items-center justify-center">
@@ -3068,7 +3068,7 @@ const DashboardPage = () => {
             {/* ── Reset Baseline Confirmation Modal (real API) ─────────────── */}
             {wlShowResetModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+                <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -3076,7 +3076,7 @@ const DashboardPage = () => {
                     <h3 className="text-lg font-bold text-gray-900">Reset Baseline?</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">This will reset your current baseline and restart the calibration period.</p>
-                  <p className="text-xs text-gray-400 mb-6">Are you sure you want to proceed?</p>
+                  <p className="text-xs text-gray-400 mb-4">Are you sure you want to proceed?</p>
                   <div className="flex space-x-3">
                     <button onClick={() => setWlShowResetModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
                     <button onClick={handleWlResetBaseline} className="flex-1 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-sm font-semibold hover:from-pink-600 hover:to-rose-600 transition shadow-md">Yes, Reset</button>
@@ -3088,7 +3088,7 @@ const DashboardPage = () => {
             {/* ── Recalibrate (simulated) Confirmation Modal ───────────────── */}
             {showRecalibrateConfirm && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4 animate-fadeIn">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -3096,7 +3096,7 @@ const DashboardPage = () => {
                     <h3 className="text-lg font-bold text-gray-900">Recalibrate Baseline?</h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Your baseline metrics will be <span className="font-semibold text-pink-600">regenerated</span> based on the next 30 seconds of your live data.</p>
-                  <p className="text-xs text-gray-400 mb-6">Please stay still and relaxed during the measurement for accurate results.</p>
+                  <p className="text-xs text-gray-400 mb-4">Please stay still and relaxed during the measurement for accurate results.</p>
                   <div className="flex space-x-3">
                     <button onClick={() => setShowRecalibrateConfirm(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
                     <button onClick={handleStartRecalibrate} className="flex-1 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-sm font-semibold hover:from-pink-600 hover:to-rose-600 transition shadow-md">Yes, Recalibrate</button>
@@ -3109,7 +3109,7 @@ const DashboardPage = () => {
             {isRecalibrating && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                 <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full mx-4 text-center">
-                  <div className="relative w-28 h-28 mx-auto mb-6">
+                  <div className="relative w-28 h-28 mx-auto mb-4">
                     <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
                       <circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" strokeWidth="10" />
                       <circle cx="60" cy="60" r="50" fill="none" stroke="url(#recalGrad)" strokeWidth="10"
@@ -3126,12 +3126,12 @@ const DashboardPage = () => {
                       </defs>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold text-pink-600">{recalibrateProgress}%</span>
+                      <span className="text-lg font-bold text-pink-600">{recalibrateProgress}%</span>
                       <span className="text-xs text-gray-400">{30 - Math.round(recalibrateProgress * 0.3)}s</span>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Measuring Your Baseline</h3>
-                  <p className="text-sm text-gray-500 mb-6">Please stay calm and relaxed. We're collecting your HRV, heart rate, activity, and sleep patterns...</p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Measuring Your Baseline</h3>
+                  <p className="text-sm text-gray-500 mb-4">Please stay calm and relaxed. We're collecting your HRV, heart rate, activity, and sleep patterns...</p>
                   <div className="space-y-3">
                     {[
                       { label: 'Heart Rate', icon: '❤️', done: recalibrateProgress > 25 },
@@ -3168,7 +3168,7 @@ const DashboardPage = () => {
               <div className="flex items-center justify-center py-10">
                 <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center border border-gray-100">
                   {/* Paw icon */}
-                  <div className="flex justify-center mb-6">
+                  <div className="flex justify-center mb-4">
                     <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center">
                       <svg className="w-10 h-10 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 21c-4.97 0-9-3.13-9-7 0-1.5.6-2.89 1.63-4.01M12 21c4.97 0 9-3.13 9-7 0-1.5-.6-2.89-1.63-4.01M12 21V9m0 0C10.34 9 9 7.66 9 6s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
@@ -3176,7 +3176,7 @@ const DashboardPage = () => {
                     </div>
                   </div>
 
-                  <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Setting up your wellness profile</h2>
+                  <h2 className="text-lg font-extrabold text-gray-900 mb-2">Setting up your wellness profile</h2>
 
                   {!wlIsDeviceConnected ? (
                     <div className="py-6">
@@ -3192,7 +3192,7 @@ const DashboardPage = () => {
                     </div>
                   ) : (
                     <>
-                      <p className="text-gray-500 mb-6">
+                      <p className="text-gray-500 mb-4">
                         {wlBaseline?.humanBaselineEstablished
                           ? 'Your baseline is complete!'
                           : wlVitalsCount >= wlRequiredCount
@@ -3259,7 +3259,7 @@ const DashboardPage = () => {
               </div>
             ) : (
               /* ── Baseline established: show live wellness dashboard ──────── */
-              <div className={`space-y-6 transition-all duration-500 ${isRecalibrating ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
+              <div className={`space-y-4 transition-all duration-500 ${isRecalibrating ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
 
               {/* Header info row */}
               <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-600">
@@ -3292,7 +3292,7 @@ const DashboardPage = () => {
               </div>
 
               {/* ── You + Dog status cards ──────────────────────────────────── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* You Card — driven by real API */}
                 {(() => {
                   const hasAlert = !!wlActiveAlert;
@@ -3304,7 +3304,7 @@ const DashboardPage = () => {
                   const isHumanStressed = statusLabel === 'Stressed';
                   const isHumanModerate = statusLabel === 'Moderate';
                   return (
-                    <div className={`rounded-2xl p-6 shadow-sm border relative transition-all duration-700 ${
+                    <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${
                       isHumanStressed ? 'bg-red-50 border-red-200' : isHumanModerate ? 'bg-orange-50 border-orange-100' : 'bg-blue-50/50 border-blue-100'
                     }`}>
                       <div className="absolute top-6 right-6">
@@ -3313,7 +3313,7 @@ const DashboardPage = () => {
                       <div className="text-sm font-medium text-gray-500 mb-4">You</div>
                       <div className="flex items-center space-x-3 mb-4">
                         <div className={`w-3 h-3 rounded-full ${isHumanStressed ? 'bg-red-500 animate-pulse' : isHumanModerate ? 'bg-orange-400' : 'bg-green-500'}`}></div>
-                        <div className={`text-2xl font-bold ${isHumanStressed ? 'text-red-600' : isHumanModerate ? 'text-orange-500' : 'text-green-700'}`}>{statusLabel}</div>
+                        <div className={`text-lg font-bold ${isHumanStressed ? 'text-red-600' : isHumanModerate ? 'text-orange-500' : 'text-green-700'}`}>{statusLabel}</div>
                       </div>
                       <div className="space-y-1">
                         <div className="text-sm text-gray-600">HRV: <span className="font-medium text-gray-900">{currentHRV != null ? `${currentHRV.toFixed(1)} ms` : '—'}</span></div>
@@ -3335,8 +3335,8 @@ const DashboardPage = () => {
 
                 {/* Dog Card — driven by real API */}
                 {!wlIsDogConnected ? (
-                  <div className="rounded-2xl p-6 shadow-sm border bg-orange-50/50 border-orange-100 relative">
-                    <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                  <div className="rounded-2xl p-4 shadow-sm border bg-orange-50/50 border-orange-100 relative">
+                    <div className="flex flex-col items-center justify-center space-y-4 py-6">
                       <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center">
                         <svg viewBox="0 0 24 24" className="w-8 h-8 text-orange-400" fill="currentColor">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
@@ -3348,7 +3348,7 @@ const DashboardPage = () => {
                       </div>
                       <button
                         onClick={() => navigate('/integrations')}
-                        className="mt-2 px-6 py-2 bg-orange-400 text-white rounded-full text-sm font-medium hover:bg-orange-500 transition-colors"
+                        className="mt-2 px-4 py-2 bg-orange-400 text-white rounded-full text-sm font-medium hover:bg-orange-500 transition-colors"
                       >
                         Connect Dog Device
                       </button>
@@ -3363,7 +3363,7 @@ const DashboardPage = () => {
                     const dogAnxious = dogState === 'Anxious' || (dogCalm != null && dogCalm < 30);
                     const dogRestless = dogState === 'Restless' || (!dogAnxious && dogCalm != null && dogCalm < 55);
                     return (
-                      <div className={`rounded-2xl p-6 shadow-sm border relative transition-all duration-700 ${dogAnxious ? 'bg-red-50 border-red-200' : dogRestless ? 'bg-orange-50 border-orange-100' : 'bg-orange-50/50 border-orange-100'
+                      <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${dogAnxious ? 'bg-red-50 border-red-200' : dogRestless ? 'bg-orange-50 border-orange-100' : 'bg-orange-50/50 border-orange-100'
                         }`}>
                         <div className="absolute top-6 right-6">
                           <svg className={`w-6 h-6 ${dogAnxious ? 'text-red-500' : dogRestless ? 'text-orange-400' : 'text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
@@ -3371,7 +3371,7 @@ const DashboardPage = () => {
                         <div className="text-sm font-medium text-gray-500 mb-4">Your Dog</div>
                         <div className="flex items-center space-x-3 mb-4">
                           <div className={`w-3 h-3 rounded-full ${dogAnxious ? 'bg-red-500' : dogRestless ? 'bg-orange-400' : 'bg-orange-500'}`}></div>
-                          <div className={`text-2xl font-bold ${dogAnxious ? 'text-red-600' : dogRestless ? 'text-orange-500' : 'text-orange-500'}`}>
+                          <div className={`text-lg font-bold ${dogAnxious ? 'text-red-600' : dogRestless ? 'text-orange-500' : 'text-orange-500'}`}>
                             {dogCalm != null ? (dogAnxious ? 'Anxious' : dogRestless ? 'Restless' : dogState) : dogState}
                           </div>
                         </div>
@@ -3395,7 +3395,7 @@ const DashboardPage = () => {
                 const activeAction = isHistory ? calendarDateDetail.scoreAction : wlSyncScore.scoreAction;
                 const activeDisclaimer = isHistory ? calendarDateDetail.disclaimer : wlSyncScore.disclaimer;
                 return (
-                  <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
                     {isHistory && (
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">
@@ -3410,11 +3410,11 @@ const DashboardPage = () => {
                     <div className={`text-6xl font-bold mb-2 transition-colors duration-700 ${getScoreColor(activeScore)}`}>
                       {isLoadingDateDetail ? '…' : activeScore}
                     </div>
-                    <div className="text-sm font-medium text-gray-500 mb-8">Bond Sync Score</div>
+                    <div className="text-sm font-medium text-gray-500 mb-4">Bond Sync Score</div>
 
                     {/* Live sub-metrics (only shown for today) */}
                     {!isHistory && (
-                      <div className="grid grid-cols-4 gap-6">
+                      <div className="grid grid-cols-4 gap-4">
                         {[
                           { label: 'HRV Stability',   value: wlSyncScore.hrvStabilityScore },
                           { label: 'Shared Activity', value: wlSyncScore.sharedActivityScore },
@@ -3437,7 +3437,7 @@ const DashboardPage = () => {
 
                     {/* Historical metric tiles */}
                     {isHistory && calendarDateDetail.detailedMetrics && (
-                      <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="grid grid-cols-3 gap-3 mb-4">
                         {[
                           { icon: '❤️', label: 'Avg Heart Rate', value: calendarDateDetail.detailedMetrics.avgHeartRate > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm` : 'Processing...' },
                           { icon: '📡', label: 'Avg HRV', value: calendarDateDetail.detailedMetrics.avgHRV > 0 ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms` : 'Processing...' },
@@ -3458,14 +3458,14 @@ const DashboardPage = () => {
                     {/* AI Bond Narrative */}
                     {activeTitle && (
                       <div className="mt-10 border-t border-gray-100 pt-8 text-left">
-                        <h3 className={`text-2xl font-bold mb-3 ${getScoreColor(activeScore)}`}>
+                        <h3 className={`text-lg font-bold mb-3 ${getScoreColor(activeScore)}`}>
                           {activeTitle}
                         </h3>
-                        <p className="text-gray-700 leading-relaxed mb-6">
+                        <p className="text-gray-700 leading-relaxed mb-4">
                           {activeDesc}
                         </p>
                         {activeAction && (
-                          <div className="bg-slate-50 rounded-xl p-5 mb-6 border border-slate-100">
+                          <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
                             <h4 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wide">What To Do</h4>
                             <p className="text-slate-700 text-sm leading-relaxed">{activeAction}</p>
                           </div>
@@ -3482,10 +3482,10 @@ const DashboardPage = () => {
                 const hasAlert = !!wlActiveAlert;
                 const suggestion = wlActiveAlert?.suggestion || '';
                 return (
-                  <div className={`rounded-2xl p-6 border shadow-sm transition-all duration-700 ${
+                  <div className={`rounded-2xl p-4 border shadow-sm transition-all duration-700 ${
                     hasAlert ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200'
                   }`}>
-                    <h3 className={`text-xl font-bold mb-2 ${hasAlert ? 'text-red-700' : 'text-green-700'}`}>
+                    <h3 className={`text-lg font-bold mb-2 ${hasAlert ? 'text-red-700' : 'text-green-700'}`}>
                       {hasAlert ? '⚠️ Wellness Alert!' : 'All Good! ✓'}
                     </h3>
                     <p className={`text-sm mb-4 ${hasAlert ? 'text-red-800' : 'text-green-800'}`}>
@@ -3527,7 +3527,7 @@ const DashboardPage = () => {
                 const isHistory = !!(selectedHistoricalDate && calendarDateDetail?.detailedMetrics);
                 const m = isHistory ? calendarDateDetail.detailedMetrics : null;
                 return (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                     {/* High-temp notice — live only */}
                     {!isHistory && wlWeather?.temperatureCelsius > 30 && (
                       <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 mb-4 text-sm text-orange-600 font-semibold">
@@ -3541,25 +3541,25 @@ const DashboardPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Avg HR</div>
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-lg font-bold text-gray-900">
                           {isHistory ? `${Math.round(m.avgHeartRate ?? 0)} bpm` : `${Math.round(wlBaseline.avgHeartRate ?? 0)} bpm`}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Avg HRV</div>
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-lg font-bold text-gray-900">
                           {isHistory ? `${(m.avgHRV ?? 0).toFixed(1)} ms` : `${(wlBaseline.avgHRV ?? 0).toFixed(1)} ms`}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-500 mb-1">{isHistory ? 'Total Steps' : 'Avg Steps'}</div>
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-lg font-bold text-gray-900">
                           {isHistory ? Math.round(m.totalSteps ?? 0).toLocaleString() : Math.round(wlBaseline.avgSteps ?? 0).toLocaleString()}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Sleep Score</div>
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-lg font-bold text-gray-900">
                           {isHistory ? Math.round(m.avgSleepScore ?? 0) : Math.round(wlBaseline.avgSleepScore ?? 0)}
                         </div>
                       </div>
@@ -3569,9 +3569,9 @@ const DashboardPage = () => {
               })()}
 
               {/* Progress Calendar */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">Progress Calendar</h3>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Progress Calendar</h3>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={backfillLast30DaysSummaries}
@@ -3734,7 +3734,7 @@ const DashboardPage = () => {
               })()}
 
               {/* Legend */}
-              <div className="flex justify-center space-x-6 text-xs text-gray-500 mt-6 pt-4 border-t border-gray-100">
+              <div className="flex justify-center space-x-6 text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500"></div><span>Calm (≥70)</span></div>
                 <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div><span>Moderate (50–69)</span></div>
                 <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500"></div><span>Stressed (&lt;50)</span></div>
@@ -3743,7 +3743,7 @@ const DashboardPage = () => {
 
               {/* Date detail is shown in the main dashboard area above, not here */}
               {false && (
-                <div id="calendar-detail-panel" className="mt-6 pt-6 border-t border-gray-100">
+                <div id="calendar-detail-panel" className="mt-4 pt-6 border-t border-gray-100">
                   {/* Header row */}
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-base font-bold text-gray-800">
@@ -3758,7 +3758,7 @@ const DashboardPage = () => {
                   </div>
 
                   {isLoadingDateDetail ? (
-                    <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-6">
                       <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin mr-2"></div>
                       <span className="text-sm text-gray-500">Loading data...</span>
                     </div>
@@ -3766,7 +3766,7 @@ const DashboardPage = () => {
                     <div className="space-y-4">
                       {/* Bond Sync Score */}
                       <div className="flex items-center space-x-3">
-                        <span className={`text-4xl font-extrabold ${
+                        <span className={`text-lg font-extrabold ${
                           calendarDateDetail.score >= 70 ? 'text-green-500'
                           : calendarDateDetail.score >= 50 ? 'text-orange-400'
                           : 'text-red-500'
@@ -3856,8 +3856,8 @@ const DashboardPage = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <div className="text-4xl mb-3">📭</div>
+                    <div className="text-center py-6">
+                      <div className="text-lg mb-3">📭</div>
                       <p className="text-sm font-semibold text-gray-600">No data available for this date</p>
                       <p className="text-xs text-gray-400 mt-1">Daily summary has not been generated yet for this day</p>
                     </div>
@@ -3874,33 +3874,33 @@ const DashboardPage = () => {
 
         {/* Bond Building Tab Content */}
         {activeTab === 'bond-building' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Bonded Score Card */}
-            <div className="mb-8">
-              <div className="bg-purple-50 rounded-2xl p-8 shadow-lg relative overflow-hidden">
+            <div className="mb-4">
+              <div className="bg-purple-50 rounded-2xl p-4 shadow-lg relative overflow-hidden">
                 {/* Content Container */}
                 <div className="flex items-start justify-between relative z-10">
                   {/* Left Section - Title and Subtitle */}
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-lg font-bold text-gray-900 mb-2">
                       Bonded Score<sup className="text-lg">™</sup>
                     </h1>
                     <p className="text-lg text-purple-600">Growing Connection</p>
 
                     {/* Key Metrics - Bottom Section */}
-                    <div className="flex space-x-8 mt-8">
+                    <div className="flex space-x-8 mt-4">
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-purple-600 mb-1">
+                        <div className="text-lg font-bold text-purple-600 mb-1">
                           {Object.values(ritualCheckboxes).filter(Boolean).length + completedActivityIds.size}
                         </div>
                         <div className="text-sm text-gray-900">Activities Today</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-purple-600 mb-1">{hoursTogether}h</div>
+                        <div className="text-lg font-bold text-purple-600 mb-1">{hoursTogether}h</div>
                         <div className="text-sm text-gray-900">Time Together</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-purple-600 mb-1">7</div>
+                        <div className="text-lg font-bold text-purple-600 mb-1">7</div>
                         <div className="text-sm text-gray-900">Chakra Harmony</div>
                       </div>
                     </div>
@@ -3911,7 +3911,7 @@ const DashboardPage = () => {
                     <div className="relative">
                       {/* Orange Gradient Circle */}
                       <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 shadow-xl flex items-center justify-center">
-                        <span className="text-white text-4xl font-bold">{bondedScore}</span>
+                        <span className="text-white text-lg font-bold">{bondedScore}</span>
                       </div>
                       {/* Yellow Star Icon */}
                       <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
@@ -3926,10 +3926,10 @@ const DashboardPage = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 w-full mb-8">
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 w-full mb-4">
               <button
                 onClick={() => setBondTab('checkins')}
-                className={`flex-1 px-6 py-3 rounded-md transition-colors ${bondTab === 'checkins'
+                className={`flex-1 px-4 py-3 rounded-md transition-colors ${bondTab === 'checkins'
                   ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -3938,7 +3938,7 @@ const DashboardPage = () => {
               </button>
               <button
                 onClick={() => setBondTab('daily-rituals')}
-                className={`flex-1 px-6 py-3 rounded-md transition-colors ${bondTab === 'daily-rituals'
+                className={`flex-1 px-4 py-3 rounded-md transition-colors ${bondTab === 'daily-rituals'
                   ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -3947,7 +3947,7 @@ const DashboardPage = () => {
               </button>
               <button
                 onClick={() => setBondTab('Chakra-sync')}
-                className={`flex-1 px-6 py-3 rounded-md transition-colors ${bondTab === 'Chakra-sync'
+                className={`flex-1 px-4 py-3 rounded-md transition-colors ${bondTab === 'Chakra-sync'
                   ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -3956,7 +3956,7 @@ const DashboardPage = () => {
               </button>
               <button
                 onClick={() => setBondTab('activities')}
-                className={`flex-1 px-6 py-3 rounded-md transition-colors ${bondTab === 'activities'
+                className={`flex-1 px-4 py-3 rounded-md transition-colors ${bondTab === 'activities'
                   ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -3965,7 +3965,7 @@ const DashboardPage = () => {
               </button>
               {/* <button
                 onClick={() => setBondTab('insights')}
-                className={`flex-1 px-6 py-3 rounded-md transition-colors ${bondTab === 'insights'
+                className={`flex-1 px-4 py-3 rounded-md transition-colors ${bondTab === 'insights'
                     ? 'bg-white text-gray-900 font-medium shadow-sm border border-gray-200'
                     : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -3978,7 +3978,7 @@ const DashboardPage = () => {
             {bondTab === 'daily-rituals' && (
               <>
                 {/* Strengthen Your Bond Section */}
-                <div className="bg-green-50 rounded-xl p-6 mb-6">
+                <div className="bg-green-50 rounded-xl p-4 mb-4">
                   {(() => {
                     const completedCount = rituals.filter(r => r.isCompleted).length;
                     const totalRituals = rituals.length;
@@ -3988,7 +3988,7 @@ const DashboardPage = () => {
                     if (totalRituals === 0) {
                       console.warn('⚠️ No rituals available for today');
                       return (
-                        <div className="bg-green-50 rounded-xl p-6 mb-6">
+                        <div className="bg-green-50 rounded-xl p-4 mb-4">
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-3">
                               <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
@@ -4027,7 +4027,7 @@ const DashboardPage = () => {
                           )}
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-4">
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm font-medium text-gray-900">Daily Progress</span>
                             <span className="text-sm font-medium text-green-600">{completedCount}/{totalRituals} completed</span>
@@ -4040,7 +4040,7 @@ const DashboardPage = () => {
                         <div className="flex justify-between items-center">
                           {/* Simplified stats for now since points are centralized */}
                           <div className="text-center">
-                            <div className="text-3xl font-bold text-green-600 mb-1">{completionPercentage}%</div>
+                            <div className="text-lg font-bold text-green-600 mb-1">{completionPercentage}%</div>
                             <div className="text-sm text-gray-600">Complete</div>
                           </div>
                         </div>
@@ -4050,7 +4050,7 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Morning Rituals */}
-                <div className="bg-yellow-50 rounded-xl p-6 mb-6">
+                <div className="bg-yellow-50 rounded-xl p-4 mb-4">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-6 h-6 bg-yellow-500 rounded flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -4095,7 +4095,7 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Afternoon Rituals */}
-                <div className="bg-blue-50 rounded-xl p-6 mb-6">
+                <div className="bg-blue-50 rounded-xl p-4 mb-4">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -4140,7 +4140,7 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Evening Rituals */}
-                <div className="bg-purple-50 rounded-xl p-6">
+                <div className="bg-purple-50 rounded-xl p-4">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -4185,11 +4185,11 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Save Rituals Button */}
-                <div className="flex justify-end mt-6">
+                <div className="flex justify-end mt-4">
                   <button
                     onClick={handleSaveRituals}
                     disabled={isRitualLoading || !rituals.some(r => r.isCompleted && !r.originallyCompleted)}
-                    className={`px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading
+                    className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading
                       ? 'bg-gray-400 cursor-not-allowed transform-none'
                       : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'
                       }`}
@@ -4217,8 +4217,8 @@ const DashboardPage = () => {
 
             {/* Check-ins Tab Content */}
             {bondTab === 'checkins' && (
-              <div className="bg-white rounded-xl p-8 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Daily Check-in</h3>
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Check-in</h3>
 
                 {/* Dynamic check-ins from API */}
                 {checkInItems.map((ci, idx) => {
@@ -4237,7 +4237,7 @@ const DashboardPage = () => {
                     'from-green-500 to-emerald-500'
                   ][idx % 4];
                   return (
-                    <div className="mb-6" key={id}>
+                    <div className="mb-4" key={id}>
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-sm font-medium text-gray-900">{question} ({value}/{max})</span>
                       </div>
@@ -4291,12 +4291,12 @@ const DashboardPage = () => {
 
             {/* Chakra Sync Tab Content */}
             {bondTab === 'Chakra-sync' && (
-              <div className="bg-white rounded-xl p-8 shadow-sm">
+              <div className="bg-white rounded-xl p-4 shadow-sm">
                 {!showRitualView && !showProgressView && (
                   <>
                     {/* Header */}
-                    <div className="text-center mb-8">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Chakra Alignment Meditation</h3>
+                    <div className="text-center mb-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Chakra Alignment Meditation</h3>
                       <p className="text-gray-600">Sync your energy centers with your companion</p>
                     </div>
 
@@ -4304,7 +4304,7 @@ const DashboardPage = () => {
 
 
                     {/* Chakra List */}
-                    <div className="space-y-6 mb-8">
+                    <div className="space-y-4 mb-4">
                       {/* Root Chakra */}
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
@@ -4536,13 +4536,13 @@ const DashboardPage = () => {
                 {showRitualView && !showProgressView && (
                   <>
                     {/* Ritual View */}
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-4">
                       {/* Header with star icons */}
                       <div className="flex items-center justify-center mb-4">
                         <svg className="w-6 h-6 text-purple-600 mr-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
-                        <h3 className="text-3xl font-bold text-purple-800">{suggestedRitual || 'Chakra Sync Ritual'}</h3>
+                        <h3 className="text-lg font-bold text-purple-800">{suggestedRitual || 'Chakra Sync Ritual'}</h3>
                         <svg className="w-6 h-6 text-purple-600 ml-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
@@ -4558,7 +4558,7 @@ const DashboardPage = () => {
                         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4 max-w-md mx-auto">
                           <div className="text-center">
                             <p className="text-sm text-gray-600 mb-1">Your Chakra Harmony Score</p>
-                            <p className="text-4xl font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
+                            <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                             <p className="text-xs text-gray-500 mt-1">
                               {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
                             </p>
@@ -4571,7 +4571,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Chakra Circles */}
-                    <div className="flex justify-center space-x-4 mb-8">
+                    <div className="flex justify-center space-x-4 mb-4">
                       {/* Root */}
                       <div className="text-center">
                         <div className="w-16 h-16 bg-red-500 border-2 border-white rounded-full flex items-center justify-center mb-2 mx-auto">
@@ -4630,7 +4630,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* What to expect section */}
-                    <div className="bg-white border border-gray-300 rounded-lg p-6 mb-8">
+                    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4">
                       <h4 className="text-lg font-semibold text-gray-800 mb-4">What to expect:</h4>
                       <ul className="space-y-2 text-left">
                         <li className="flex items-start">
@@ -4656,7 +4656,7 @@ const DashboardPage = () => {
                     <div className="flex justify-between">
                       <button
                         onClick={handleBackFromRitual}
-                        className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                        className="px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -4666,7 +4666,7 @@ const DashboardPage = () => {
 
                       <button
                         onClick={handleBeginRitual}
-                        className="px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
+                        className="px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
                       >
                         <span>Begin Ritual</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4680,9 +4680,9 @@ const DashboardPage = () => {
                 {showProgressView && (
                   <>
                     {/* Progress View */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {/* Header Section */}
-                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div className="flex justify-between items-center mb-3">
                           <h3 className="text-lg font-semibold text-gray-900">Chakra Healing Ritual</h3>
                           <span className="text-purple-600 font-semibold">Focused Session</span>
@@ -4699,9 +4699,9 @@ const DashboardPage = () => {
                       </div>
 
                       {/* Main Chakra Card */}
-                      <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+                      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                         {/* Chakra Header */}
-                        <div className="text-center mb-6">
+                        <div className="text-center mb-4">
                           <div className="flex items-center justify-center mb-2">
                             <div className={`w-2 h-2 rounded-full mr-2 ${recommendedChakra?.color === 'red' ? 'bg-red-500' :
                               recommendedChakra?.color === 'orange' ? 'bg-orange-500' :
@@ -4730,10 +4730,10 @@ const DashboardPage = () => {
 
                         {/* Harmony Score Display */}
                         {harmonyScore > 0 && (
-                          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-6 max-w-md mx-auto">
+                          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4 max-w-md mx-auto">
                             <div className="text-center">
                               <p className="text-sm text-gray-600 mb-1">Your Chakra Harmony Score</p>
-                              <p className="text-4xl font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
+                              <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                               <p className="text-xs text-gray-500 mt-1">
                                 {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
                               </p>
@@ -4742,7 +4742,7 @@ const DashboardPage = () => {
                         )}
 
                         {/* Chakra Visualization */}
-                        <div className="text-center mb-6">
+                        <div className="text-center mb-4">
                           <div className={`w-32 h-32 bg-${recommendedChakra?.color || 'red'}-500 border-4 border-white rounded-full mx-auto mb-4 shadow-lg flex items-center justify-center animate-pulse`}>
                             {isPlaying && (
                               <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -4750,7 +4750,7 @@ const DashboardPage = () => {
                           </div>
 
                           {/* Progress Bar & Timer */}
-                          <div className="max-w-xs mx-auto mb-6">
+                          <div className="max-w-xs mx-auto mb-4">
                             <div className="flex justify-between text-xs text-gray-500 mb-1 font-mono">
                               <span>{formatTime(audioCurrentTime)}</span>
                               <span>{formatTime(audioDuration)}</span>
@@ -4763,14 +4763,14 @@ const DashboardPage = () => {
                             />
                           </div>
 
-                          <div className="text-3xl font-bold text-gray-900 mb-2 font-mono">
+                          <div className="text-lg font-bold text-gray-900 mb-2 font-mono">
                             {isPlaying ? formatTime(audioCurrentTime) : (recommendedChakra?.timer || '1:00')}
                           </div>
                           <p className="text-sm text-gray-600 italic">"{recommendedChakra?.breathing || 'Deep, slow breaths'}"</p>
                         </div>
 
                         {/* Affirmation */}
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 transform transition-all hover:scale-102">
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4 transform transition-all hover:scale-102">
                           <p className="text-center text-purple-800 font-medium italic">
                             "{recommendedChakra?.affirmation || 'I am grounded and secure'}"
                           </p>
@@ -4793,7 +4793,7 @@ const DashboardPage = () => {
 
                           <button
                             onClick={handlePlayAudio}
-                            className={`${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-purple-500 hover:bg-purple-600'} text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3`}
+                            className={`${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-purple-500 hover:bg-purple-600'} text-white px-4 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3`}
                           >
                             {isPlaying ? (
                               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -4833,7 +4833,7 @@ const DashboardPage = () => {
                       </div>
 
                       {/* Meditation Instructions */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <h4 className="text-lg font-semibold text-blue-900 mb-4">Meditation Instructions:</h4>
                         <ol className="space-y-2 text-blue-800">
                           {chakraData[currentChakraStep - 1].instructions.map((instruction, index) => (
@@ -4849,7 +4849,7 @@ const DashboardPage = () => {
                       <div className="flex justify-start">
                         <button
                           onClick={handleBackFromProgress}
-                          className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                          className="px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -4865,17 +4865,17 @@ const DashboardPage = () => {
             )}
 
             {bondTab === 'activities' && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Header Section */}
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Bonding Activities</h2>
+                <div className="text-center mb-4">
+                  <h2 className="text-lg font-bold text-gray-900 mb-2">Bonding Activities</h2>
                   <p className="text-lg text-gray-600">Complete activities to strengthen your spiritual connection</p>
                 </div>
 
                 {/* Activities List */}
                 <div className="space-y-4">
                   {isLoadingActivities ? (
-                    <div className="bg-white rounded-xl p-6 border border-gray-200 text-center text-gray-600">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center text-gray-600">
                       Loading bonding activities...
                     </div>
                   ) : activitiesError ? (
@@ -4883,7 +4883,7 @@ const DashboardPage = () => {
                       {activitiesError}
                     </div>
                   ) : bondingActivities.length === 0 ? (
-                    <div className="bg-white rounded-xl p-6 border border-gray-200 text-center text-gray-600">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center text-gray-600">
                       No bonding activities available right now. Please check back later.
                     </div>
                   ) : (
@@ -4959,7 +4959,7 @@ const DashboardPage = () => {
                         <div
                           key={activity.activityId}
                           onClick={handleActivityClick}
-                          className={`rounded-xl p-6 border transition-colors ${isCompleted
+                          className={`rounded-xl p-4 border transition-colors ${isCompleted
                             ? 'bg-green-50 border-green-200'
                             : 'bg-white border-gray-200 hover:border-gray-300 cursor-pointer'
                             }`}
@@ -5007,11 +5007,11 @@ const DashboardPage = () => {
 
                 {/* Save Activities Button */}
                 {bondingActivities.length > 0 && (
-                  <div className="flex justify-end mt-6">
+                  <div className="flex justify-end mt-4">
                     <button
                       onClick={handleSaveActivities}
                       disabled={isSavingActivities || completedActivityIds.size === 0}
-                      className={`px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isSavingActivities || completedActivityIds.size === 0
+                      className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isSavingActivities || completedActivityIds.size === 0
                         ? 'bg-gray-400 cursor-not-allowed transform-none'
                         : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'
                         }`}
@@ -5040,9 +5040,9 @@ const DashboardPage = () => {
 
             {/* Bond Building Insights Content - Commented out
             {bondTab === 'insights' && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5055,7 +5055,7 @@ const DashboardPage = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5068,7 +5068,7 @@ const DashboardPage = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+                  <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5092,7 +5092,7 @@ const DashboardPage = () => {
         {activeTab === 'meditation' && (
           <div className="w-full">
             {/* Left Section - Synchronized Breathing */}
-            <div className="bg-white rounded-xl p-8 shadow-sm">
+            <div className="bg-white rounded-xl p-4 shadow-sm">
               {/* Header */}
               <div className="flex items-center mb-4">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -5100,13 +5100,13 @@ const DashboardPage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2M9 8h6m-6 4h6m-6 4h6" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Synchronized Breathing</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Synchronized Breathing</h3>
               </div>
 
-              <p className="text-gray-600 mb-6">Align your breath with your companion's natural rhythm</p>
+              <p className="text-gray-600 mb-4">Align your breath with your companion's natural rhythm</p>
 
               {/* Breathing Pattern */}
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Breathing Pattern</label>
                 <div className="relative">
                   <button
@@ -5154,7 +5154,7 @@ const DashboardPage = () => {
               </div>
 
               {/* Target Cycles */}
-              <div className="flex items-start gap-4 mb-6">
+              <div className="flex items-start gap-4 mb-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Target Cycles</label>
                   <div className="relative">
@@ -5198,7 +5198,7 @@ const DashboardPage = () => {
               </div>
 
               {/* Breathing Visualizer */}
-              <div className="text-center mb-6 h-64 flex flex-col items-center justify-center">
+              <div className="text-center mb-4 h-64 flex flex-col items-center justify-center">
                 <motion.div
                   className="bg-gradient-to-br from-blue-400 to-blue-200 rounded-full mb-4 flex items-center justify-center shadow-lg relative"
                   style={{ borderRadius: "50%" }} // Force circle shape
@@ -5224,7 +5224,7 @@ const DashboardPage = () => {
                   }}
                 >
                   <div className="flex flex-col items-center">
-                    <span className="text-white text-xl font-medium">
+                    <span className="text-white text-lg font-medium">
                       {!isBreathingSessionActive
                         ? "Ready"
                         : breathingPhase === 'inhale'
@@ -5253,7 +5253,7 @@ const DashboardPage = () => {
               </div>
 
               {/* Progress Bar */}
-              <div className="mb-6">
+              <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-700">Progress</span>
                   <span className="text-sm text-gray-500">{currentCycle}/{targetCycles.find(c => c.id === selectedTargetCycles)?.cycles || 10} cycles</span>
@@ -5273,7 +5273,7 @@ const DashboardPage = () => {
                 {!isBreathingSessionActive ? (
                   <button
                     onClick={handleStartBreathingSession}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
@@ -5283,7 +5283,7 @@ const DashboardPage = () => {
                 ) : (
                   <button
                     onClick={handleStopBreathingSession}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -5291,7 +5291,7 @@ const DashboardPage = () => {
                     <span>Stop Session</span>
                   </button>
                 )}
-                <button className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center">
+                <button className="px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
@@ -5300,19 +5300,19 @@ const DashboardPage = () => {
             </div>
 
             {/* Right Section - Guided Meditation Library */}
-            {/* <div className="bg-white rounded-xl p-8 shadow-sm">
+            {/* <div className="bg-white rounded-xl p-4 shadow-sm">
               <div className="flex items-center mb-4">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
                   <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">Guided Meditation Library</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Guided Meditation Library</h3>
               </div>
 
-              <p className="text-gray-600 mb-6">Access our library of guided meditations designed for you and your companion</p>
+              <p className="text-gray-600 mb-4">Access our library of guided meditations designed for you and your companion</p>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 mb-4">
                 <div className="border border-green-200 rounded-lg p-4 hover:border-green-300 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
@@ -5350,7 +5350,7 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2">
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
@@ -5368,7 +5368,7 @@ const DashboardPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Insights Coming Soon</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Insights Coming Soon</h3>
             <p className="text-gray-600">We're developing personalized insights based on your bonding journey.</p>
           </div>
         )} */}
@@ -5380,14 +5380,14 @@ const DashboardPage = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-auto">
               {/* Modal Header */}
-              <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center p-4 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-yellow-400 border-2 border-white rounded-full flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-orange-600">Upgrade to Premium</h2>
+                  <h2 className="text-lg font-bold text-orange-600">Upgrade to Premium</h2>
                 </div>
                 <button
                   onClick={handleClosePricingModal}
@@ -5400,14 +5400,14 @@ const DashboardPage = () => {
               </div>
 
               {/* Modal Content */}
-              <div className="p-6">
+              <div className="p-4">
                 {/* Subtitle */}
-                <p className="text-center text-gray-600 mb-8">
+                <p className="text-center text-gray-600 mb-4">
                   Unlock the full potential of your spiritual journey with your dog
                 </p>
 
                 {/* Pricing Toggle */}
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center mb-4">
                   <div className="flex items-center space-x-4">
                     <span className={`text-sm font-medium ${!isYearlyPlan ? 'text-gray-900' : 'text-gray-500'}`}>
                       Monthly
@@ -5436,16 +5436,16 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Monthly Plan */}
-                  <div className={`border-2 rounded-xl p-6 ${!isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+                  <div className={`border-2 rounded-xl p-4 ${!isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Monthly Plan</h3>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">$19.99<span className="text-lg font-normal">/month</span></div>
+                    <div className="text-lg font-bold text-gray-900 mb-1">$19.99<span className="text-lg font-normal">/month</span></div>
                     <p className="text-sm text-gray-600">Billed monthly, cancel anytime</p>
                   </div>
 
                   {/* Yearly Plan */}
-                  <div className={`border-2 rounded-xl p-6 relative ${isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+                  <div className={`border-2 rounded-xl p-4 relative ${isYearlyPlan ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
                     {isYearlyPlan && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                         <span className="bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-medium">
@@ -5454,7 +5454,7 @@ const DashboardPage = () => {
                       </div>
                     )}
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Yearly Plan</h3>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">$199.99<span className="text-lg font-normal">/year</span></div>
+                    <div className="text-lg font-bold text-gray-900 mb-1">$199.99<span className="text-lg font-normal">/year</span></div>
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-lg text-gray-500 line-through">$239.00</span>
                       <span className="text-sm text-green-600 font-medium">Save $30.00</span>
@@ -5464,9 +5464,9 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Premium Features */}
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">Premium Features</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-center text-gray-900 mb-4">Premium Features</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Left Column */}
                     <div className="space-y-4">
                       {/* Unlimited Chakra Rituals */}
@@ -5576,9 +5576,9 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Testimonials Section */}
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">What Our Premium Members Say</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-center text-gray-900 mb-4">What Our Premium Members Say</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="flex justify-center mb-3">
                         {[...Array(5)].map((_, i) => (
@@ -5619,7 +5619,7 @@ const DashboardPage = () => {
                 <div className="flex justify-center space-x-4">
                   <button
                     onClick={handleClosePricingModal}
-                    className="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                    className="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
                   >
                     Maybe Later
                   </button>
@@ -5628,7 +5628,7 @@ const DashboardPage = () => {
                         setShowPricingModal(false);
                         navigate('/subscription');
                       }}
-                    className="px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                    className="px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
                   >
                     Upgrade to Premium
                   </button>
@@ -5641,8 +5641,8 @@ const DashboardPage = () => {
       {/* Reflection Modal */}
       {showReflectionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl transform transition-all">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 shadow-2xl transform transition-all">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
               {activeReflectionActivity?.activityName || 'Reflection'}
             </h3>
             <p className="text-gray-600 mb-4">
@@ -5707,7 +5707,7 @@ const DashboardPage = () => {
                   }
                 }}
                 disabled={isSavingReflection}
-                className={`px-6 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center ${isSavingReflection ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center ${isSavingReflection ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {isSavingReflection ? (
                   <>
