@@ -561,13 +561,13 @@ const ProfileSettingsPage = () => {
 
         // Bonded Score from dashboard summary
         if (summaryRes.status === 'fulfilled' && summaryRes.value) {
-          const s = summaryRes.value;
+          const s = summaryRes.value?.data || summaryRes.value;
           stats.bondedScore = Math.round(s.BondedScore ?? s.bondedScore ?? 0);
         }
 
         // Journal Entries total count
         if (journalRes.status === 'fulfilled' && journalRes.value) {
-          const j = journalRes.value;
+          const j = journalRes.value?.data || journalRes.value;
           stats.journalEntries = j.TotalCount ?? j.totalCount ?? 0;
         }
 

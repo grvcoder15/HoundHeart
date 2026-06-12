@@ -58,6 +58,15 @@ const DashboardPage = () => {
   const [bondTab, setBondTab] = useState('checkins');
   const [progressTimeframe, setProgressTimeframe] = useState('this-week');
 
+  // Handle cross-page actions (like opening change password from other pages)
+  useEffect(() => {
+    if (window.location.search.includes('action=change-password')) {
+      handleOpenChangePassword();
+      // Remove the query parameter so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   // ─── Live Wellness API State (mirrored from AdminPanel WearablesPage) ──────
   const [wlBaseline, setWlBaseline] = useState(null);
   const [wlVitalsCount, setWlVitalsCount] = useState(0);

@@ -164,9 +164,9 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
         onChangePassword();
       }, 100);
     } else {
-      // Fallback: navigate to login where forgot/change password flow exists
+      // Fallback: navigate to dashboard where the change password modal exists
       setTimeout(() => {
-        navigate('/login');
+        navigate('/dashboard?action=change-password');
       }, 100);
     }
   };
