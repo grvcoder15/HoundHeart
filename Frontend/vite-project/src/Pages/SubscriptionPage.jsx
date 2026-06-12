@@ -380,8 +380,8 @@ const SubscriptionPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gray-50 py-4 px-4">
+            <div className="max-w-5xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Header */}
                     {/* Header - Same as Dashboard */}
@@ -459,17 +459,17 @@ const SubscriptionPage = () => {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="p-6 lg:p-8">
+                    <div className="p-4 lg:p-6">
                         {activeTab === 'plans' && (
                             <div>
                                 {/* Header */}
-                                <div className="text-center mb-6">
-                                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Choose Your Plan</h2>
-                                    <p className="text-sm lg:text-base text-gray-600">Select the perfect plan for your needs. Upgrade or downgrade at any time.</p>
+                                <div className="text-center mb-4">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1">Choose Your Plan</h2>
+                                    <p className="text-xs text-gray-600">Select the perfect plan for your needs. Upgrade or downgrade at any time.</p>
                                 </div>
 
                                 {/* Toggle (Monthly/Yearly) - Working! */}
-                                <div className="flex items-center justify-center gap-3 mb-6">
+                                <div className="flex items-center justify-center gap-3 mb-4">
                                     <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
                                         Plus Monthly
                                     </span>
@@ -484,10 +484,10 @@ const SubscriptionPage = () => {
                                         Plus Yearly
                                     </span>
                                 </div>
-                                <p className="text-center text-xs text-gray-500 mb-6">Premium is yearly-only and always checks out as yearly.</p>
+                                <p className="text-center text-xs text-gray-500 mb-4">Premium is yearly-only and always checks out as yearly.</p>
 
                                 {/* Pricing Cards */}
-                                <div className="grid grid-cols-1 gap-5 mb-10 max-w-6xl mx-auto lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-4 mb-6 max-w-5xl mx-auto lg:grid-cols-3">
                                     {plans.length === 0 ? (
                                         <div className="col-span-3 text-center py-12">
                                             <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
@@ -525,7 +525,7 @@ const SubscriptionPage = () => {
                                             return (
                                                 <div
                                                     key={plan.tierLevel}
-                                                    className={`relative rounded-2xl border-2 p-5 transition-all hover:shadow-xl ${isPopular
+                                                    className={`relative rounded-2xl border-2 p-4 transition-all hover:shadow-xl ${isPopular
                                                         ? 'border-purple-500 shadow-lg bg-gradient-to-br from-purple-50 to-white'
                                                         : isCurrentPlan
                                                             ? 'border-green-500 shadow-lg bg-green-50/20'
@@ -576,7 +576,7 @@ const SubscriptionPage = () => {
                                                             </div>
                                                         )}
                                                         <div className="flex items-baseline justify-center gap-1">
-                                                            <span className="text-3xl font-bold text-gray-900">
+                                                            <span className="text-2xl font-bold text-gray-900">
                                                                 ${plan.price}
                                                             </span>
                                                             <span className="text-gray-600 text-xs">
@@ -655,8 +655,8 @@ const SubscriptionPage = () => {
                                 </div>
 
                                 {/* FAQ Section */}
-                                <div className="mt-8 border-t pt-6">
-                                    <h3 className="text-xl font-bold text-center text-gray-900 mb-6">Frequently Asked Questions</h3>
+                                <div className="mt-4 border-t pt-4">
+                                    <h3 className="text-base font-bold text-center text-gray-900 mb-4">Frequently Asked Questions</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                                         <div>
                                             <h4 className="font-semibold text-gray-900 mb-1.5 text-sm">Can I change plans at any time?</h4>

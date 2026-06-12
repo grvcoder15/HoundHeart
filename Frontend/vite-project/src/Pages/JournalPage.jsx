@@ -910,19 +910,19 @@ const JournalPage = () => {
       <Navbar currentPage="journal" onUpgrade={handleUpgrade} />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8" style={{ overflow: 'visible' }}>
+      <div className="max-w-7xl mx-auto px-4 py-6" style={{ overflow: 'visible' }}>
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Your Journal</h1>
-            <h2 className="text-xl text-gray-600">Transform Your Lives Together</h2>
+            <h1 className="text-lg font-bold text-gray-900 mb-2">Your Journal</h1>
+            <h2 className="text-lg text-gray-600">Transform Your Lives Together</h2>
             {/* <p>HoundHeart™ is designed to help you harness this connection. You'll learn to align with your dog's natural rhythms, sync your energy fields, and support each other's well-being on every level: physical, emotional, and spiritual.
               HoundHeart™ is more than technology. It is a pathway to a deeper relationship with your dog and a healthier, more vibrant you. Together, you and your dog can create a field of love and presence powerful enough to transform both your lives.</p> */}
           </div>
           {activeTab === 'legacy-archive' ? (
             <button
               onClick={() => { setEntryType('letter'); setShowCreateModal(true); }}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -932,7 +932,7 @@ const JournalPage = () => {
           ) : (
             <button
               onClick={handleNewEntry}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -943,7 +943,7 @@ const JournalPage = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex w-full mb-6">
+        <div className="flex w-full mb-4">
           <button
             onClick={() => setActiveTab('all-entries')}
             className={`flex-1 py-3 rounded-lg font-medium transition-all duration-300 ${activeTab === 'all-entries'
@@ -976,7 +976,7 @@ const JournalPage = () => {
 
 
         {/* Search and Filter Section */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1039,7 +1039,7 @@ const JournalPage = () => {
               // Show loading state
               if (isLoadingEntries) {
                 return (
-                  <div className="bg-white rounded-2xl shadow-lg p-12">
+                  <div className="bg-white rounded-2xl shadow-lg p-4">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
                       <p className="text-gray-600">Loading entries...</p>
@@ -1049,35 +1049,35 @@ const JournalPage = () => {
               }
 
               return memoryEntries.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-lg p-12">
+                <div className="bg-white rounded-2xl shadow-lg p-4">
                   <div className="text-center">
                     {/* Book Icon */}
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <svg className="w-12 h-12 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
                     </div>
 
                     {/* No Entries Message */}
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">No memory entries found</h3>
-                    <p className="text-gray-600 mb-8 text-lg">Start documenting your journey with jojo.</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">No memory entries found</h3>
+                    <p className="text-gray-600 mb-4 text-lg">Start documenting your journey with jojo.</p>
 
                     {/* Create First Entry Button */}
                     <button
                       onClick={handleCreateFirstEntry}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       Create First Entry
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {memoryEntries.map((entry) => (
-                    <div key={entry.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <div key={entry.id} className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">{entry.title}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{entry.title}</h3>
                           <p className="text-sm text-gray-500 mb-3">
                             {new Date(entry.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
@@ -1138,7 +1138,7 @@ const JournalPage = () => {
                   ))}
 
                   {/* Pagination Controls (Memory) */}
-                  <div className="flex justify-center items-center space-x-4 mt-8">
+                  <div className="flex justify-center items-center space-x-4 mt-4">
                     <button
                       onClick={() => {
                         const newPage = Math.max(1, currentPage - 1);
@@ -1181,16 +1181,16 @@ const JournalPage = () => {
 
         {/* Legacy Archive Content */}
         {activeTab === 'legacy-archive' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Legacy Archive Header */}
-            <div className="flex items-center space-x-3 mb-6">
+            <div className="flex items-center space-x-3 mb-4">
               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Legacy Archive</h2>
+                <h2 className="text-lg font-bold text-gray-900">Legacy Archive</h2>
                 <p className="text-gray-600">Letters and special memories to preserve forever</p>
               </div>
             </div>
@@ -1216,18 +1216,18 @@ const JournalPage = () => {
               }
 
               return legacyEntries.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-lg p-12">
+                <div className="bg-white rounded-2xl shadow-lg p-4">
                   <div className="text-center">
                     {/* Heart Icon */}
-                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </div>
 
                     {/* No Legacy Entries Message */}
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">No legacy entries yet</h3>
-                    <p className="text-gray-600 mb-8 text-lg">Start writing letters to jojo or your future self.</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">No legacy entries yet</h3>
+                    <p className="text-gray-600 mb-4 text-lg">Start writing letters to jojo or your future self.</p>
 
                     {/* Write First Letter Button */}
                     <button
@@ -1235,19 +1235,19 @@ const JournalPage = () => {
                         setEntryType('letter');
                         setShowCreateModal(true);
                       }}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       Write First Letter
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {legacyEntries.map((entry) => (
-                    <div key={entry.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <div key={entry.id} className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">{entry.title}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{entry.title}</h3>
                           <p className="text-sm text-gray-500 mb-3">
                             {new Date(entry.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
@@ -1308,7 +1308,7 @@ const JournalPage = () => {
                   ))}
 
                   {/* Pagination Controls (Legacy Archive) */}
-                  <div className="flex justify-center items-center space-x-4 mt-8">
+                  <div className="flex justify-center items-center space-x-4 mt-4">
                     <button
                       onClick={() => {
                         const newPage = Math.max(1, currentPage - 1);
@@ -1352,10 +1352,10 @@ const JournalPage = () => {
               const user = JSON.parse(localStorage.getItem('user') || '{}');
               const isPremium = user.roleId === 2 || user.RoleId === 2;
               return (
-                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-6">
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Export Your Legacy</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Export Your Legacy</h3>
                       <p className="text-gray-600">
                         {isPremium
                           ? 'Download your complete journal as a beautiful PDF book'
@@ -1365,7 +1365,7 @@ const JournalPage = () => {
                     {isPremium ? (
                       <button
                         onClick={downloadJournalPDF}
-                        className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
+                        className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3" />
@@ -1375,7 +1375,7 @@ const JournalPage = () => {
                     ) : (
                       <button
                         onClick={() => navigate('/subscription')}
-                        className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
                       >
                         Upgrade to Export
                       </button>
@@ -1389,29 +1389,29 @@ const JournalPage = () => {
 
         {/* Insights Content - Commented out
         {activeTab === 'insights' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">{insights.totalEntries}</div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-2xl shadow-lg p-4 text-center">
+                <div className="text-lg font-bold text-purple-600 mb-2">{insights.totalEntries}</div>
                 <div className="text-gray-600">Total Entries</div>
               </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">{insights.legacyLetters}</div>
+              <div className="bg-white rounded-2xl shadow-lg p-4 text-center">
+                <div className="text-lg font-bold text-purple-600 mb-2">{insights.legacyLetters}</div>
                 <div className="text-gray-600">Legacy Letters</div>
               </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">{insights.thisMonthEntries}</div>
+              <div className="bg-white rounded-2xl shadow-lg p-4 text-center">
+                <div className="text-lg font-bold text-purple-600 mb-2">{insights.thisMonthEntries}</div>
                 <div className="text-gray-600">This Month</div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">Your Journaling Journey</h2>
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-3">Your Journaling Journey</h2>
                 <p className="text-gray-600 leading-relaxed">
                   You've been documenting your bond with jojo and creating lasting memories. Keep writing to strengthen your connection and preserve these precious moments.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Used Tags</h3>
                   <div className="space-y-3">
@@ -1430,7 +1430,7 @@ const JournalPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Writing Streak</h3>
                   <div className="flex items-baseline space-x-2 mb-2">
-                    <span className="text-3xl font-bold text-purple-600">{insights.writingStreak} days</span>
+                    <span className="text-lg font-bold text-purple-600">{insights.writingStreak} days</span>
                     <span className="text-gray-500">{insights.totalEntries}</span>
                   </div>
                   <p className="text-gray-600">
@@ -1449,9 +1449,9 @@ const JournalPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Create New Journal Entry</h2>
+                <h2 className="text-lg font-bold text-gray-900">Create New Journal Entry</h2>
                 <p className="text-gray-600 mt-1">Document your memories and special moments with your beloved companion</p>
               </div>
               <button
@@ -1465,14 +1465,14 @@ const JournalPage = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
               {/* Entry Type Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">What type of entry is this?</label>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => setEntryType('memory-reflection')}
-                    className={`px-6 py-3 rounded-full font-medium transition-colors ${entryType === 'memory-reflection'
+                    className={`px-4 py-3 rounded-full font-medium transition-colors ${entryType === 'memory-reflection'
                       ? 'bg-gray-900 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
@@ -1481,7 +1481,7 @@ const JournalPage = () => {
                   </button>
                   <button
                     onClick={() => setEntryType('letter')}
-                    className={`px-6 py-3 rounded-full font-medium transition-colors ${entryType === 'letter'
+                    className={`px-4 py-3 rounded-full font-medium transition-colors ${entryType === 'letter'
                       ? 'bg-gray-900 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
@@ -1493,7 +1493,7 @@ const JournalPage = () => {
               </div>
 
               {/* Media Attachments — Combined Audio & Photo */}
-              <div className="bg-gradient-to-br from-purple-50/70 to-pink-50/40 p-5 rounded-2xl border border-purple-100/60">
+              <div className="bg-gradient-to-br from-purple-50/70 to-pink-50/40 p-4 rounded-2xl border border-purple-100/60">
                 <label className="block text-sm font-semibold text-gray-700 mb-4">Media Attachments</label>
 
                 {/* Side-by-side Action Buttons */}
@@ -1645,17 +1645,17 @@ const JournalPage = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-3 p-4 border-t border-gray-200">
               <button
                 onClick={handleCloseModal}
-                className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateEntry}
                 disabled={isCreatingEntry}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isCreatingEntry ? 'Creating...' : 'Create Entry'}
               </button>
@@ -1669,10 +1669,10 @@ const JournalPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             {/* Compact Modal Header */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl">⭐</span>
+                  <span className="text-lg">⭐</span>
                   <h3 className="text-white font-bold text-lg">Upgrade to Premium</h3>
                 </div>
                 <button
@@ -1687,13 +1687,13 @@ const JournalPage = () => {
             </div>
 
             {/* Compact Modal Content */}
-            <div className="px-6 py-5">
-              <p className="text-gray-700 text-center mb-6 font-medium">
+            <div className="px-4 py-5">
+              <p className="text-gray-700 text-center mb-4 font-medium">
                 You've reached your free limit. Upgrade to Premium for unlimited access!
               </p>
 
               {/* Quick Features List */}
-              <div className="bg-purple-50 rounded-lg p-4 mb-6 space-y-2">
+              <div className="bg-purple-50 rounded-lg p-4 mb-4 space-y-2">
                 <div className="flex items-center space-x-2 text-sm text-gray-700">
                   <span className="text-green-500">✓</span>
                   <span>Unlimited memories & journal entries</span>
@@ -1709,9 +1709,9 @@ const JournalPage = () => {
               </div>
 
               {/* Pricing Quick View */}
-              <div className="bg-gray-50 rounded-lg p-3 mb-6 text-center text-sm">
+              <div className="bg-gray-50 rounded-lg p-3 mb-4 text-center text-sm">
                 <div className="text-gray-600">Start from</div>
-                <div className="text-2xl font-bold text-purple-600">$19.99/mo</div>
+                <div className="text-lg font-bold text-purple-600">$19.99/mo</div>
               </div>
 
               {/* Action Buttons */}

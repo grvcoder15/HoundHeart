@@ -119,28 +119,28 @@ const SacredGuidePage = () => {
             <Navbar currentPage="sacred-guide" onUpgrade={handleUpgrade} />
 
             {/* Main Content */}
-            <main className="max-w-5xl mx-auto px-6 py-8">
+            <main className="max-w-5xl mx-auto px-4 py-6">
                 {/* Page Header — "Before launching book screen" label */}
                 <p style={{ fontSize: '0.8rem', color: '#9ca3af', fontStyle: 'italic', marginBottom: 8 }}>
                     Before launching book screen
                 </p>
 
                 {/* Title Section */}
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)' }}>
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold" style={{ color: '#7c3aed' }}>{guideTitle} ({statusLabel})</h1>
+                        <h1 className="text-lg font-bold" style={{ color: '#7c3aed' }}>{guideTitle} ({statusLabel})</h1>
                         {guideDesc && <p className="text-sm text-gray-500">{guideDesc}</p>}
                     </div>
                 </div>
 
                 {/* ─── Hero Banner — Coming Soon ─────────────────── */}
                 <div
-                    className="rounded-2xl p-8 mb-8"
+                    className="rounded-2xl p-4 mb-4"
                     style={{
                         background: 'linear-gradient(135deg, #8b5cf6 0%, #c084fc 30%, #e879f9 60%, #ec4899 100%)',
                         position: 'relative',
@@ -152,20 +152,20 @@ const SacredGuidePage = () => {
                     <div style={{ position: 'absolute', bottom: -30, left: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
 
                     {/* Banner Title */}
-                    <div className="flex items-center gap-3 mb-6" style={{ position: 'relative', zIndex: 2 }}>
+                    <div className="flex items-center gap-3 mb-4" style={{ position: 'relative', zIndex: 2 }}>
                         <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white">{guideTitle} — {statusLabel}</h2>
+                            <h2 className="text-lg font-bold text-white">{guideTitle} — {statusLabel}</h2>
                             <p className="text-sm text-white text-opacity-80">{guideDesc || 'Your complete spiritual wellness companion guide'}</p>
                         </div>
                     </div>
 
                     {/* Feature Pills */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" style={{ position: 'relative', zIndex: 2 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" style={{ position: 'relative', zIndex: 2 }}>
                         {/* Free for Plus and Premium */}
                         <div className="flex flex-col items-center text-center">
                             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-2 backdrop-blur-sm">
@@ -206,7 +206,7 @@ const SacredGuidePage = () => {
                             <>
                                 <button
                                     onClick={() => setShowPricingModal(true)}
-                                    className="flex items-center gap-2 px-8 py-3 rounded-full font-bold text-base transition-all duration-200 hover:scale-105 shadow-xl"
+                                    className="flex items-center gap-2 px-4 py-3 rounded-full font-bold text-base transition-all duration-200 hover:scale-105 shadow-xl"
                                     style={{
                                         background: 'white',
                                         color: '#7c3aed',
@@ -220,7 +220,7 @@ const SacredGuidePage = () => {
                                         disabled={!guideSalesEnabled}
                                         onClick={() => setShowPreview(true)}
                                         title={!guideSalesEnabled ? "Sacred Guide sales are currently disabled" : ""}
-                                        className="px-6 py-3 rounded-full font-bold text-sm transition-all duration-200 hover:scale-105 border-2 border-white text-white shadow-xl hover:bg-white hover:bg-opacity-10 ml-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                        className="px-4 py-3 rounded-full font-bold text-sm transition-all duration-200 hover:scale-105 border-2 border-white text-white shadow-xl hover:bg-white hover:bg-opacity-10 ml-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     >
                                         Read Free Preview
                                     </button>
@@ -230,7 +230,7 @@ const SacredGuidePage = () => {
                             <button
                                 disabled={hasJoined}
                                 onClick={() => { if (!hasJoined) setShowWaitlistModal(true); }}
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 disabled:opacity-80 disabled:cursor-default"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 disabled:opacity-80 disabled:cursor-default"
                                 style={{
                                     background: 'white',
                                     color: hasJoined ? '#16a34a' : '#7c3aed',
@@ -264,18 +264,18 @@ const SacredGuidePage = () => {
                 </div>
 
                 {/* ─── Bottom Cards — Pricing & Project Status ──── */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     {/* Pricing Structure Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                        <div className="flex items-center gap-2 mb-6">
+                    <div className="bg-white rounded-2xl p-4 border border-gray-100" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                        <div className="flex items-center gap-2 mb-4">
                             <span style={{ color: '#f59e0b', fontSize: '1.1rem' }}>💲</span>
                             <h3 className="text-lg font-bold text-gray-900">Pricing Structure</h3>
                         </div>
 
                         {/* Free Members Price */}
                         <div
-                            className="rounded-xl p-5 mb-4 text-center transition-all duration-300"
+                            className="rounded-xl p-4 mb-4 text-center transition-all duration-300"
                             style={{
                                 background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
                                 border: !hasDigitalBookAccess ? '2px solid #f59e0b' : '1px solid #fde68a',
@@ -293,12 +293,12 @@ const SacredGuidePage = () => {
                                 <span className="text-sm font-semibold text-yellow-800">Free Members</span>
                                 {!hasDigitalBookAccess && <span className="text-xs bg-yellow-600 text-white px-2 py-0.5 rounded-full">Your Plan</span>}
                             </div>
-                            <p className="text-xl font-bold text-yellow-700">Read free preview only</p>
+                            <p className="text-lg font-bold text-yellow-700">Read free preview only</p>
                         </div>
 
                         {/* Plus & Premium Members Price */}
                         <div
-                            className="rounded-xl p-5 mb-5 text-center transition-all duration-300"
+                            className="rounded-xl p-4 mb-5 text-center transition-all duration-300"
                             style={{
                                 background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
                                 border: hasDigitalBookAccess ? '2px solid #22c55e' : '1px solid #bbf7d0',
@@ -316,7 +316,7 @@ const SacredGuidePage = () => {
                                 <span className="text-sm font-semibold text-green-800">Plus & Premium Members</span>
                                 {hasDigitalBookAccess && <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Your Plan</span>}
                             </div>
-                            <p className="text-3xl font-black text-green-600">FREE</p>
+                            <p className="text-lg font-black text-green-600">FREE</p>
                         </div>
 
                         <p className="text-xs text-gray-400 text-center">
@@ -327,8 +327,8 @@ const SacredGuidePage = () => {
                     </div>
 
                     {/* Project Status Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                        <div className="flex items-center gap-2 mb-6">
+                    <div className="bg-white rounded-2xl p-4 border border-gray-100" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                        <div className="flex items-center gap-2 mb-4">
                             <svg className="w-5 h-5" style={{ color: '#22c55e' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -381,7 +381,7 @@ const SacredGuidePage = () => {
                     onClick={() => setShowWaitlistModal(false)}
                 >
                     <div
-                        className="bg-white rounded-2xl w-full max-w-md p-8 relative"
+                        className="bg-white rounded-2xl w-full max-w-md p-4 relative"
                         style={{ boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -408,11 +408,11 @@ const SacredGuidePage = () => {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-xl font-bold text-gray-900 text-center mb-1">Join the Sacred Guide Waitlist</h2>
-                        <p className="text-sm text-gray-500 text-center mb-6">Be the first to know when our spiritual wellness e-book launches</p>
+                        <h2 className="text-lg font-bold text-gray-900 text-center mb-1">Join the Sacred Guide Waitlist</h2>
+                        <p className="text-sm text-gray-500 text-center mb-4">Be the first to know when our spiritual wellness e-book launches</p>
 
                         {/* Form */}
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-4 mb-4">
                             {/* Name */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-1.5">Your Name</label>
@@ -444,7 +444,7 @@ const SacredGuidePage = () => {
                         </div>
 
                         {/* Benefits */}
-                        <div className="space-y-2 mb-6">
+                        <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <span>✨</span>
                                 <span>Early access notification</span>
@@ -501,7 +501,7 @@ const SacredGuidePage = () => {
             {/* ─── Toast notification ─── */}
             {toastMsg && (
                 <div
-                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-6 py-3 rounded-xl text-white text-sm font-medium shadow-lg transition-all duration-300"
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-4 py-3 rounded-xl text-white text-sm font-medium shadow-lg transition-all duration-300"
                     style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)' }}
                 >
                     {toastMsg}
