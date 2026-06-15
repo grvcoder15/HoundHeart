@@ -67,9 +67,8 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
       try {
         const user = localStorage.getItem('user');
         const userObj = user ? JSON.parse(user) : {};
-        const rolePremium = userObj.roleId === 2 || userObj.RoleId === 2;
         const tierFromUser = normalizeTier(userObj.tierLevel);
-        const resolvedTier = tierFromUser !== 'free' ? tierFromUser : (rolePremium ? 'premium' : 'free');
+        const resolvedTier = tierFromUser;
 
         const name = userObj.fullName || userObj.profileName || userObj.name || 'User';
         const email = userObj.email || '';
@@ -113,7 +112,6 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
         const subData = response && Object.prototype.hasOwnProperty.call(response, 'data') ? response.data : response;
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const rolePremium = user.roleId === 2 || user.RoleId === 2;
         const tierFromUser = normalizeTier(user.tierLevel);
         const tierFromPlan = isActiveSubscription(subData)
           ? getTierFromPlanName(subData?.planName || subData?.PlanName)
@@ -123,17 +121,13 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
         if (tierFromPlan === 'premium' || (tierFromPlan === 'plus' && resolvedTier === 'free')) {
           resolvedTier = tierFromPlan;
         }
-        if (resolvedTier === 'free' && rolePremium) {
-          resolvedTier = 'premium';
-        }
 
         setCurrentSubscription(subData || null);
         setMembershipTier(resolvedTier);
       } catch (error) {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const rolePremium = user.roleId === 2 || user.RoleId === 2;
         const tierFromUser = normalizeTier(user.tierLevel);
-        setMembershipTier(tierFromUser !== 'free' ? tierFromUser : (rolePremium ? 'premium' : 'free'));
+        setMembershipTier(tierFromUser);
       }
     };
 
