@@ -55,6 +55,33 @@ namespace Hounded_Heart.Api.Services
                             ALTER TABLE ""SubscriptionPlans""
                             ADD COLUMN IF NOT EXISTS ""TierLevel"" character varying(20) NOT NULL DEFAULT 'plus';
                         ", stoppingToken);
+
+                        // Ensure Rituals table exists
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""Rituals"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""Title"" character varying(100) NOT NULL,
+                                ""Description"" character varying(500),
+                                ""Duration"" character varying(50),
+                                ""Category"" character varying(50) NOT NULL,
+                                ""IconType"" character varying(50),
+                                CONSTRAINT ""PK_Rituals"" PRIMARY KEY (""Id"")
+                            );
+                        ", stoppingToken);
+
+                        // Ensure RitualLogs table exists
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""RitualLogs"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""RitualId"" uuid NOT NULL,
+                                ""UserId"" uuid NOT NULL,
+                                ""CompletedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                ""BonusAwarded"" boolean NOT NULL DEFAULT false,
+                                CONSTRAINT ""PK_RitualLogs"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_RitualLogs_Rituals_RitualId"" FOREIGN KEY (""RitualId"") REFERENCES ""Rituals""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_RitualLogs_RitualId"" ON ""RitualLogs""(""RitualId"");
+                        ", stoppingToken);
                     }
 
                     // Seed Database
