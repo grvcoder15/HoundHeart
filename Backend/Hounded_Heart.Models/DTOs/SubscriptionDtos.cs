@@ -14,6 +14,8 @@ namespace Hounded_Heart.Models.DTOs
         public Guid SubscriptionId { get; set; }
         public string? PlanName { get; set; }
         public string TierLevel { get; set; } = "free"; // free, plus, premium
+        public string? StripePriceId { get; set; }
+        public string? BillingPeriod { get; set; } // monthly, yearly
         public string? Status { get; set; }
         public DateTime? CurrentPeriodStart { get; set; }
         public DateTime? CurrentPeriodEnd { get; set; }

@@ -54,13 +54,14 @@ const ProtectedRoute = ({ children, requiredTier = 'free' }) => {
 
         const data = response?.data || response;
         const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const normalizedTierLevel = normalizeTier(data?.tierLevel ?? existingUser.tierLevel);
+        const tierFromData = data?.tierLevel ?? data?.TierLevel;
+        const normalizedTierLevel = normalizeTier(tierFromData ?? existingUser.tierLevel);
 
         localStorage.setItem('user', JSON.stringify({
           ...existingUser,
           tierLevel: normalizedTierLevel,
-          roleId: data?.roleId ?? existingUser.roleId,
-          RoleId: data?.roleId ?? existingUser.RoleId
+          roleId: data?.roleId ?? data?.RoleId ?? existingUser.roleId ?? existingUser.RoleId,
+          RoleId: data?.RoleId ?? data?.roleId ?? existingUser.RoleId ?? existingUser.roleId
         }));
       } catch {
         // Leave current local auth state untouched if the access check fails.
