@@ -406,7 +406,7 @@ namespace Hounded_Heart.Api.Controllers
                     .ToListAsync();
 
                 if (checkIns == null || !checkIns.Any())
-                    return NotFound(ResponseHelper.Fail<object>("No check-ins found.", 404));
+                    return Ok(ResponseHelper.Success(new List<object>(), "No check-ins found.", 200));
 
                 return Ok(ResponseHelper.Success(checkIns, "Check-ins fetched successfully.", 200));
             }

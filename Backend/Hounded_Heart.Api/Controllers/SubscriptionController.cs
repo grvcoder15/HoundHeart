@@ -180,10 +180,26 @@ namespace Hounded_Heart.Api.Controllers
                     return Ok(ResponseHelper.Success<SubscriptionResponseDto>(null, "No subscription found", 200));
                 }
 
+                // Resolve tier level from the matching subscription plan
+                var tierLevel = "free";
+                var billingPeriod = "monthly";
+                if (!string.IsNullOrEmpty(subscription.StripePriceId))
+                {
+                    var matchedPlan = await _context.SubscriptionPlans
+                        .FirstOrDefaultAsync(p => p.StripePriceId == subscription.StripePriceId && p.IsActive);
+                    if (!string.IsNullOrWhiteSpace(matchedPlan?.TierLevel))
+                        tierLevel = matchedPlan.TierLevel.Trim().ToLower();
+                    if (!string.IsNullOrWhiteSpace(matchedPlan?.BillingPeriod))
+                        billingPeriod = matchedPlan.BillingPeriod.Trim().ToLower();
+                }
+
                 var response = new SubscriptionResponseDto
                 {
                     SubscriptionId = subscription.SubscriptionId,
                     PlanName = subscription.PlanName,
+                    TierLevel = tierLevel,
+                    StripePriceId = subscription.StripePriceId,
+                    BillingPeriod = billingPeriod,
                     Status = subscription.Status,
                     CurrentPeriodStart = subscription.CurrentPeriodStart,
                     CurrentPeriodEnd = subscription.CurrentPeriodEnd,
@@ -223,12 +239,12 @@ namespace Hounded_Heart.Api.Controllers
 
                 if (existingSubscription == null)
                 {
-                    return BadRequest(ResponseHelper.Fail<object>("No subscription found to sync."));
+                    return Ok(ResponseHelper.Success<object>(null, "No subscription found to sync.", 200));
                 }
 
                 if (string.IsNullOrEmpty(existingSubscription.StripeSubscriptionId))
                 {
-                    return BadRequest(ResponseHelper.Fail<object>("This subscription is not linked to Stripe yet."));
+                    return Ok(ResponseHelper.Success<object>(null, "This subscription is not linked to Stripe yet.", 200));
                 }
 
                 var subscription = await _stripeService.SyncLatestUserSubscriptionFromStripeAsync(userId.Value);

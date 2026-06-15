@@ -502,12 +502,14 @@ const SubscriptionPage = () => {
                                         plans.map((plan) => {
                                             const isFree = plan.tierLevel === 'free';
                                             const isPopular = plan.tierLevel === 'plus';
-                                            const currentTier = (currentSubscription?.tierLevel || '').toLowerCase();
                                             const isCurrentFree = isLoggedIn && !currentSubscription && isFree;
-                                            const isCurrentPaid = !!currentSubscription && (
-                                                currentTier === plan.tierLevel ||
-                                                currentSubscription.stripePriceId === plan.planId ||
-                                                currentSubscription.planName === plan.planName
+                                            // Match by exact Stripe price ID, or exact amount as fallback.
+                                            // Never match by plan name alone — both monthly/yearly Plus share the same name.
+                                            const currentStripePriceId = currentSubscription?.stripePriceId || currentSubscription?.StripePriceId;
+                                            const currentAmount = currentSubscription?.amount ?? currentSubscription?.Amount;
+                                            const isCurrentPaid = !isFree && !!currentSubscription && (
+                                                (currentStripePriceId && currentStripePriceId === plan.planId) ||
+                                                (!currentStripePriceId && currentAmount !== undefined && currentAmount === plan.price)
                                             );
                                             const isCurrentPlan = isCurrentFree || isCurrentPaid;
                                             const buttonLabel = isCurrentPlan
