@@ -43,7 +43,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
                 var activities = await _context.UserBondingActivities
                     .Where(x => x.UserId == userId && x.ActivityDate == today)

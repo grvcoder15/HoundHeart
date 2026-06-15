@@ -89,42 +89,82 @@ namespace Hounded_Heart.Api.Data
                 await context.SaveChangesAsync();
             }
 
-            // Seed bonding activities if missing
-            if (!await context.BondingActivities.AnyAsync())
+            // Seed missing bonding activities
+            // Seed missing bonding activities or update existing points
+            var allActivities = new[]
             {
-                context.BondingActivities.AddRange(
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Morning Walk", Points = 10, Category = "Physical", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Play Fetch", Points = 10, Category = "Physical", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Training Session", Points = 15, Category = "Physical", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Grooming", Points = 10, Category = "Physical", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Meditation Together", Points = 15, Category = "Spiritual", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Nature Walk", Points = 10, Category = "Spiritual", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Cuddle Time", Points = 10, Category = "Emotional", InteractionType = "Checkbox" },
-                    new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "New Trick Practice", Points = 15, Category = "Emotional", InteractionType = "Checkbox" }
-                );
-                await context.SaveChangesAsync();
-            }
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Bedtime Blessing", Points = 2, Category = "Emotional", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Belly Rubs", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Chakra Sync", Points = 2, Category = "Spiritual", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Energy Check-in", Points = 2, Category = "Emotional", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Evening Reflection", Points = 2, Category = "Spiritual", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Feeding Time", Points = 1, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Gratitude Moment", Points = 2, Category = "Emotional", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Grooming", Points = 1, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Meditation Together", Points = 3, Category = "Spiritual", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Mindful Walk", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Morning Intention Setting", Points = 2, Category = "Spiritual", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Morning Walk", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Outdoor Adventure", Points = 5, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Playtime", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Synchronized Breathing", Points = 2, Category = "Spiritual", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Training Session", Points = 4, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Nature Walk", Points = 3, Category = "Spiritual", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Cuddle Time", Points = 2, Category = "Emotional", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "New Trick Practice", Points = 3, Category = "Emotional", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Play Fetch", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Heart-to-Heart Reflection", Points = 2, Category = "Emotional", InteractionType = "Input" }
+            };
 
-            // Check if "Dog Behavior" check-in exists
-            var checkInText = "How is your dog's behavior today? (0/10)";
-            var exists = await context.CheckIns.AnyAsync(c => c.Questions == checkInText);
-
-            if (!exists)
+            foreach (var act in allActivities)
             {
-                var newCheckIn = new CheckIn
+                var existingAct = await context.BondingActivities.FirstOrDefaultAsync(a => a.ActivityName == act.ActivityName);
+                if (existingAct == null)
                 {
-                    CheckInId = Guid.NewGuid(),
-                    Questions = checkInText, // Matches user request
-                    Rating = 0, // Default in DB, but frontend handles user interaction
-                    LowEnergyLabel = "Restless / Stressed",
-                    HighEnergyLabel = "Calm / Playful",
-                    CreatedOn = DateTime.UtcNow,
-                    IsDeleted = false
-                };
-
-                await context.CheckIns.AddAsync(newCheckIn);
-                await context.SaveChangesAsync();
+                    context.BondingActivities.Add(act);
+                }
+                else
+                {
+                    // Update the points to match the new values
+                    if (existingAct.Points != act.Points)
+                    {
+                        existingAct.Points = act.Points;
+                        context.BondingActivities.Update(existingAct);
+                    }
+                }
             }
+            await context.SaveChangesAsync();
+
+            // Seed all 7 Daily Check-in questions if not yet seeded
+            var allCheckInQuestions = new[]
+            {
+                new { Q = "How present are you in this moment? (0/10)",                               Low = "Distracted",            High = "Fully Present" },
+                new { Q = "How much quality time have you spent with your dog today? (0/10)",         Low = "0 Hours",               High = "10+ Hours" },
+                new { Q = "How balanced do you feel emotionally today? (0/10)",                       Low = "Overwhelmed",           High = "Centered / Peaceful" },
+                new { Q = "How is your dog's behavior today? (0/10)",                                 Low = "Restless / Stressed",   High = "Calm / Playful" },
+                new { Q = "How strong is your spiritual connection with your dog right now? (0/10)",  Low = "Disconnected",          High = "Deeply Connected" },
+                new { Q = "How is your energy level today? (0/10)",                                   Low = "Low Energy",            High = "High Energy" },
+                new { Q = "Emergency/Neglect: Was your dog left alone or walk missed? (0/10)",        Low = "No Issues",             High = "Emergency Occurred" }
+            };
+
+            foreach (var q in allCheckInQuestions)
+            {
+                var existsCheckIn = await context.CheckIns.AnyAsync(c => c.Questions == q.Q);
+                if (!existsCheckIn)
+                {
+                    await context.CheckIns.AddAsync(new CheckIn
+                    {
+                        CheckInId = Guid.NewGuid(),
+                        Questions = q.Q,
+                        Rating = 0,
+                        LowEnergyLabel = q.Low,
+                        HighEnergyLabel = q.High,
+                        CreatedOn = DateTime.UtcNow,
+                        IsDeleted = false
+                    });
+                }
+            }
+            await context.SaveChangesAsync();
 
             // Seed Healing Circles if empty
             if (!await context.HealingCircles.AnyAsync())

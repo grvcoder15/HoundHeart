@@ -772,54 +772,18 @@ const DashboardPage = () => {
 
       let bonusAwarded = false;
 
-      // API-based ritual completions
-      const apiRitualsToSave = ritualsToSave.filter(r => r.source !== 'activity');
-      for (const ritual of apiRitualsToSave) {
+      // Process all new completions
+      for (const ritual of ritualsToSave) {
         const response = await apiService.completeRitual(currentUserId, ritual.id);
-        const completePayload = response?.data || response || {};
-        if (completePayload?.bonusAwarded || response?.bonusAwarded) {
+        if (response && response.bonusAwarded) {
           bonusAwarded = true;
         }
       }
 
-      // Fallback activity-based ritual completions
-      const activityRitualsToSave = ritualsToSave.filter(r => r.source === 'activity' && r.activityId);
-      if (activityRitualsToSave.length > 0) {
-        const payload = {
-          UserId: currentUserId,
-          Date: new Date().toISOString(),
-          Activities: activityRitualsToSave.map(r => ({
-            ActivityId: r.activityId,
-            Score: r.points || ritualPointsMap[r.title] || 2
-          }))
-        };
-        await apiService.saveUserActivitiesScore(payload);
-      }
-
-      // For api-source completions, update ritualCheckboxes immediately so
-      // "Activities Today" counter reflects them before loadBondingActivities resolves.
-      if (apiRitualsToSave.length > 0) {
-        const reverseRitualNameMapping = {
-          "Morning Intention Setting": "morningIntention",
-          "Energy Check-in": "energyCheckin",
-          "Mindful Walk": "mindfulWalk",
-          "Gratitude Moment": "gratitudeMoment",
-          "Evening Reflection": "eveningReflection",
-          "Bedtime Blessing": "bedtimeBlessing"
-        };
-        setRitualCheckboxes(prev => {
-          const updated = { ...prev };
-          apiRitualsToSave.forEach(r => {
-            const key = reverseRitualNameMapping[r.title];
-            if (key) updated[key] = true;
-          });
-          return updated;
-        });
-      }
-
+      // Refresh data
       await fetchRituals();
-      await loadBondingActivities();
-      fetchWellnessData(false);
+      fetchDashboardStats();
+      fetchBondedScore(); // Refresh score circle immediately
 
       if (bonusAwarded) {
         setDailyBonusEarned(true);
@@ -1273,7 +1237,20 @@ const DashboardPage = () => {
 
   const fetchBondedScore = async () => {
     try {
-      await fetchWellnessData(false);
+      const userId = apiService.getCurrentUserId();
+      const dogId = localStorage.getItem('dogId') || '00000000-0000-0000-0000-000000000000';
+
+      const response = await apiService.calculateBondedScore(userId, dogId);
+      console.log('📊 Dashboard fetchBondedScore response:', response);
+
+      const data = response?.data || response || {};
+      const score = data.BondedScore !== undefined ? data.BondedScore : (data.bondedScore || 50);
+      const level = data.BondLevel || data.bondLevel || 'New Connection ✿';
+
+      setBondedScore(Math.round(score));
+      setBondLevel(level);
+      setWeeklyProgress(data.WeeklyProgress || data.weeklyProgress || 0);
+      setRitualDays(data.RitualDaysCount || data.ritualDaysCount || 0);
     } catch (error) {
       console.error('Error fetching bonded score:', error);
       const storedScore = localStorage.getItem('bondedScore');
@@ -1284,7 +1261,11 @@ const DashboardPage = () => {
 
   const fetchCheckInStatus = async () => {
     try {
-      await fetchWellnessData(false);
+      const userId = apiService.getCurrentUserId();
+      if (userId) {
+        const res = await apiService.checkCheckInDoneToday(userId);
+        setIsCheckInDoneToday(res?.done || false);
+      }
     } catch (err) {
       console.error('Error fetching check-in status:', err);
     }
@@ -1301,8 +1282,8 @@ const DashboardPage = () => {
       // If we reach here without an error/exception, the request succeeded (200 range)
       toast.success(res?.message || 'Daily check-ins updated successfully.');
 
-      // Refresh dashboard snapshot once instead of refetching multiple slices separately.
-      fetchWellnessData(false);
+      // Refresh data to reflect changes
+      fetchCheckInStatus();
       if (res && res.stats) {
         // Update local stats immediately if returned
         setWeeklyProgress(res.stats.weeklyProgress || 0);
@@ -1312,13 +1293,16 @@ const DashboardPage = () => {
         if (res.scoreUpdate) {
           setBondedScore(res.scoreUpdate.newScore);
         }
+      } else {
+        fetchBondedScore();
+        fetchDashboardStats();
       }
 
       // Refresh ratings from server to reflect persisted values
       const serverCheckIns = await apiService.getUserCheckIns(userId);
       if (Array.isArray(serverCheckIns) && serverCheckIns.length > 0) {
         const updated = { ...ratingsById };
-        const today = formatLocalDate(new Date()); // YYYY-MM-DD (local)
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
         // Only use TODAY's check-ins (filter out old/missed entries)
         serverCheckIns.forEach(uci => {
@@ -1561,15 +1545,14 @@ const DashboardPage = () => {
 
       // Map selected IDs to { ActivityId, Score } objects
       const activitiesToSave = activityIds.map(id => {
-        const normalizedId = normalizeId(id);
-        const activity = bondingActivities.find(a => normalizeId(a.activityId) === normalizedId);
+        const activity = bondingActivities.find(a => a.activityId === id);
         if (!activity) return null;
 
         // Use dynamic point from map if available, else fallback to activity.points
         const score = ritualPointsMap[activity.activityName] || activity.points || 2;
 
         return {
-          ActivityId: activity.activityId,
+          ActivityId: id,
           Score: score
         };
       }).filter(Boolean);
@@ -1584,17 +1567,9 @@ const DashboardPage = () => {
 
       toast.success(response?.message || 'Activities saved successfully!');
 
-      // Persist server-confirmed activity IDs to localStorage so they survive refresh all day
-      const today = new Date().toISOString().split('T')[0];
-      const serverConfirmedIds = activityIds.map(String);
-      localStorage.setItem('dailyActivityCompletions', JSON.stringify({
-        date: today,
-        completedIds: serverConfirmedIds
-      }));
-
       // Refresh data from server to persist checkbox state and score
       await loadBondingActivities();
-      await fetchWellnessData(false);
+      await fetchBondedScore();
 
     } catch (error) {
       console.error('Save activities error:', error);
@@ -2182,7 +2157,7 @@ const DashboardPage = () => {
                   return next;
                 });
 
-                fetchWellnessData(false); // Immediate dashboard refresh from unified summary
+                fetchBondedScore(); // Immediate score update
                 await loadBondingActivities(); // Refresh completed activities state from backend
               } catch (err) {
                 console.error('Failed to award ritual bonus:', err);

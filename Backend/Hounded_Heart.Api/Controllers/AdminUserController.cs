@@ -33,7 +33,7 @@ namespace Hounded_Heart.Api.Controllers
                 var suspended = await _context.Users.CountAsync(u => !u.IsDeleted && u.Status == "Suspended");
 
                 // Active Today: Unique users with activity records created today (UTC)
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 
                 var checkInUsers = _context.UserCheckIns.Where(c => c.CreatedOn.Date == today).Select(c => c.UserId);
                 var ritualUsers = _context.RitualLogs.Where(r => r.CompletedAt.Date == today).Select(r => r.UserId);

@@ -32,7 +32,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var today = DateTime.SpecifyKind(DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc), DateTimeKind.Utc);
                 var queryStartDate = DateTime.SpecifyKind((startDate ?? today.AddDays(-30)).Date, DateTimeKind.Utc);
                 var queryEndDate = DateTime.SpecifyKind((endDate ?? today).Date, DateTimeKind.Utc);
 

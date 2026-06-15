@@ -39,7 +39,7 @@ namespace Hounded_Heart.Api.Controllers
                 if (userId == Guid.Empty)
                     return BadRequest(ResponseHelper.Fail<object>("Invalid user ID.", 400));
 
-                var baseDate = DateTime.SpecifyKind(clientDate?.Date ?? DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var baseDate = DateTime.SpecifyKind(clientDate?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc), DateTimeKind.Utc);
                 var stats = await BuildDashboardStatsAsync(userId, baseDate);
 
                 return Ok(ResponseHelper.Success(new
@@ -69,7 +69,7 @@ namespace Hounded_Heart.Api.Controllers
                 if (userId == Guid.Empty)
                     return BadRequest(ResponseHelper.Fail<object>("Invalid user ID.", 400));
 
-                var baseDate = DateTime.SpecifyKind(clientDate?.Date ?? DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var baseDate = DateTime.SpecifyKind(clientDate?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc), DateTimeKind.Utc);
                 var user = await _context.Users
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.UserId == userId);

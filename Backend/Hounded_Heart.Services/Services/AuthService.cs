@@ -101,9 +101,9 @@ namespace Hounded_Heart.Services.Services
                     200
                 );
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return ResponseHelper.Fail<object>("Internal server error during Google login.", 500);
+                return ResponseHelper.Fail<object>($"Google login error: {ex.Message}", 500);
             }
         }
         #endregion GoogleLogin
@@ -179,7 +179,7 @@ namespace Hounded_Heart.Services.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(double.Parse(_configuration["Jwt:DurationInHours"] ?? "8")),
+                Expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:DurationInMinutes"] ?? "120")),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),

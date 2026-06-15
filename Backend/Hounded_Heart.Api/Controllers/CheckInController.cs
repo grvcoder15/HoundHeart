@@ -26,8 +26,8 @@ namespace Hounded_Heart.Api.Controllers
                     .Where(c => !c.IsDeleted)  
                     .ToListAsync();
 
-                if (checkIns == null || checkIns.Count == 0)
-                    return Ok(ResponseHelper.Success(new List<object>(), "No check-ins found.", 200));
+                if (checkIns == null)
+                    return NotFound(ResponseHelper.Fail<object>("No check-ins found.", 404));
 
                 return Ok(ResponseHelper.Success(checkIns, "Check-ins fetched successfully.", 200));
             }
@@ -46,7 +46,8 @@ namespace Hounded_Heart.Api.Controllers
                     return BadRequest(ResponseHelper.Fail<object>("Invalid request data.", 400));
 
                 var userId = dto.UserId;
-                var today = DateTime.SpecifyKind(dto.Date?.Date ?? DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var rawToday = dto.Date?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var today = DateTime.SpecifyKind(rawToday, DateTimeKind.Utc);
                 var yesterday = today.AddDays(-1);
 
                 // --- Step 1: Calculate Score BEFORE Update ---
@@ -302,7 +303,7 @@ namespace Hounded_Heart.Api.Controllers
 
         private async Task CheckAndApplyMissedPenalties(Guid userId)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.SpecifyKind(DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc), DateTimeKind.Utc);
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null) return;
 
@@ -312,7 +313,8 @@ namespace Hounded_Heart.Api.Controllers
                 .OrderByDescending(u => u.CreatedOn)
                 .FirstOrDefaultAsync();
 
-            DateTime lastDate = lastCheckIn?.CreatedOn.Date ?? user.CreatedOn.Date;
+            var rawLastDate = lastCheckIn?.CreatedOn.Date ?? user.CreatedOn.Date;
+            DateTime lastDate = DateTime.SpecifyKind(rawLastDate, DateTimeKind.Utc);
             
             // If user just joined today, do nothing
             if (lastDate >= today) return;
@@ -404,7 +406,7 @@ namespace Hounded_Heart.Api.Controllers
                     .ToListAsync();
 
                 if (checkIns == null || !checkIns.Any())
-                    return Ok(ResponseHelper.Success(new List<object>(), "No check-ins found.", 200));
+                    return NotFound(ResponseHelper.Fail<object>("No check-ins found.", 404));
 
                 return Ok(ResponseHelper.Success(checkIns, "Check-ins fetched successfully.", 200));
             }
@@ -422,7 +424,8 @@ namespace Hounded_Heart.Api.Controllers
             {
                 if (userId == Guid.Empty) return BadRequest(ResponseHelper.Fail<object>("Invalid userId.", 400));
 
-                var today = clientDate?.Date ?? DateTime.UtcNow.Date;
+                var rawToday = clientDate?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var today = DateTime.SpecifyKind(rawToday, DateTimeKind.Utc);
                 var exists = await _context.UserCheckIns
                     .AnyAsync(x => x.UserId == userId
                                 && (x.ActivityDate == today || (x.ActivityDate == null && x.CreatedOn.Date == today)));
