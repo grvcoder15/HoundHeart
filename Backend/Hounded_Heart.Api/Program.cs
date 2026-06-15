@@ -119,7 +119,11 @@ builder.Services.AddCors(options =>
               "http://localhost:5178",
               "http://127.0.0.1:5173",
               "http://127.0.0.1:5178",
-              "http://localhost:3000")
+              "http://localhost:3000",
+              "https://www.houndheartwellness.com",
+              "https://admin.houndheartwellness.com",
+              "https://houndheart-frontend-production.up.railway.app",
+              "https://houndheart-admin-production.up.railway.app")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -152,7 +156,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("AllowReactApp");
+app.UseCors("AllowFrontend");
 // app.UseHttpsRedirection();
 
 // Ensure wwwroot exists (auto-create if missing after branch switch)

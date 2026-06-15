@@ -29,7 +29,7 @@ namespace Hounded_Heart.Api.Controllers
                     return BadRequest(ResponseHelper.Fail<object>("UserId is required.", 400));
 
                 // Use client date if provided, else UTC
-                var today = clientDate?.Date ?? DateTime.UtcNow.Date;
+                var today = clientDate?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
                 // 1. Activities Today (Distinct Bonding Activities + Daily Check-in cap of 1)
                 var tomorrow = today.AddDays(1);

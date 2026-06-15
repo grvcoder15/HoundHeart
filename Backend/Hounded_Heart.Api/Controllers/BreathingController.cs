@@ -95,7 +95,7 @@ namespace Hounded_Heart.Api.Controllers
                     return Unauthorized(ResponseHelper.Fail<object>("User ID not found in token.", 401));
 
                 // Award points logic
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 var activityName = "Synchronized Breathing";
                 
                 var activity = await _context.BondingActivities.FirstOrDefaultAsync(a => a.ActivityName == activityName);

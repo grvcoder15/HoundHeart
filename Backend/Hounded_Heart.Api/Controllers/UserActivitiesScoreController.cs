@@ -29,7 +29,7 @@ namespace Hounded_Heart.Api.Controllers
                     return BadRequest(ResponseHelper.Fail<object>("No activities provided.", 400));
 
                 // Use provided local date or fallback to UTC Today
-                var activityDate = DateTime.SpecifyKind(request.Date?.Date ?? DateTime.UtcNow.Date, DateTimeKind.Utc);
+                var activityDate = request.Date?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 var now = DateTime.UtcNow;
                 
                 List<UserActivitiesScore> scoreEntities = new();
@@ -75,19 +75,6 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     await _context.UserActivitiesScores.AddRangeAsync(scoreEntities);
                     await _context.UserBondingActivities.AddRangeAsync(bondingEntities);
-
-                    var pointsEarned = scoreEntities.Sum(x => x.Score ?? 0);
-                    if (pointsEarned > 0)
-                    {
-                        var dog = await _context.Dogs.FirstOrDefaultAsync(d => d.UserId == request.UserId);
-                        if (dog != null)
-                        {
-                            dog.CurrentScore = Math.Min(100, Math.Max(0, dog.CurrentScore + pointsEarned));
-                            dog.UpdatedOn = now;
-                            _context.Dogs.Update(dog);
-                        }
-                    }
-
                     await _context.SaveChangesAsync();
                 }
 
@@ -134,7 +121,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             if (userId == Guid.Empty) return BadRequest(ResponseHelper.Fail<object>("Invalid userId.", 400));
 
-            var start = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+            var start = date.Date;
             var end = start.AddDays(1);
 
             var total = await _context.UserActivitiesScores
@@ -181,7 +168,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             if (userId == Guid.Empty) return BadRequest(ResponseHelper.Fail<object>("Invalid userId.", 400));
 
-            var today = DateTime.SpecifyKind(clientDate?.Date ?? DateTime.UtcNow.Date, DateTimeKind.Utc);
+            var today = clientDate?.Date ?? DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
             var tomorrow = today.AddDays(1);
 
             var activities = await _context.UserActivitiesScores

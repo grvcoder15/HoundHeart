@@ -27,7 +27,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
                 var totalPosts = await _context.CommunityPosts.CountAsync(p => !p.IsDeleted);
                 // "published" could just simply mean not flagged and not deleted.

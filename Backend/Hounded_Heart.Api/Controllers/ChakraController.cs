@@ -25,30 +25,6 @@ namespace Hounded_Heart.Api.Controllers
             _progressService = progressService;
         }
 
-        [HttpGet("chakrasList")]
-        public async Task<IActionResult> GetChakrasList()
-        {
-            try
-            {
-                var chakras = await _context.Chakras
-                    .AsNoTracking()
-                    .OrderBy(c => c.ChakraName)
-                    .Select(c => new
-                    {
-                        chakraId = c.ChakraId,
-                        chakraName = c.ChakraName,
-                        audioUrl = c.AudioUrl
-                    })
-                    .ToListAsync();
-
-                return Ok(ResponseHelper.Success(chakras, "Chakras retrieved successfully.", 200));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ResponseHelper.Fail<object>($"Error retrieving chakras: {ex.Message}", 500));
-            }
-        }
-
         [HttpGet("get-progress")]
         public async Task<IActionResult> GetProgress([FromQuery] Guid userId, [FromQuery] Guid chakraId)
         {
@@ -158,7 +134,7 @@ namespace Hounded_Heart.Api.Controllers
 
             try
             {
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
                 // 1. Get Activity for "Chakra Sync"
                 var activity = await _context.BondingActivities

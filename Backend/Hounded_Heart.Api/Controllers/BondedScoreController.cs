@@ -34,7 +34,7 @@ namespace Hounded_Heart.Api.Controllers
                 if (user == null)
                     return BadRequest(ResponseHelper.Fail<string>("User not found.", 404));
 
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 var last7Days = today.AddDays(-7);
                 var yesterday = today.AddDays(-1);
 
