@@ -25,6 +25,19 @@ const ChakraRitualsPage = () => {
   // Ritual top-bar stats (fetched from Dashboard Stats)
   const [ritualStats, setRitualStats] = useState({ bondedScore: 0, dayStreak: 0, energySync: 0 });
 
+  // Resolve the user's tier from localStorage (kept in sync by ProtectedRoute)
+  const getUserTier = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const tier = String(user.tierLevel || 'free').toLowerCase().trim();
+      return tier === 'plus' || tier === 'premium' ? tier : 'free';
+    } catch {
+      return 'free';
+    }
+  };
+  const userTier = getUserTier(); // 'free' | 'plus' | 'premium'
+  const hasPaidAccess = userTier === 'plus' || userTier === 'premium';
+
   // Fetch & refresh top stats
   const fetchRitualStats = async () => {
     try {
@@ -935,14 +948,14 @@ const ChakraRitualsPage = () => {
       name: 'Deep Bonding Meditation',
       description: 'Strengthen your spiritual connection',
       duration: '15 minutes',
-      isLocked: true,
+      isLocked: !hasPaidAccess,
       isPremium: true
     },
     {
       name: 'Healing Circle Practice',
       description: 'Send healing energy to your dog',
       duration: '12 minutes',
-      isLocked: true,
+      isLocked: !hasPaidAccess,
       isPremium: true
     },
     {

@@ -779,6 +779,7 @@ class ApiService {
     // Try different endpoint variations based on common ASP.NET Core routing patterns
     // The method has [HttpGet("chakrasList")] but controller name might vary
     const endpoints = [
+      '/Audio/chakras',         // Correct endpoint based on AudioController
       '/Chakra/chakrasList',    // ChakraController with chakrasList route
       '/Chakras/chakrasList',   // ChakrasController (plural)
       '/chakra/chakrasList',    // Lowercase controller

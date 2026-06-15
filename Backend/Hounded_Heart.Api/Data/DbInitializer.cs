@@ -288,6 +288,22 @@ namespace Hounded_Heart.Api.Data
                 await context.HealingCircles.AddRangeAsync(circles);
                 await context.SaveChangesAsync();
             }
+
+            // Seed default Rituals if table is empty
+            if (!await context.Rituals.AnyAsync())
+            {
+                var rituals = new[]
+                {
+                    new Ritual { Id = Guid.NewGuid(), Title = "Morning Intention Setting", Description = "Start your day with a clear intention.", Duration = "5 min", Category = "Morning", IconType = "Sun" },
+                    new Ritual { Id = Guid.NewGuid(), Title = "Gratitude Moment",          Description = "Reflect on what you are grateful for.",  Duration = "2 min", Category = "Morning", IconType = "Heart" },
+                    new Ritual { Id = Guid.NewGuid(), Title = "Energy Check-in",           Description = "Assess your current energy levels.",       Duration = "1 min", Category = "Morning", IconType = "Battery" },
+                    new Ritual { Id = Guid.NewGuid(), Title = "Mindful Walk",              Description = "Take a walk with full awareness.",          Duration = "15 min", Category = "Afternoon", IconType = "Walk" },
+                    new Ritual { Id = Guid.NewGuid(), Title = "Evening Reflection",        Description = "Reflect on the events of the day.",         Duration = "10 min", Category = "Evening", IconType = "Moon" },
+                    new Ritual { Id = Guid.NewGuid(), Title = "Bedtime Blessing",          Description = "Send a blessing before sleep.",             Duration = "5 min",  Category = "Evening", IconType = "Star" },
+                };
+                await context.Rituals.AddRangeAsync(rituals);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
