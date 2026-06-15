@@ -61,13 +61,16 @@ namespace Hounded_Heart.Services.Services
                         UserId = Guid.NewGuid(),
                         FullName = payload.GivenName,
                         Email = payload.Email,
-                        RoleId = 2,
+                        RoleId = 1, // Regular User (not Admin)
+                        IsPremium = false,
+                        TierLevel = "free",
                         CreatedOn = DateTime.UtcNow,
                         IsActive = true,
                         IsDeleted = false,
                         IsTermAccepted = true,
                         PasswordHash = "",
                         IsGoogleSignIn = true,
+                        Status = "Active",
                     };
 
                     _context.Users.Add(user);
