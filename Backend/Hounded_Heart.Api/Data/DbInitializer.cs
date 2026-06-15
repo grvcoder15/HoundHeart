@@ -18,6 +18,85 @@ namespace Hounded_Heart.Api.Data
                 await context.SaveChangesAsync();
             }
 
+            // Seed Subscription Plans if missing
+            if (!await context.SubscriptionPlans.AnyAsync())
+            {
+                var plans = new List<SubscriptionPlan>
+                {
+                    new SubscriptionPlan
+                    {
+                        PlanId = Guid.NewGuid(),
+                        PlanName = "Free Member",
+                        Description = "Essential access to begin your HoundHeart journey",
+                        Price = 0.00m,
+                        Currency = "USD",
+                        BillingPeriod = "Forever",
+                        TierLevel = "free",
+                        StripePriceId = null,
+                        Features = "[\"Create and manage account\",\"Create and manage dog profile(s)\",\"Basic app access\",\"Access to newsletter and announcements\",\"Purchase books and merchandise\"]",
+                        Badge = null,
+                        SavingsText = null,
+                        DisplayOrder = 1,
+                        IsActive = true,
+                        CreatedOn = DateTime.UtcNow
+                    },
+                    new SubscriptionPlan
+                    {
+                        PlanId = Guid.NewGuid(),
+                        PlanName = "HoundHeart Plus",
+                        Description = "Advanced wellness and connection tools for dedicated members",
+                        Price = 9.99m,
+                        Currency = "USD",
+                        BillingPeriod = "monthly",
+                        TierLevel = "plus",
+                        StripePriceId = "price_1TgHoZ1CAX7d2eZrgU1c51Pb",
+                        Features = "[\"Includes all Free Member features\",\"Full app access\",\"Full Bonded Score access\",\"Wellness tracking tools\",\"Free digital and audio book\",\"Travel directory access\",\"Partner discounts and wearable connection\"]",
+                        Badge = "Most Popular",
+                        SavingsText = null,
+                        DisplayOrder = 2,
+                        IsActive = true,
+                        CreatedOn = DateTime.UtcNow
+                    },
+                    new SubscriptionPlan
+                    {
+                        PlanId = Guid.NewGuid(),
+                        PlanName = "HoundHeart Plus",
+                        Description = "Advanced wellness and connection tools for dedicated members",
+                        Price = 79.99m,
+                        Currency = "USD",
+                        BillingPeriod = "yearly",
+                        TierLevel = "plus",
+                        StripePriceId = "price_1TgI9r1CAX7d2eZrFT5sBfQz",
+                        Features = "[\"Includes all Free Member features\",\"Full app access\",\"Full Bonded Score access\",\"Wellness tracking tools\",\"Free digital and audio book\",\"Travel directory access\",\"Partner discounts and wearable connection\"]",
+                        Badge = "Best Value",
+                        SavingsText = "Save $40/year (17% off)",
+                        DisplayOrder = 3,
+                        IsActive = true,
+                        CreatedOn = DateTime.UtcNow
+                    },
+                    new SubscriptionPlan
+                    {
+                        PlanId = Guid.NewGuid(),
+                        PlanName = "HoundHeart Premium",
+                        Description = "The complete premium lifestyle package for top-tier members",
+                        Price = 149.99m,
+                        Currency = "USD",
+                        BillingPeriod = "yearly",
+                        TierLevel = "premium",
+                        StripePriceId = "price_1TgHps1CAX7d2eZrYmgLh6m6",
+                        Features = "[\"Includes all HoundHeart Plus features\",\"Paperback HoundHeart book\",\"Official HoundHeart T-shirt\",\"$10 donation to animal welfare charities\",\"Travel Club access and premium discounts\",\"Premium Member badge in profile\"]",
+                        Badge = "Best Value",
+                        SavingsText = "Yearly Only",
+                        DisplayOrder = 4,
+                        IsActive = true,
+                        CreatedOn = DateTime.UtcNow
+                    }
+                };
+
+                await context.SubscriptionPlans.AddRangeAsync(plans);
+                await context.SaveChangesAsync();
+            }
+
             // Seed spiritual traits (insert only missing names)
             var now = DateTime.UtcNow;
 

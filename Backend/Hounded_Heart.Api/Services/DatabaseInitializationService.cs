@@ -49,6 +49,12 @@ namespace Hounded_Heart.Api.Services
                             SET ""TierLevel"" = 'free'
                             WHERE ""TierLevel"" IS NULL OR btrim(""TierLevel"") = '';
                         ", stoppingToken);
+
+                        // Ensure SubscriptionPlans table has TierLevel column
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""SubscriptionPlans""
+                            ADD COLUMN IF NOT EXISTS ""TierLevel"" character varying(20) NOT NULL DEFAULT 'plus';
+                        ", stoppingToken);
                     }
 
                     // Seed Database
