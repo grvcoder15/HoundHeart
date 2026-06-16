@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Hounded_Heart.Models.Data;
 using Hounded_Heart.Models.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Hounded_Heart.Services.Services
 {
@@ -76,12 +78,24 @@ namespace Hounded_Heart.Services.Services
         private readonly IPetPaceService _petPaceService;
         private readonly IAppleHealthService _appleHealthService;
         private readonly AppDbContext _context;
+        private readonly ISmsService _smsService;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<BondSyncService> _logger;
 
-        public BondSyncService(IPetPaceService petPaceService, IAppleHealthService appleHealthService, AppDbContext context)
+        public BondSyncService(
+            IPetPaceService petPaceService, 
+            IAppleHealthService appleHealthService, 
+            AppDbContext context,
+            ISmsService smsService,
+            IConfiguration configuration,
+            ILogger<BondSyncService> logger)
         {
             _petPaceService = petPaceService;
             _appleHealthService = appleHealthService;
             _context = context;
+            _smsService = smsService;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         private async Task<Guid> ResolveWellnessDogIdAsync(Guid userId, Guid requestedDogId)
@@ -448,6 +462,11 @@ namespace Hounded_Heart.Services.Services
 
             if (!exists)
             {
+                var previousRecord = await _context.SyncScoreRecords
+                    .Where(s => s.UserId == userId && s.DogId == dogId)
+                    .OrderByDescending(s => s.CalculatedAt)
+                    .FirstOrDefaultAsync();
+
                 var syncScoreRecord = new SyncScoreRecord
                 {
                     Id = Guid.NewGuid(),
@@ -464,6 +483,29 @@ namespace Hounded_Heart.Services.Services
 
                 _context.SyncScoreRecords.Add(syncScoreRecord);
                 await _context.SaveChangesAsync();
+
+                if (previousRecord != null)
+                {
+                    int diff = roundedScore - previousRecord.Score;
+                    if (Math.Abs(diff) >= 10)
+                    {
+                        try
+                        {
+                            var toNumber = _configuration["Twilio:ToNumber"];
+                            if (!string.IsNullOrEmpty(toNumber))
+                            {
+                                string msg = diff >= 10 
+                                    ? "🌟 HoundHeart: Your Bond Score increased! You and your pet are more in sync today."
+                                    : "⚠️ HoundHeart: Your Bond Score dropped. Your pet may need extra attention today.";
+                                await _smsService.SendSms(userId, toNumber, "system", msg);
+                            }
+                        }
+                        catch (Exception smsEx)
+                        {
+                            _logger.LogWarning(smsEx, "Failed to send Bond Score SMS.");
+                        }
+                    }
+                }
             }
 
             var details = GetScoreDescription(roundedScore);
