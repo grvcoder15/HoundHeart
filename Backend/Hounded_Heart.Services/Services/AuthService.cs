@@ -61,7 +61,7 @@ namespace Hounded_Heart.Services.Services
                         UserId = Guid.NewGuid(),
                         FullName = payload.GivenName,
                         Email = payload.Email,
-                        RoleId = 2, // 2 = Regular User, 1 = Admin only
+                        RoleId = 1, // 1 = Regular User, 2 = Premium/Admin
                         IsPremium = false,
                         TierLevel = "free",
                         CreatedOn = DateTime.UtcNow,
@@ -88,10 +88,10 @@ namespace Hounded_Heart.Services.Services
                         return ResponseHelper.Fail<object>("Your account is banned.", 403);
                     }
 
-                    // 🔧 Fix: if existing Google user was mistakenly assigned RoleId=1 (Admin), correct it to 2 (Regular User)
-                    if (user.IsGoogleSignIn && user.RoleId == 1)
+                    // 🔧 Fix: Revert accidental upgrades. Anyone who was mistakenly given RoleId=2 (Premium/Admin) via Google login should be reset to 1.
+                    if (user.IsGoogleSignIn && user.RoleId == 2 && !user.IsPremium)
                     {
-                        user.RoleId = 2;
+                        user.RoleId = 1;
                         await _context.SaveChangesAsync();
                     }
                 }
