@@ -1490,6 +1490,16 @@ const DashboardPage = () => {
         interactionType: a.interactionType || 'Checkbox'
       }));
 
+      // ✅ KEY FIX: Seed todayIds with any activity the backend already flagged as Completed=true.
+      // GetAllBondingActivities cross-checks RitualLogs, ChakraLogs, CheckIns and UserBondingActivities.
+      // Without this, rituals completed via Daily Rituals tab are never marked in Activities tab.
+      activitiesWithProps.forEach(a => {
+        const backendCompleted = a.completed === true || a.Completed === true;
+        if (backendCompleted) {
+          todayIds.add(normalizeId(a.activityId));
+        }
+      });
+
       // Fallback: if Chakra was completed in this session/day, keep it marked.
       const chakraLocalKey = `chakraSyncCompletedDate:${currentUserId}`;
       const chakraCompletedDate = localStorage.getItem(chakraLocalKey);
