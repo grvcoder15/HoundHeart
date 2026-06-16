@@ -151,34 +151,11 @@ const DashboardPage = () => {
 
       const summary = summaryResponse?.data || {};
       const deviceSummary = summary.device || {};
-      let newBaseline = summary.baseline || null;
-      let newStress = summary.stressStatus || null;
-      let newSync = summary.syncScore || null;
+      const newBaseline = summary.baseline || null;
+      const newStress = summary.stressStatus || null;
+      const newSync = summary.syncScore || null;
       const newAlerts = Array.isArray(summary.alerts) ? summary.alerts : [];
       const newDog = summary.dogVitals || null;
-
-      // --- DEMO FALLBACK (Always Look Good) ---
-      // If Fitbit hasn't synced real data yet, use these realistic numbers for client demos
-      if (newBaseline) {
-        newBaseline.avgHeartRate = newBaseline.avgHeartRate || 72;
-        newBaseline.avgHRV = newBaseline.avgHRV || 48.5;
-      } else {
-        newBaseline = { avgHeartRate: 72, avgHRV: 48.5, humanBaselineEstablished: true, avgSleepScore: 420 };
-      }
-      
-      if (newStress) {
-        newStress.currentHRV = newStress.currentHRV || 46.2;
-      } else {
-        newStress = { currentHRV: 46.2, isStressed: false };
-      }
-      
-      if (newSync) {
-        newSync.humanHRV = newSync.humanHRV || 47.1;
-        newSync.hrvStabilityScore = newSync.hrvStabilityScore || 85;
-      } else {
-        newSync = { humanHRV: 47.1, hrvStabilityScore: 85 };
-      }
-      // ----------------------------------------
       const stats = summary.stats || {};
       const ritualConsistencyData = stats.ritualConsistency || { count: 0, total: 7 };
       const journalCount = stats?.journalEntries?.count ?? 0;
