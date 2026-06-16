@@ -484,7 +484,7 @@ const DashboardPage = () => {
       try {
         setIsLoadingPoints(true);
         // Use getBondingActivities instead of getAllPoints to get the actual rituals with IDs
-        const points = await apiService.getBondingActivities();
+        const points = await apiService.getBondingActivities(userId);
 
         const pointsMap = {};
         const idMap = {};
@@ -762,7 +762,7 @@ const DashboardPage = () => {
 
       // Parallel fetch: Activities + Today's Status
       const [activitiesResponse, todayResponse] = await Promise.all([
-        apiService.getBondingActivities(),
+        apiService.getBondingActivities(userId),
         apiService.getUserActivitiesToday(userId)
       ]);
 

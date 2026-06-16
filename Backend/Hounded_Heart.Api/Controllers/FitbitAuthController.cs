@@ -24,6 +24,7 @@ namespace Hounded_Heart.Api.Controllers
         private readonly IWeatherService _weatherService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly AppDbContext _context;
+        private readonly ISmsService _smsService;
 
         public FitbitAuthController(
             IFitbitTokenService fitbitTokenService,
@@ -35,7 +36,8 @@ namespace Hounded_Heart.Api.Controllers
             IVitalsService vitalsService,
             IWeatherService weatherService,
             IServiceScopeFactory scopeFactory,
-            AppDbContext context)
+            AppDbContext context,
+            ISmsService smsService)
         {
             _fitbitTokenService = fitbitTokenService;
             _userRepository = userRepository;
@@ -47,6 +49,7 @@ namespace Hounded_Heart.Api.Controllers
             _weatherService = weatherService;
             _scopeFactory = scopeFactory;
             _context = context;
+            _smsService = smsService;
 
             // Fitbit API requires a User-Agent header
             if (!_httpClient.DefaultRequestHeaders.Contains("User-Agent"))
@@ -192,6 +195,19 @@ namespace Hounded_Heart.Api.Controllers
                     _logger.LogInformation("Starting initial Fitbit sync for user {UserId} after authorization", userId);
                     // Run it in the background so the user doesn't wait for the API call to finish
                     _ = Task.Run(async () => await SyncUserFitbitDataInternal(user));
+                }
+
+                try
+                {
+                    var toNumber = _configuration["Twilio:ToNumber"];
+                    if (!string.IsNullOrEmpty(toNumber) && Guid.TryParse(userId, out var smsUserId))
+                    {
+                        await _smsService.SendSms(smsUserId, toNumber, "system", "💙 HoundHeart: Your Fitbit is now connected! We'll start monitoring your health data.");
+                    }
+                }
+                catch (Exception smsEx)
+                {
+                    _logger.LogWarning(smsEx, "Failed to send Fitbit connected SMS");
                 }
 
                 return Ok(new

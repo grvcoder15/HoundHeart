@@ -1133,9 +1133,10 @@ class ApiService {
     }
   }
 
-  async getBondingActivities() {
+  async getBondingActivities(userId) {
     try {
-      const response = await this.makeRequest('/BondingActivities/GetAllBondingActivities', {
+      const url = userId ? `/BondingActivities/GetAllBondingActivities?userId=${userId}` : '/BondingActivities/GetAllBondingActivities';
+      const response = await this.makeRequest(url, {
         method: 'GET',
       });
       return response;

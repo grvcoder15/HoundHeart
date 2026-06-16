@@ -20,13 +20,15 @@ namespace Hounded_Heart.Api.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<FitBarkController> _logger;
+        private readonly ISmsService _smsService;
 
-        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger)
+        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger, ISmsService smsService)
         {
             _fitBarkService = fitBarkService;
             _context = context;
             _configuration = configuration;
             _logger = logger;
+            _smsService = smsService;
         }
 
         [HttpGet("auth/authorize")]
@@ -64,6 +66,19 @@ namespace Hounded_Heart.Api.Controllers
             if (!connected)
             {
                 return Content("<html><body><h3>FitBark authorization failed.</h3></body></html>", "text/html");
+            }
+
+            try
+            {
+                var toNumber = _configuration["Twilio:ToNumber"];
+                if (!string.IsNullOrEmpty(toNumber))
+                {
+                    await _smsService.SendSms(Guid.Empty, toNumber, "system", "🐾 HoundHeart: Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send FitBark connected SMS");
             }
 
             // Auto-fetch and save dog details after successful token exchange
@@ -127,6 +142,19 @@ namespace Hounded_Heart.Api.Controllers
             if (!connected)
             {
                 return BadRequest(new { success = false, message = "Failed to exchange FitBark authorization code." });
+            }
+
+            try
+            {
+                var toNumber = _configuration["Twilio:ToNumber"];
+                if (!string.IsNullOrEmpty(toNumber))
+                {
+                    await _smsService.SendSms(Guid.Empty, toNumber, "system", "🐾 HoundHeart: Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send FitBark connected SMS");
             }
 
             // Auto-fetch and save dog details after successful token exchange

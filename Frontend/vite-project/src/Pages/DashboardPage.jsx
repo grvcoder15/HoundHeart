@@ -703,7 +703,7 @@ const DashboardPage = () => {
 
       if (!activitiesList || activitiesList.length === 0) {
         const [activitiesResponse, todayResponse] = await Promise.all([
-          apiService.getBondingActivities(),
+          apiService.getBondingActivities(currentUserId),
           apiService.getUserActivitiesToday(currentUserId, new Date().toISOString())
         ]);
 
@@ -1185,7 +1185,7 @@ const DashboardPage = () => {
       try {
         setIsLoadingPoints(true);
         // Use getBondingActivities instead of getAllPoints to get the actual rituals with IDs
-        const points = await apiService.getBondingActivities();
+        const points = await apiService.getBondingActivities(currentUserId);
 
         const pointsMap = {};
         const idMap = {};
@@ -1434,7 +1434,7 @@ const DashboardPage = () => {
 
       // Parallel fetch: Activities + Today's Status
       const [activitiesResponse, todayResponse] = await Promise.all([
-        apiService.getBondingActivities(),
+        apiService.getBondingActivities(currentUserId),
         apiService.getUserActivitiesToday(currentUserId, new Date().toISOString())
       ]);
 
@@ -4878,41 +4878,46 @@ const DashboardPage = () => {
                       // Check by ID (string/int safe comparison needed?)
                       // Assuming IDs are Guids (strings) in both Activity and UserLog
                       const activityId = normalizeId(activity.activityId);
-                      const isCompleted = completedActivityIds.has(activityId);
+                      const isCompleted = completedActivityIds.has(activityId) || activity.completed || activity.Completed;
 
                       const handleActivityClick = () => {
                         // 1. Prevent action if already completed (Read-Only)
                         if (isCompleted) return;
 
-                        // 2. Handle Logic based on InteractionType
+                        // 2. Custom tab routing based on activity name
+                        if (activity.activityName === 'Chakra Sync') {
+                          setActiveTab('bond-building');
+                          setBondTab('Chakra-sync');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          return;
+                        }
+                        
+                        if (activity.activityName === 'Energy Check-in') {
+                          setActiveTab('bond-building');
+                          setBondTab('checkins');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          return;
+                        }
+                        
+                        const ritualActivities = [
+                          'Bedtime Blessing', 
+                          'Morning Intention Setting', 
+                          'Mindful Walk', 
+                          'Gratitude Moment', 
+                          'Evening Reflection'
+                        ];
+                        
+                        if (ritualActivities.includes(activity.activityName)) {
+                          setActiveTab('bond-building');
+                          setBondTab('daily-rituals');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          return;
+                        }
+
+                        // 3. Handle Logic based on InteractionType
                         if (interactionType === 'Redirect') {
-                          // Use legacy name mapping for specific routes if needed
-                          if (activity.activityName === 'Chakra Sync') {
-                            // Switch to Bond Building -> Chakra Rituals
-                            // Setup state for Chakra Rituals view if needed, or just navigate
-                            // Since it's on the same page, we might need to change tabs/state
-                            setActiveTab('bond-building');
-                            setBondTab('Chakra-sync');
-                            // If it relies on a route, navigate there. 
-                            // But DashboardPage seems to handle all tabs.
-                            // Let's assume we just switch tabs.
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                            return;
-                          }
                           if (activity.activityName === 'Synchronized Breathing' || activity.activityName === 'Meditation Together') {
                             setActiveTab('meditation');
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                            return;
-                          }
-                          if (activity.activityName === 'Energy Check-in') {
-                            setActiveTab('bond-building');
-                            setBondTab('checkins');
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                            return;
-                          }
-                          if (activity.activityName === 'Bedtime Blessing') {
-                            setActiveTab('bond-building');
-                            setBondTab('daily-rituals');
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                             return;
                           }

@@ -98,8 +98,11 @@ namespace Hounded_Heart.Api.Controllers
                 var checkInsToday = checkInSummaries.Where(x => x.CreatedOn.Date == today).ToList();
                 bool didCheckInToday = checkInsToday.Any();
 
-                double score = rules["BaseScore"] + dailyRitualPoints + activityScoresSum;
-                double currentPositivePoints = 0;
+                var dog = await _context.Dogs.AsNoTracking().FirstOrDefaultAsync(d => d.UserId == userId);
+                double baseScoreUsed = dog?.CurrentScore ?? rules["BaseScore"];
+
+                double score = baseScoreUsed;
+                double currentPositivePoints = dailyRitualPoints;
                 double currentNegativePoints = 0;
 
                 // --- 1. TIME SPENT ---
@@ -201,9 +204,13 @@ namespace Hounded_Heart.Api.Controllers
                     .ToListAsync();
                 
                 double weeklySum = weeklyPoints.Sum(s => (double?)(s ?? 0) ?? 0);
+                double todayAdjustments = currentPositivePoints + currentNegativePoints;
 
                 var result = new
                 {
+                    BaseScoreFromDB = baseScoreUsed,
+                    TodayAdjustments = todayAdjustments,
+                    FinalScore = score,
                     BondedScore = score,
                     BondLevel = bondLevel,
                     RitualDaysCount = ritualBonusDays, // Showing Daily Ritual streak

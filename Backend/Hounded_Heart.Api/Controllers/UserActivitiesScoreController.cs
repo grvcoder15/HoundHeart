@@ -75,6 +75,22 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     await _context.UserActivitiesScores.AddRangeAsync(scoreEntities);
                     await _context.UserBondingActivities.AddRangeAsync(bondingEntities);
+
+                    try
+                    {
+                        var dog = await _context.Dogs.FirstOrDefaultAsync(d => d.UserId == request.UserId);
+                        if (dog != null)
+                        {
+                            double totalActivityPoints = scoreEntities.Sum(s => s.Score ?? 0);
+                            dog.CurrentScore = Math.Min(100, Math.Max(0, dog.CurrentScore + totalActivityPoints));
+                            _context.Dogs.Update(dog);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[UserActivitiesScoreController] Error updating dog score: {ex.Message}");
+                    }
+
                     await _context.SaveChangesAsync();
                 }
 
