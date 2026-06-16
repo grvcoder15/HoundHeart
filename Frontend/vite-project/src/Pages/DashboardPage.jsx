@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import toast from '../services/toastService';
+import { useNotificationPopup } from '../hooks/useNotificationPopup';
 
 // Deep comparison utility (used for wellness live-data polling)
 const deepEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -48,6 +49,7 @@ const ACTIVITY_CATEGORIES = {
 };
 
 const DashboardPage = () => {
+  const { showPopup } = useNotificationPopup();
   const navigate = useNavigate();
   const userId = apiService.getCurrentUserId();
   const [isVisible, setIsVisible] = useState({});
@@ -172,6 +174,13 @@ const DashboardPage = () => {
       if (!deepEqual(wlPrevRef.current.baseline, newBaseline)) {
         setWlBaseline(newBaseline);
         wlPrevRef.current.baseline = newBaseline;
+        
+        if (newBaseline?.humanBaselineEstablished || newBaseline?.dogBaselineEstablished) {
+          if (!localStorage.getItem('baseline_formed_popup_shown')) {
+            showPopup('baseline_formed');
+            localStorage.setItem('baseline_formed_popup_shown', 'true');
+          }
+        }
       }
 
       if (wlPrevRef.current.vitalsCount !== nextVitalsCount) {
@@ -1247,7 +1256,20 @@ const DashboardPage = () => {
       const score = data.BondedScore !== undefined ? data.BondedScore : (data.bondedScore || 50);
       const level = data.BondLevel || data.bondLevel || 'New Connection ✿';
 
-      setBondedScore(Math.round(score));
+      const currentScoreInt = Math.round(score);
+      setBondedScore(currentScoreInt);
+      
+      const lastKnownScore = localStorage.getItem('last_known_bond_score');
+      if (lastKnownScore) {
+        const diff = currentScoreInt - parseInt(lastKnownScore, 10);
+        if (diff >= 10) {
+          showPopup('score_increased');
+        } else if (diff <= -10) {
+          showPopup('score_decreased');
+        }
+      }
+      localStorage.setItem('last_known_bond_score', currentScoreInt.toString());
+
       setBondLevel(level);
       setWeeklyProgress(data.WeeklyProgress || data.weeklyProgress || 0);
       setRitualDays(data.RitualDaysCount || data.ritualDaysCount || 0);
@@ -1993,7 +2015,7 @@ const DashboardPage = () => {
 
   const handleUpgrade = () => {
     console.log('Upgrade to Premium clicked');
-    setShowPricingModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePricingModal = () => {

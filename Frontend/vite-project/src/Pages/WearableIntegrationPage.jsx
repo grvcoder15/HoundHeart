@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import toastService from '../services/toastService';
 import apiService from '../services/apiService';
+import { useNotificationPopup } from '../hooks/useNotificationPopup';
 
 const WearableIntegrationPage = () => {
+    const { showPopup } = useNotificationPopup();
     const navigate = useNavigate();
     
     const [devices, setDevices] = useState({
@@ -116,6 +118,7 @@ const WearableIntegrationPage = () => {
                             }
                             
                             toastService.success('✅ Fitbit connected successfully! Data sync starting...');
+                            showPopup('fitbit_connected');
                         }
                     } catch (error) {
                         // Still checking...

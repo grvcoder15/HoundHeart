@@ -29,15 +29,18 @@ import TravelClubPage from './Pages/TravelClubPage';
 import WearableMarketplacePage from './Pages/WearableMarketplacePage';
 import OnlineStorePage from './Pages/OnlineStorePage';
 import BooksLibraryPage from './Pages/BooksLibraryPage';
+import { NotificationPopupProvider } from './hooks/useNotificationPopup';
+import NotificationPopup from './components/NotificationPopup';
 // import HoundheartLogo from "./assets/images/Houndheart_logo.svg";
 
 const App = () => {
   return (
-    <div>
-      {/* <img src={HoundheartLogo} alt="HoundHeart Logo" />; */}
-      <Router>
-        <Routes>
-          {/* Not under protected routing */}
+    <NotificationPopupProvider>
+      <div>
+        {/* <img src={HoundheartLogo} alt="HoundHeart Logo" />; */}
+        <Router>
+          <Routes>
+            {/* Not under protected routing */}
           <Route path="/" element={<HoundHeartLandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -77,7 +80,9 @@ const App = () => {
           <Route path="/terms-of-use" element={<PrivacyPolicyPage key="terms-of-use" showHeaderFooter={true} initialTab="houndheart" />} />
         </Routes>
       </Router>
+      <NotificationPopup />
     </div>
+    </NotificationPopupProvider>
   );
 };
 

@@ -390,7 +390,7 @@ const CommunityPage = () => {
   }, [navigate]);
 
   const handleUpgrade = () => {
-    setShowPricingModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePricingModal = () => {
@@ -444,7 +444,7 @@ const CommunityPage = () => {
       if (circleJoinsTrialUsed >= 2) {
         showToast('Free tier users can join up to 2 circles. Upgrade to Plus for unlimited circle access!', 'error');
         setJoinCircleModal({ isOpen: false, circleId: null, circleName: '' });
-        setShowPricingModal(true);
+        navigate('/subscription');
         return;
       }
     }
@@ -535,7 +535,7 @@ const CommunityPage = () => {
       
       if (communityTrialUsed >= 2) {
         showToast('Free tier users can share up to 2 posts. Upgrade to Plus for unlimited sharing!', 'error');
-        setShowPricingModal(true);
+        navigate('/subscription');
         return;
       }
     }
