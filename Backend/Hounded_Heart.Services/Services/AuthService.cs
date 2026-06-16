@@ -61,7 +61,7 @@ namespace Hounded_Heart.Services.Services
                         UserId = Guid.NewGuid(),
                         FullName = payload.GivenName,
                         Email = payload.Email,
-                        RoleId = 1, // Regular User (not Admin)
+                        RoleId = 2, // 2 = Regular User, 1 = Admin only
                         IsPremium = false,
                         TierLevel = "free",
                         CreatedOn = DateTime.UtcNow,
@@ -86,6 +86,13 @@ namespace Hounded_Heart.Services.Services
                     if (user.Status == "Banned")
                     {
                         return ResponseHelper.Fail<object>("Your account is banned.", 403);
+                    }
+
+                    // 🔧 Fix: if existing Google user was mistakenly assigned RoleId=1 (Admin), correct it to 2 (Regular User)
+                    if (user.IsGoogleSignIn && user.RoleId == 1)
+                    {
+                        user.RoleId = 2;
+                        await _context.SaveChangesAsync();
                     }
                 }
 
