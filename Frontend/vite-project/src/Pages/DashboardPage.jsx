@@ -793,6 +793,7 @@ const DashboardPage = () => {
       await fetchRituals();
       fetchDashboardStats();
       fetchBondedScore(); // Refresh score circle immediately
+      loadBondingActivities(); // Refresh activities tab immediately
 
       if (bonusAwarded) {
         setDailyBonusEarned(true);
@@ -1319,6 +1320,8 @@ const DashboardPage = () => {
         fetchBondedScore();
         fetchDashboardStats();
       }
+      
+      loadBondingActivities(); // Refresh activities tab immediately
 
       // Refresh ratings from server to reflect persisted values
       const serverCheckIns = await apiService.getUserCheckIns(userId);
