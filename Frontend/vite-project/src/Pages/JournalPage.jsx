@@ -760,7 +760,7 @@ const JournalPage = () => {
     
     if (normalizedTier === 'free' && journalEntries.length >= 5) {
       toastService.error('Free tier users can create up to 5 memories. Upgrade to Plus or Premium for unlimited memories!');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -841,7 +841,7 @@ const JournalPage = () => {
 
   const handleUpgrade = () => {
     console.log('Upgrade to Premium clicked');
-    setShowPricingModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePricingModal = () => {

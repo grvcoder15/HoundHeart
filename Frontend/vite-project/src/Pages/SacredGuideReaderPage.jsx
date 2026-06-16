@@ -167,8 +167,11 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     // ─── Loading state ───
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+                <Navbar currentPage="sacred-guide" />
+                <div className="flex-grow flex items-center justify-center">
+                    <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                </div>
             </div>
         );
     }
@@ -176,7 +179,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <Navbar currentPage="sacred-guide" onUpgrade={() => setShowPricingModal(true)} />
+            <Navbar currentPage="sacred-guide" onUpgrade={() => navigate('/subscription')} />
 
             {/* Sub-header bar */}
             <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -315,7 +318,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                                                         Upgrade to Premium to unlock the full {totalPages}-page Sacred Guide and continue your journey!
                                                     </p>
                                                     <button
-                                                        onClick={() => setShowPricingModal(true)}
+                                                        onClick={() => navigate('/subscription')}
                                                         className="w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform hover:scale-105"
                                                         style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)' }}
                                                     >

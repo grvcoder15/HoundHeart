@@ -61,7 +61,7 @@ const AskExpertPage = () => {
        const user = JSON.parse(localStorage.getItem('user') || '{}');
        const rolePremium = user.roleId === 2 || user.RoleId === 2;
        if (!(hasPremiumAccess || rolePremium)) {
-          setShowPricingModal(true);
+          navigate('/subscription');
           return;
        }
     }

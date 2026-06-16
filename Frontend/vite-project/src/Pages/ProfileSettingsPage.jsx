@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
 import apiService from '../services/apiService';
 import toastService from '../services/toastService';
+import { useNotificationPopup } from '../hooks/useNotificationPopup';
 
 const DEVICE_API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const ProfileSettingsPage = () => {
   console.log('ProfileSettingsPage component rendered');
+  const { showPopup } = useNotificationPopup();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -85,9 +87,11 @@ const ProfileSettingsPage = () => {
         toastService.warning('FitBark connected, but no linked dogs found. Please verify your FitBark account.');
       } else {
         toastService.success(`FitBark connected successfully. Found ${dogs.length} linked dog(s).`);
+        showPopup('fitbark_connected');
       }
     } else {
       toastService.success('FitBark connected successfully.');
+      showPopup('fitbark_connected');
     }
   };
 
@@ -124,7 +128,7 @@ const ProfileSettingsPage = () => {
   const handlePetpaceConnect = async () => {
     if (!hasDeviceConnectivityAccess) {
       toastService.error('Device connectivity is available for Plus and Premium members only.');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -185,7 +189,7 @@ const ProfileSettingsPage = () => {
   const handlePetpaceDisconnect = () => {
     if (!hasDeviceConnectivityAccess) {
       toastService.error('Device connectivity is available for Plus and Premium members only.');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -256,7 +260,7 @@ const ProfileSettingsPage = () => {
   const handleFitbarkConnect = async () => {
     if (!hasDeviceConnectivityAccess) {
       toastService.error('Device connectivity is available for Plus and Premium members only.');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -314,7 +318,7 @@ const ProfileSettingsPage = () => {
   const handleFitbarkDisconnect = async () => {
     if (!hasDeviceConnectivityAccess) {
       toastService.error('Device connectivity is available for Plus and Premium members only.');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -338,7 +342,7 @@ const ProfileSettingsPage = () => {
     try {
       if (!hasDeviceConnectivityAccess) {
         toastService.error('Device connectivity is available for Plus and Premium members only.');
-        setShowPricingModal(true);
+        navigate('/subscription');
         return;
       }
 
@@ -380,6 +384,7 @@ const ProfileSettingsPage = () => {
               }
               
               toastService.success('✅ Fitbit connected successfully! Data sync starting...');
+              showPopup('fitbit_connected');
             }
           } catch (error) {
             // Still checking...
@@ -407,7 +412,7 @@ const ProfileSettingsPage = () => {
   const handleFitbitDisconnect = async () => {
     if (!hasDeviceConnectivityAccess) {
       toastService.error('Device connectivity is available for Plus and Premium members only.');
-      setShowPricingModal(true);
+      navigate('/subscription');
       return;
     }
 
@@ -644,7 +649,7 @@ const ProfileSettingsPage = () => {
 
   const handleUpgrade = () => {
     console.log('Upgrade clicked');
-    setShowPremiumModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePremiumModal = () => {
@@ -653,7 +658,7 @@ const ProfileSettingsPage = () => {
 
   const handleUpgradeClick = () => {
     console.log('Upgrade to Premium clicked');
-    setShowPricingModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePricingModal = () => {
@@ -1047,7 +1052,7 @@ const ProfileSettingsPage = () => {
     return (initials || 'U').slice(0, 2);
   })();
 
-  const membershipTier = (() => {
+  const [membershipTier, setMembershipTier] = useState(() => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const tier = String(user?.tierLevel || '').toLowerCase().trim();
@@ -1062,7 +1067,33 @@ const ProfileSettingsPage = () => {
     } catch {
       return 'free';
     }
-  })();
+  });
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const response = await apiService.makeRequest('/Subscription/current', { method: 'GET' });
+        const subData = response && Object.prototype.hasOwnProperty.call(response, 'data') ? response.data : response;
+
+        if (!subData) return;
+        
+        const status = (subData.status || subData.Status || '').toString().toLowerCase();
+        const periodEnd = subData.currentPeriodEnd || subData.CurrentPeriodEnd;
+        const endDate = periodEnd ? new Date(periodEnd) : null;
+        const now = new Date();
+        const isActive = (status === 'active' || status === 'trialing') && (!endDate || endDate >= now);
+
+        if (isActive) {
+            const planName = String(subData?.planName || subData?.PlanName || '').toLowerCase();
+            if (planName.includes('premium')) setMembershipTier('premium');
+            else if (planName.includes('plus')) setMembershipTier('plus');
+        }
+      } catch (error) {
+        console.error('Error fetching subscription status in profile:', error);
+      }
+    };
+    fetchSubscription();
+  }, []);
 
   const hasDeviceConnectivityAccess = membershipTier === 'plus' || membershipTier === 'premium';
 

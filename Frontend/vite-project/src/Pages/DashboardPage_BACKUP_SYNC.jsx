@@ -1251,7 +1251,7 @@ const DashboardPage = () => {
 
   const handleUpgrade = () => {
     console.log('Upgrade to Premium clicked');
-    setShowPricingModal(true);
+    navigate('/subscription');
   };
 
   const handleClosePricingModal = () => {

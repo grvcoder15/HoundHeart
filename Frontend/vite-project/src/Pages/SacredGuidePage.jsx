@@ -19,7 +19,7 @@ const SacredGuidePage = () => {
     const [showPreview, setShowPreview] = useState(false);
     const [guideSalesEnabled, setGuideSalesEnabled] = useState(true);
 
-    const handleUpgrade = () => setShowPricingModal(true);
+    const handleUpgrade = () => navigate('/subscription');
 
     // Load user tier + active guide + waitlist status + check if sales enabled
     useEffect(() => {
@@ -81,8 +81,11 @@ const SacredGuidePage = () => {
     // Show loading spinner while fetching guide
     if (pageLoading) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+                <Navbar currentPage="sacred-guide" />
+                <div className="flex-grow flex items-center justify-center">
+                    <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                </div>
             </div>
         );
     }
@@ -205,7 +208,7 @@ const SacredGuidePage = () => {
                         {isLive ? (
                             <>
                                 <button
-                                    onClick={() => setShowPricingModal(true)}
+                                    onClick={() => navigate('/subscription')}
                                     className="flex items-center gap-2 px-4 py-3 rounded-full font-bold text-base transition-all duration-200 hover:scale-105 shadow-xl"
                                     style={{
                                         background: 'white',
