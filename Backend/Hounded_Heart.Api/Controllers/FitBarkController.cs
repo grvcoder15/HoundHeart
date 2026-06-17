@@ -23,15 +23,17 @@ namespace Hounded_Heart.Api.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<FitBarkController> _logger;
+        private readonly IEmailService _emailService;
         private readonly ISmsService _smsService;
         private readonly IMemoryCache _memoryCache;
 
-        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger, ISmsService smsService, IMemoryCache memoryCache)
+        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger, IEmailService emailService, ISmsService smsService, IMemoryCache memoryCache)
         {
             _fitBarkService = fitBarkService;
             _context = context;
             _configuration = configuration;
             _logger = logger;
+            _emailService = emailService;
             _smsService = smsService;
             _memoryCache = memoryCache;
         }
@@ -45,6 +47,27 @@ namespace Hounded_Heart.Api.Controllers
             }
 
             return null;
+        }
+
+        private async Task SendFitBarkConnectedEmailAsync(Guid userId)
+        {
+            var user = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.UserId == userId)
+                .Select(u => new { u.Email, u.FullName })
+                .FirstOrDefaultAsync();
+
+            if (user == null || string.IsNullOrWhiteSpace(user.Email))
+            {
+                _logger.LogWarning("FitBark connected email skipped for user {UserId}: no email on file.", userId);
+                return;
+            }
+
+            await UserNotificationEmails.SendFitBarkConnectedAsync(
+                _emailService,
+                _logger,
+                user.Email,
+                user.FullName);
         }
 
         [HttpGet("auth/authorize")]
@@ -109,16 +132,11 @@ namespace Hounded_Heart.Api.Controllers
 
                 if (currentUserId.HasValue)
                 {
-                    var userEmail = await _context.Users
-                        .AsNoTracking()
-                        .Where(u => u.UserId == currentUserId.Value)
-                        .Select(u => u.Email)
-                        .FirstOrDefaultAsync();
-
-                    if (!string.IsNullOrWhiteSpace(userEmail))
-                    {
-                        await _smsService.SendSms(currentUserId.Value, userEmail, "system", "Your FitBark device is now connected! We'll start tracking your dog's activity.");
-                    }
+                    await SendFitBarkConnectedEmailAsync(currentUserId.Value);
+                }
+                else
+                {
+                    _logger.LogWarning("FitBark callback completed but user could not be resolved for email notification.");
                 }
             }
             catch (Exception ex)
@@ -199,16 +217,11 @@ namespace Hounded_Heart.Api.Controllers
 
                 if (effectiveUserId != Guid.Empty)
                 {
-                    var userEmail = await _context.Users
-                        .AsNoTracking()
-                        .Where(u => u.UserId == effectiveUserId)
-                        .Select(u => u.Email)
-                        .FirstOrDefaultAsync();
-
-                    if (!string.IsNullOrWhiteSpace(userEmail))
-                    {
-                        await _smsService.SendSms(effectiveUserId, userEmail, "system", "Your FitBark device is now connected! We'll start tracking your dog's activity.");
-                    }
+                    await SendFitBarkConnectedEmailAsync(effectiveUserId);
+                }
+                else
+                {
+                    _logger.LogWarning("FitBark code exchange completed but user could not be resolved for email notification.");
                 }
             }
             catch (Exception ex)

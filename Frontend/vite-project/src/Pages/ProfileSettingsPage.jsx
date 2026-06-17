@@ -114,7 +114,8 @@ const ProfileSettingsPage = () => {
     setFitbarkCodeSubmitting(true);
 
     try {
-      await apiService.exchangeFitBarkCode(trimmedCode);
+      const userId = apiService.getCurrentUserId();
+      await apiService.exchangeFitBarkCode(trimmedCode, null, userId);
       await finalizeFitbarkConnection();
     } catch (error) {
       console.error('Error submitting FitBark authorization code:', error);
@@ -267,7 +268,8 @@ const ProfileSettingsPage = () => {
     setFitbarkConnecting(true);
 
     try {
-      const response = await apiService.getFitBarkAuthUrl();
+      const userId = apiService.getCurrentUserId();
+      const response = await apiService.getFitBarkAuthUrl(userId);
       const authUrl = response?.data?.authUrl;
       const requiresManualCode = !!response?.data?.requiresManualCode;
 
