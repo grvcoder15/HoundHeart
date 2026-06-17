@@ -574,11 +574,11 @@ const SignupPage = () => {
             />
             <label htmlFor="terms" className="text-sm text-gray-600">
               I accept the{' '}
-              <button onClick={() => navigate('/terms-of-use')} className="text-purple-500 hover:text-purple-600 font-medium">
+              <button onClick={() => navigate('/terms-of-use', { state: { from: 'signup' } })} className="text-purple-500 hover:text-purple-600 font-medium">
                 Terms of Service
               </button>
               {' '}and{' '}
-              <button onClick={() => navigate('/privacy-policy')} className="text-purple-500 hover:text-purple-600 font-medium">
+              <button onClick={() => navigate('/privacy-policy', { state: { from: 'signup' } })} className="text-purple-500 hover:text-purple-600 font-medium">
                 Privacy Policy
               </button>
             </label>
