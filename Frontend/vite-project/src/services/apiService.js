@@ -1593,6 +1593,48 @@ class ApiService {
     }
   }
 
+  // ===== Courses APIs =====
+
+  async getCourses() {
+    try {
+      const response = await this.makeRequest('/courses', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get courses error:', error);
+      throw error;
+    }
+  }
+
+  async getCourseById(courseId) {
+    try {
+      const response = await this.makeRequest(`/courses/${courseId}`, { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get course by id error:', error);
+      throw error;
+    }
+  }
+
+  async joinCourseWaitlist(courseId) {
+    try {
+      const response = await this.makeRequest(`/courses/${courseId}/waitlist/join`, { method: 'POST' });
+      return response;
+    } catch (error) {
+      console.error('Join course waitlist error:', error);
+      throw error;
+    }
+  }
+
+  async getCourseWaitlistStatus(courseId) {
+    try {
+      const response = await this.makeRequest(`/courses/${courseId}/waitlist/status`, { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get course waitlist status error:', error);
+      return null;
+    }
+  }
+
   // ───────────────────────────────────────────────
   // Community Module Methods
   // ───────────────────────────────────────────────
