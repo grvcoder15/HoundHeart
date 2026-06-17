@@ -129,8 +129,12 @@ namespace Hounded_Heart.Services.Services
             await _notificationService.SendStressAlert(userId, suggestion, dogProfile ?? "Your dog", latestDog.State);
 
             // Send SMS if phone number exists
-            var humanProfile = await _context.HumanProfiles.FirstOrDefaultAsync(h => h.UserId == userId);
-            if (humanProfile != null && !string.IsNullOrEmpty(humanProfile.PhoneNumber))
+            var userEmail = await _context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+
+            if (!string.IsNullOrWhiteSpace(userEmail))
             {
                 var dogName = dogProfile ?? "Your dog";
                 string smsBody = $"HoundHeart Alert: {suggestion} " +
@@ -141,7 +145,7 @@ namespace Hounded_Heart.Services.Services
 
                 await _smsService.SendSms(
                     userId,
-                    humanProfile.PhoneNumber,
+                    userEmail,
                     "stress_alert",
                     smsBody,
                     newAlert.Id);

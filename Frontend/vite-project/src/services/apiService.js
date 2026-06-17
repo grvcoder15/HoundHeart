@@ -984,7 +984,7 @@ class ApiService {
       });
       return response;
     } catch (error) {
-      console.error('Chakra Sync error:', error);
+      console.error('Nerve Center Sync error:', error);
       throw error;
     }
   }
@@ -1009,7 +1009,7 @@ class ApiService {
       });
       return response;
     } catch (error) {
-      console.error('Complete Chakra Ritual error:', error);
+      console.error('Complete Nerve Center Ritual error:', error);
       throw error;
     }
   }
@@ -1173,9 +1173,10 @@ class ApiService {
     }
   }
 
-  async getFitBarkAuthUrl() {
+  async getFitBarkAuthUrl(userId = null) {
     try {
-      const response = await this.makeRequest('/fitbark/auth/authorize', {
+      const path = userId ? `/fitbark/auth/authorize?userId=${encodeURIComponent(userId)}` : '/fitbark/auth/authorize';
+      const response = await this.makeRequest(path, {
         method: 'GET'
       });
       return response;
@@ -1197,11 +1198,11 @@ class ApiService {
     }
   }
 
-  async exchangeFitBarkCode(code, state = null) {
+  async exchangeFitBarkCode(code, state = null, userId = null) {
     try {
       const response = await this.makeRequest('/fitbark/auth/exchange-code', {
         method: 'POST',
-        body: JSON.stringify({ code, state })
+        body: JSON.stringify({ code, state, userId })
       });
       return response;
     } catch (error) {

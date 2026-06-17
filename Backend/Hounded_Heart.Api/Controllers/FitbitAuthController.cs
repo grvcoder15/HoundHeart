@@ -199,15 +199,14 @@ namespace Hounded_Heart.Api.Controllers
 
                 try
                 {
-                    var toNumber = _configuration["Twilio:ToNumber"];
-                    if (!string.IsNullOrEmpty(toNumber) && Guid.TryParse(userId, out var smsUserId))
+                    if (Guid.TryParse(userId, out var smsUserId) && !string.IsNullOrWhiteSpace(user?.Email))
                     {
-                        await _smsService.SendSms(smsUserId, toNumber, "system", "💙 HoundHeart: Your Fitbit is now connected! We'll start monitoring your health data.");
+                        await _smsService.SendSms(smsUserId, user.Email!, "system", "Your Fitbit is now connected! We'll start monitoring your health data.");
                     }
                 }
                 catch (Exception smsEx)
                 {
-                    _logger.LogWarning(smsEx, "Failed to send Fitbit connected SMS");
+                    _logger.LogWarning(smsEx, "Failed to send Fitbit connected email notification");
                 }
 
                 return Ok(new
@@ -566,8 +565,36 @@ namespace Hounded_Heart.Api.Controllers
 
                 await _userRepository.UpdateUserAsync(user);
 
+                if (Guid.TryParse(userId, out var userGuid))
+                {
+                    var existingConnection = await _context.DeviceConnections
+                        .FirstOrDefaultAsync(dc => dc.UserId == userGuid && dc.DeviceType == "Fitbit");
+                    if (existingConnection != null)
+                    {
+                        existingConnection.IsConnected = false;
+                        existingConnection.DisconnectedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 // Clear cache
                 _memoryCache.Remove($"fitbit_expiry_{userId}");
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(user.Email))
+                    {
+                        await _smsService.SendSms(
+                            user.UserId,
+                            user.Email,
+                            "system",
+                            "Your Fitbit device has been disconnected successfully.");
+                    }
+                }
+                catch (Exception mailEx)
+                {
+                    _logger.LogWarning(mailEx, "Failed to send Fitbit disconnected email notification for user {UserId}", userId);
+                }
 
                 _logger.LogInformation("📱 Fitbit disconnected for user: {UserId}", userId);
 

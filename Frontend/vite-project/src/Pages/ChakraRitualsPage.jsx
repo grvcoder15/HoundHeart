@@ -142,20 +142,20 @@ const ChakraRitualsPage = () => {
         
         // Map chakra names to colors for display
         const colorMap = {
-          'Root Chakra': 'red',
-          'Sacral Chakra': 'orange',
-          'Solar Plexus': 'yellow',
-          'Heart Chakra': 'green',
-          'Throat Chakra': 'blue',
-          'Third Eye': 'indigo',
-          'Crown Chakra': 'purple'
+          'Root Nerve Center': 'red',
+          'Sacral Nerve Center': 'orange',
+          'Solar Plexus Nerve Center': 'yellow',
+          'Heart Nerve Center': 'green',
+          'Throat Nerve Center': 'blue',
+          'Insight Nerve Center': 'indigo',
+          'Crown Nerve Center': 'purple'
         };
         
         // Transform API response and fetch audio durations concurrently
         console.log('Fetching audio durations for all chakras...');
         const transformedChakras = await Promise.all(
           chakrasResponse.map(async (chakra, index) => {
-            console.log(`Processing chakra ${index}:`, chakra.name || chakra.chakraName);
+            console.log(`Processing Nerve Center ${index}:`, chakra.name || chakra.chakraName);
             
             // Fetch audio duration
             let durationSeconds = 0;
@@ -378,16 +378,16 @@ const ChakraRitualsPage = () => {
     newChakraAudio.addEventListener('loadedmetadata', () => {
       setChakraDuration(newChakraAudio.duration);
       setChakraAudioLoading(false);
-      console.log('Chakra audio loaded, duration:', newChakraAudio.duration);
+      console.log('Nerve Center audio loaded, duration:', newChakraAudio.duration);
     });
 
     // Wait for more data to be loaded for better seeking
     newChakraAudio.addEventListener('canplaythrough', () => {
-      console.log('Chakra audio can play through - ready for seeking');
+      console.log('Nerve Center audio can play through - ready for seeking');
     });
 
     newChakraAudio.addEventListener('loadeddata', () => {
-      console.log('Chakra audio data loaded - readyState:', newChakraAudio.readyState);
+      console.log('Nerve Center audio data loaded - readyState:', newChakraAudio.readyState);
     });
     
     newChakraAudio.addEventListener('timeupdate', () => {
@@ -449,7 +449,7 @@ const ChakraRitualsPage = () => {
       // Ignore: ABORTED errors (code 1), empty src (cleanup), or no error code
       if (hasSrc && errorCode && errorCode !== 1) {
         // Real errors: NETWORK (2), DECODE (3), SRC_NOT_SUPPORTED (4)
-        console.error('Chakra audio error:', e);
+        console.error('Nerve Center audio error:', e);
       }
       // Always update loading state
       setChakraAudioLoading(false);
@@ -769,7 +769,7 @@ const ChakraRitualsPage = () => {
     if (isChakraPlaying) {
       chakraAudio.pause();
       setIsChakraPlaying(false);
-      console.log('Chakra audio paused');
+      console.log('Nerve Center audio paused');
       
       // Save progress on pause
       if (saveProgressOnPauseRef.current && chakraAudio.currentTime > 0) {
@@ -796,7 +796,7 @@ const ChakraRitualsPage = () => {
         if (error.name === 'NotAllowedError') {
           alert('Please click play to start the audio. Your browser requires user interaction to play audio.');
         } else {
-          console.error('Error playing chakra audio:', error);
+          console.error('Error playing nerve center audio:', error);
           toastService.error('Failed to play audio. Please try again.');
         }
       }
@@ -996,10 +996,10 @@ const ChakraRitualsPage = () => {
           }`}
         >
           <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            Chakra Rituals
+            Nerve Center Rituals
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Align your energy with jojo through guided chakra practices and spiritual rituals.
+            Align your energy with jojo through guided nerve center practices and spiritual rituals.
           </p>
         </div>
 
@@ -1055,7 +1055,7 @@ const ChakraRitualsPage = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Chakra Alignment
+              Nerve Center Alignment
             </button>
             <button
               onClick={() => setActiveTab('guided-practices')}
@@ -1665,14 +1665,14 @@ const ChakraRitualsPage = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-lg font-bold text-gray-900">Unlimited Chakras Rituals</h4>
+                        <h4 className="text-lg font-bold text-gray-900">Unlimited Nerve Center Rituals</h4>
                         <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
                       </div>
-                      <p className="text-gray-600 text-sm">Access to all 7 chakra alignment practices and advanced guided meditations</p>
+                      <p className="text-gray-600 text-sm">Access to all 7 nerve center alignment practices and advanced guided meditations</p>
                     </div>
                   </div>
 

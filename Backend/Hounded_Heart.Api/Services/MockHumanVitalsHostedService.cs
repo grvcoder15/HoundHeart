@@ -203,10 +203,12 @@ namespace Hounded_Heart.Api.Services
 
                     if (!baselineEstablished)
                     {
-                        var humanProfile = await context.HumanProfiles
-                            .FirstOrDefaultAsync(h => h.UserId == userId);
+                        var userEmail = await context.Users
+                            .Where(u => u.UserId == userId)
+                            .Select(u => u.Email)
+                            .FirstOrDefaultAsync();
 
-                        if (humanProfile != null && !string.IsNullOrEmpty(humanProfile.PhoneNumber))
+                        if (!string.IsNullOrWhiteSpace(userEmail))
                         {
                             bool alreadySentToday = await context.MessageLogs
                                 .AnyAsync(m => m.UserId == userId 
@@ -218,7 +220,7 @@ namespace Hounded_Heart.Api.Services
                                 string smsBody = "HoundHeart: Your 7-day baseline data is ready! Open HoundHeart and tap Create My Baseline to activate full stress monitoring.";
                                 await smsService.SendSms(
                                     userId,
-                                    humanProfile.PhoneNumber,
+                                    userEmail,
                                     "baseline_ready",
                                     smsBody);
                             }

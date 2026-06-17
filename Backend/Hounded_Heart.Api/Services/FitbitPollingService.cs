@@ -324,15 +324,7 @@ namespace Hounded_Heart.Api.Services
                     }
                     catch (HttpRequestException ex) when (ex.Message.Contains("401"))
                     {
-                        _logger.LogWarning("Token refresh failed with 401 for user {UserId}, marking as disconnected", user.UserId);
-                        
-                        // Clear tokens to mark user as disconnected
-                        await userRepository.SaveFitbitTokensAsync(
-                            user.UserId.ToString(), 
-                            null!, 
-                            null!, 
-                            DateTime.MinValue);
-                        
+                        _logger.LogWarning("Token refresh failed with 401 for user {UserId}. Keeping existing connection state; user must disconnect manually.", user.UserId);
                         return null;
                     }
                 }

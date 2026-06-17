@@ -196,12 +196,12 @@ namespace Hounded_Heart.Services.Services
             return !string.IsNullOrWhiteSpace(_oauthAccessToken) && DateTime.UtcNow < _oauthAccessTokenExpiresUtc;
         }
 
-        public void Disconnect()
+        public void Disconnect(Guid? userId = null)
         {
             _oauthAccessToken = null;
             _oauthRefreshToken = null;
             _oauthAccessTokenExpiresUtc = DateTime.MinValue;
-            ClearOAuthTokensFromDatabase();
+            ClearOAuthTokensFromDatabase(userId);
 
             if (!string.IsNullOrWhiteSpace(_configuredAccessToken))
             {
@@ -479,9 +479,9 @@ namespace Hounded_Heart.Services.Services
             _oauthAccessTokenExpiresUtc = user?.FitBarkTokenExpiresAt ?? DateTime.MinValue;
         }
 
-        private void ClearOAuthTokensFromDatabase()
+        private void ClearOAuthTokensFromDatabase(Guid? userIdOverride = null)
         {
-            var userId = GetCurrentUserId();
+            var userId = userIdOverride ?? GetCurrentUserId();
             if (!userId.HasValue)
             {
                 return;

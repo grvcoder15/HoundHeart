@@ -174,7 +174,7 @@ namespace Hounded_Heart.Api.Data
             {
                 new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Bedtime Blessing", Points = 2, Category = "Emotional", InteractionType = "Redirect" },
                 new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Belly Rubs", Points = 2, Category = "Physical", InteractionType = "Checkbox" },
-                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Chakra Sync", Points = 2, Category = "Spiritual", InteractionType = "Redirect" },
+                new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Nerve Center Sync", Points = 2, Category = "Spiritual", InteractionType = "Redirect" },
                 new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Energy Check-in", Points = 2, Category = "Emotional", InteractionType = "Redirect" },
                 new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Evening Reflection", Points = 2, Category = "Spiritual", InteractionType = "Checkbox" },
                 new BondingActivity { ActivityId = Guid.NewGuid(), ActivityName = "Feeding Time", Points = 1, Category = "Physical", InteractionType = "Checkbox" },

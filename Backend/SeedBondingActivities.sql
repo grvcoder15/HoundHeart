@@ -19,7 +19,7 @@ VALUES
 (NEWID(), 'Training Session', 4, 'Physical', 'Checkbox'), -- Corrected from 20 to 4
 
 -- Spiritual / Ritual (Redirects)
-(NEWID(), 'Chakra Sync', 2, 'Spiritual', 'Redirect'),
+(NEWID(), 'Nerve Center Sync', 2, 'Spiritual', 'Redirect'),
 (NEWID(), 'Synchronized Breathing', 2, 'Spiritual', 'Redirect'),
 (NEWID(), 'Meditation Together', 3, 'Spiritual', 'Redirect'), -- Corrected from 25 to 3
 (NEWID(), 'Bedtime Blessing', 2, 'Spiritual', 'Redirect'),

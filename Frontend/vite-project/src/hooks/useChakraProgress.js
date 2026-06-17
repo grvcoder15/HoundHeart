@@ -104,7 +104,7 @@ export const useChakraProgress = (chakraId, userId, audioRef, preLoadedProgress 
         return null;
       }
     } catch (error) {
-      console.warn('Error loading chakra progress:', error);
+      console.warn('Error loading Nerve Center progress:', error);
       setProgress(null);
       return null;
     }

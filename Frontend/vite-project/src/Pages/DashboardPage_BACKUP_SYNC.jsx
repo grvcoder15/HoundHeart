@@ -20,7 +20,7 @@ const ACTIVITY_CATEGORIES = {
   'Training Session': 'Physical',
 
   // Spiritual / Ritual
-  'Chakra Sync': 'Spiritual',
+  'Nerve Center Sync': 'Spiritual',
   'Synchronized Breathing': 'Spiritual',
   'Meditation Together': 'Spiritual',
   'Bedtime Blessing': 'Spiritual',
@@ -987,17 +987,17 @@ const DashboardPage = () => {
         Behaviors: selectedBehaviors // Send selected behaviors
       };
 
-      console.log('Syncing Chakra with data:', syncData);
+      console.log('Syncing Nerve Center with data:', syncData);
 
       const response = await apiService.syncChakra(syncData);
 
-      console.log('Chakra Sync Response:', response);
+      console.log('Nerve Center Sync Response:', response);
 
       if (response) {
         setHarmonyScore(response.harmonyScore || 0);
-        setSuggestedRitual(response.dominantBlockage ? `${response.dominantBlockage} Chakra Healing` : 'Chakra Sync Ritual');
+        setSuggestedRitual(response.dominantBlockage ? `${response.dominantBlockage} Nerve Center Healing` : 'Nerve Center Sync Ritual');
         setRitualDescription(response.dominantBlockage
-          ? `Focus on your ${response.dominantBlockage} chakra to restore balance and harmony.`
+          ? `Focus on your ${response.dominantBlockage} Nerve Center to restore balance and harmony.`
           : 'Align your energy centers with your companion through guided meditation.');
 
         // Update UI with adjusted scores if available
@@ -1016,12 +1016,12 @@ const DashboardPage = () => {
           if (chakra) {
             setRecommendedChakra({
               ...chakra,
-              audio: response.audioUrl && response.audioUrl !== 'Audio not available for this chakra yet.'
+              audio: response.audioUrl && response.audioUrl !== 'Audio not available for this Nerve Center yet.'
                 ? response.audioUrl
                 : chakra.audio
             });
             // Store audio URL for playback
-            if (response.audioUrl && response.audioUrl !== 'Audio not available for this chakra yet.') {
+            if (response.audioUrl && response.audioUrl !== 'Audio not available for this Nerve Center yet.') {
               localStorage.setItem('currentChakraAudio', response.audioUrl);
             } else {
               localStorage.removeItem('currentChakraAudio');
@@ -1060,7 +1060,7 @@ const DashboardPage = () => {
   const chakraData = [
     {
       id: 1,
-      name: "Root Chakra",
+      name: "Root Nerve Center",
       location: "Base of spine",
       color: "red",
       timer: "1:00",
@@ -1077,7 +1077,7 @@ const DashboardPage = () => {
     },
     {
       id: 2,
-      name: "Sacral Chakra",
+      name: "Sacral Nerve Center",
       location: "Below navel",
       color: "orange",
       timer: "1:00",
@@ -1094,7 +1094,7 @@ const DashboardPage = () => {
     },
     {
       id: 3,
-      name: "Solar Plexus",
+      name: "Solar Nerve Center",
       location: "Above navel",
       color: "yellow",
       timer: "1:00",
@@ -1111,7 +1111,7 @@ const DashboardPage = () => {
     },
     {
       id: 4,
-      name: "Heart Chakra",
+      name: "Heart Nerve Center",
       location: "Center of chest",
       color: "green",
       timer: "1:30",
@@ -1128,7 +1128,7 @@ const DashboardPage = () => {
     },
     {
       id: 5,
-      name: "Throat Chakra",
+      name: "Throat Nerve Center",
       location: "Base of throat",
       color: "blue",
       timer: "1:00",
@@ -1145,7 +1145,7 @@ const DashboardPage = () => {
     },
     {
       id: 6,
-      name: "Third Eye",
+      name: "Insight Nerve Center",
       location: "Between eyebrows",
       color: "indigo",
       timer: "1:30",
@@ -1162,7 +1162,7 @@ const DashboardPage = () => {
     },
     {
       id: 7,
-      name: "Crown Chakra",
+      name: "Crown Nerve Center",
       location: "Top of head",
       color: "purple",
       timer: "1:30",
@@ -1283,7 +1283,7 @@ const DashboardPage = () => {
   };
 
   const handleStartRitual = async () => {
-    console.log('Start Guided Chakra Ritual clicked');
+    console.log('Start Guided Nerve Center Ritual clicked');
 
     // Prepare data for sync
     const syncPayload = {
@@ -1304,7 +1304,7 @@ const DashboardPage = () => {
         setRitualDescription(response.ritualDescription);
         setHarmonyScore(response.harmonyScore);
         setShowRitualView(true);
-        toast.success("Chakra alignment calculated!");
+        toast.success("Nerve Center alignment calculated!");
       }
     } catch (err) {
       console.error("Sync failed", err);
@@ -1332,7 +1332,7 @@ const DashboardPage = () => {
     } else {
       let audioUrl = recommendedChakra?.audio || localStorage.getItem('currentChakraAudio');
 
-      if (audioUrl && audioUrl !== 'Audio not available for this chakra yet.') {
+      if (audioUrl && audioUrl !== 'Audio not available for this Nerve Center yet.') {
         let currentAudio = audioInstance;
 
         if (!currentAudio || currentAudio.src !== audioUrl) {
@@ -1372,7 +1372,7 @@ const DashboardPage = () => {
         currentAudio.play();
         setIsPlaying(true);
       } else {
-        toast.error("No audio available for this chakra yet.");
+        toast.error("No audio available for this nerve center yet.");
       }
     }
   };
@@ -1937,7 +1937,7 @@ const DashboardPage = () => {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Chakra Sync</h3>
+                    <h3 className="text-lg font-semibold mb-2">Nerve Center Sync</h3>
                     <p className="text-sm text-gray-500">Align your energy with your dog</p>
                   </div>
                 </button>
@@ -2196,7 +2196,7 @@ const DashboardPage = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-purple-600 mb-1">{chakraHarmonyCount}</div>
-                        <div className="text-sm text-gray-900">Chakra Harmony</div>
+                        <div className="text-sm text-gray-900">Nerve Center Harmony</div>
                       </div>
                     </div>
                   </div>
@@ -2247,7 +2247,7 @@ const DashboardPage = () => {
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
-                Chakra Sync
+                Nerve Center Sync
               </button>
               <button
                 onClick={() => setBondTab('activities')}
@@ -2570,7 +2570,7 @@ const DashboardPage = () => {
                   <>
                     {/* Header */}
                     <div className="text-center mb-8">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Chakra Alignment Meditation</h3>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Nerve Center Alignment Meditation</h3>
                       <p className="text-gray-600">Sync your energy centers with your companion</p>
                     </div>
 
@@ -2586,7 +2586,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-orange-600">Root Chakra</span>
+                            <span className="text-sm font-medium text-orange-600">Root Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{rootChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2616,7 +2616,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Sacral Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Sacral Nerve Center</span>
                             <span className="text-sm font-medium text-green-600">{sacralChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2646,7 +2646,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-yellow-600">Solar Plexus Chakra</span>
+                            <span className="text-sm font-medium text-yellow-600">Solar Plexus Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{solarPlexusChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2676,7 +2676,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Heart Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Heart Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{heartChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2710,7 +2710,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Throat Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Throat Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{throatChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2740,7 +2740,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Third Eye Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Insight Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{thirdEyeChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2770,7 +2770,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Crown Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Crown Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{crownChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -2802,7 +2802,7 @@ const DashboardPage = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Sync Chakras & Get Recommendation</span>
+                      <span>Sync Nerve Center & Get Recommendation</span>
                     </button>
                   </>
                 )}
@@ -2816,7 +2816,7 @@ const DashboardPage = () => {
                         <svg className="w-6 h-6 text-purple-600 mr-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
-                        <h3 className="text-3xl font-bold text-purple-800">{suggestedRitual || 'Chakra Sync Ritual'}</h3>
+                        <h3 className="text-3xl font-bold text-purple-800">{suggestedRitual || 'Nerve Center Sync Ritual'}</h3>
                         <svg className="w-6 h-6 text-purple-600 ml-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
@@ -2831,7 +2831,7 @@ const DashboardPage = () => {
                       {harmonyScore > 0 && (
                         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4 max-w-md mx-auto">
                           <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">Your Chakra Harmony Score</p>
+                            <p className="text-sm text-gray-600 mb-1">Your Nerve Center Harmony Score</p>
                             <p className="text-4xl font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                             <p className="text-xs text-gray-500 mt-1">
                               {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
@@ -2958,7 +2958,7 @@ const DashboardPage = () => {
                       {/* Header Section */}
                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="flex justify-between items-center mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900">Chakra Healing Ritual</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">Nerve Center Healing Ritual</h3>
                           <span className="text-purple-600 font-semibold">Focused Session</span>
                         </div>
                         <div className="w-full bg-purple-100 rounded-full h-3 mb-3">
@@ -2995,7 +2995,7 @@ const DashboardPage = () => {
                                         recommendedChakra?.color === 'purple' ? 'text-purple-600' :
                                           'text-gray-600'
                               }`}>
-                              {recommendedChakra?.name || 'Root Chakra'}
+                              {recommendedChakra?.name || 'Root Nerve Center'}
                             </h4>
                             <div className="w-2 h-2 bg-red-500 rounded-full ml-2"></div>
                           </div>
@@ -3061,7 +3061,7 @@ const DashboardPage = () => {
                               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                               </svg>
-                              <span className="text-lg">Start New Chakra</span>
+                              <span className="text-lg">Start New Nerve Center</span>
                             </button>
                           ) : (
                             <button
@@ -3175,7 +3175,7 @@ const DashboardPage = () => {
 
                         // 2. Special redirect activities — always redirect by name,
                         //    regardless of InteractionType in the database
-                        if (activity.activityName === 'Chakra Sync') {
+                        if (activity.activityName === 'Nerve Center Sync') {
                           setActiveTab('bond-building');
                           setBondTab('Chakra-sync');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3761,14 +3761,14 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-semibold text-gray-900">Unlimited Chakra Rituals</h4>
+                            <h4 className="font-semibold text-gray-900">Unlimited Nerve Center Rituals</h4>
                             <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full flex items-center justify-center">
                               <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-600">Access to all 7 chakra alignment practices and advanced guided meditations</p>
+                          <p className="text-sm text-gray-600">Access to all 7 nerve center alignment practices and advanced guided meditations</p>
                         </div>
                       </div>
 

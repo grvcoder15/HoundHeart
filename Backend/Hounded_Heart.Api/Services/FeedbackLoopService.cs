@@ -133,8 +133,12 @@ namespace Hounded_Heart.Api.Services
                     
                     await notificationService.SendRecoveryMessage(alert.UserId, recoveryMessage);
 
-                    var humanProfile = await context.HumanProfiles.FirstOrDefaultAsync(h => h.UserId == alert.UserId);
-                    if (humanProfile != null && !string.IsNullOrEmpty(humanProfile.PhoneNumber))
+                    var userEmail = await context.Users
+                        .Where(u => u.UserId == alert.UserId)
+                        .Select(u => u.Email)
+                        .FirstOrDefaultAsync();
+
+                    if (!string.IsNullOrWhiteSpace(userEmail))
                     {
                         string smsBody = "";
                         if (outcome == "improved")
@@ -158,7 +162,7 @@ namespace Hounded_Heart.Api.Services
                         }
 
                         await smsService.SendSms(
-                            alert.UserId, humanProfile.PhoneNumber,
+                            alert.UserId, userEmail,
                             "recovery_calm", smsBody, alert.Id);
                     }
 

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Hounded_Heart.Models.Data;
 using Hounded_Heart.Models.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Hounded_Heart.Services.Services
@@ -79,7 +78,6 @@ namespace Hounded_Heart.Services.Services
         private readonly IAppleHealthService _appleHealthService;
         private readonly AppDbContext _context;
         private readonly ISmsService _smsService;
-        private readonly IConfiguration _configuration;
         private readonly ILogger<BondSyncService> _logger;
 
         public BondSyncService(
@@ -87,14 +85,12 @@ namespace Hounded_Heart.Services.Services
             IAppleHealthService appleHealthService, 
             AppDbContext context,
             ISmsService smsService,
-            IConfiguration configuration,
             ILogger<BondSyncService> logger)
         {
             _petPaceService = petPaceService;
             _appleHealthService = appleHealthService;
             _context = context;
             _smsService = smsService;
-            _configuration = configuration;
             _logger = logger;
         }
 
@@ -491,18 +487,23 @@ namespace Hounded_Heart.Services.Services
                     {
                         try
                         {
-                            var toNumber = _configuration["Twilio:ToNumber"];
-                            if (!string.IsNullOrEmpty(toNumber))
+                            var toEmail = await _context.Users
+                                .AsNoTracking()
+                                .Where(u => u.UserId == userId)
+                                .Select(u => u.Email)
+                                .FirstOrDefaultAsync();
+
+                            if (!string.IsNullOrWhiteSpace(toEmail))
                             {
                                 string msg = diff >= 10 
-                                    ? "🌟 HoundHeart: Your Bond Score increased! You and your pet are more in sync today."
-                                    : "⚠️ HoundHeart: Your Bond Score dropped. Your pet may need extra attention today.";
-                                await _smsService.SendSms(userId, toNumber, "system", msg);
+                                    ? "Your Bond Score increased! You and your pet are more in sync today."
+                                    : "Your Bond Score dropped. Your pet may need extra attention today.";
+                                await _smsService.SendSms(userId, toEmail, "system", msg);
                             }
                         }
                         catch (Exception smsEx)
                         {
-                            _logger.LogWarning(smsEx, "Failed to send Bond Score SMS.");
+                            _logger.LogWarning(smsEx, "Failed to send Bond Score email notification.");
                         }
                     }
                 }

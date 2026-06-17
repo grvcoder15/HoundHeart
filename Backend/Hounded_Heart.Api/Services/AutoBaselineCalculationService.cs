@@ -63,6 +63,7 @@ namespace Hounded_Heart.Api.Services
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var baselineService = scope.ServiceProvider.GetRequiredService<IBaselineService>();
+            var smsService = scope.ServiceProvider.GetRequiredService<ISmsService>();
             var config = _config.CurrentValue;
 
             // Find users who need baseline calculation - only those with Fitbit connections
@@ -93,7 +94,7 @@ namespace Hounded_Heart.Api.Services
             // Process human baselines with old approach (keep for compatibility)
             foreach (var userProfile in usersNeedingBaseline)
             {
-                await ProcessUserBaseline(context, baselineService, userProfile, config);
+                await ProcessUserBaseline(context, baselineService, smsService, userProfile, config);
             }
 
             // Process dog baselines with new approach
@@ -106,6 +107,7 @@ namespace Hounded_Heart.Api.Services
         private async Task ProcessUserBaseline(
             AppDbContext context, 
             IBaselineService baselineService, 
+            ISmsService smsService,
             HumanProfile userProfile, 
             BaselineConfiguration config)
         {
@@ -163,6 +165,7 @@ namespace Hounded_Heart.Api.Services
                     await context.SaveChangesAsync();
 
                     _logger.LogInformation("User {UserId}: Baseline calculation completed successfully and profile updated.", userId);
+                    await SendBaselineReadyEmailIfNeeded(context, smsService, userId);
                 }
                 else
                 {
@@ -173,6 +176,35 @@ namespace Hounded_Heart.Api.Services
             {
                 _logger.LogError(ex, "Error processing baseline calculation for user {UserId}.", userProfile.UserId);
             }
+        }
+
+        private async Task SendBaselineReadyEmailIfNeeded(AppDbContext context, ISmsService smsService, Guid userId)
+        {
+            var alreadySentToday = await context.MessageLogs
+                .AnyAsync(m => m.UserId == userId
+                            && m.MessageType == "baseline_ready"
+                            && m.SentAt.Date == DateTime.UtcNow.Date);
+
+            if (alreadySentToday)
+            {
+                return;
+            }
+
+            var userEmail = await context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(userEmail))
+            {
+                return;
+            }
+
+            await smsService.SendSms(
+                userId,
+                userEmail,
+                "baseline_ready",
+                "HoundHeart: Your baseline has been formed. Stress monitoring is now active.");
         }
 
         private async Task ProcessDogBaselineNew(AppDbContext context, Guid dogId)

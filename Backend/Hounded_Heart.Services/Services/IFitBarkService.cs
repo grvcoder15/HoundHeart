@@ -10,7 +10,7 @@ namespace Hounded_Heart.Services.Services
         Task<string> GetAuthorizationUrlAsync();
         Task<bool> ExchangeCodeForTokensAsync(string code, string? state);
         bool IsConnected();
-        void Disconnect();
+        void Disconnect(Guid? userId = null);
         Task<FitBarkUserProfile?> GetUserInfoAsync();
         Task<List<FitBarkDogProfile>?> GetDogProfilesAsync();
         Task<FitBarkDogInfo?> GetDogInfoAsync(string dogSlug);
