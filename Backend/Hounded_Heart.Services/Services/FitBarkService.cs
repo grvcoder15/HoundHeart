@@ -193,7 +193,9 @@ namespace Hounded_Heart.Services.Services
 
             LoadOAuthTokensFromDatabase();
 
-            return !string.IsNullOrWhiteSpace(_oauthAccessToken) && DateTime.UtcNow < _oauthAccessTokenExpiresUtc;
+            // Stay connected while a refresh token exists, even if the access token expired.
+            return !string.IsNullOrWhiteSpace(_oauthRefreshToken)
+                || !string.IsNullOrWhiteSpace(_oauthAccessToken);
         }
 
         public void Disconnect(Guid? userId = null)
@@ -280,7 +282,10 @@ namespace Hounded_Heart.Services.Services
 
             await LoadOAuthTokensFromDatabaseAsync();
 
-            if (!string.IsNullOrWhiteSpace(_oauthAccessToken) && DateTime.UtcNow < _oauthAccessTokenExpiresUtc)
+            var accessTokenStillValid = !string.IsNullOrWhiteSpace(_oauthAccessToken)
+                && DateTime.UtcNow < _oauthAccessTokenExpiresUtc.AddMinutes(-5);
+
+            if (accessTokenStillValid)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _oauthAccessToken);
                 return true;
