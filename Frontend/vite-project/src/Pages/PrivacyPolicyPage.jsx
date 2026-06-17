@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
 import apiService from '../services/apiService';
 
 const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState(initialTab); // Use initialTab prop or default to Privacy Policy tab
   const isAuthenticated = apiService.isAuthenticated() && !!apiService.getToken();
-  const homePath = isAuthenticated ? '/dashboard' : '/';
+
+  // If the user arrived here from the signup page (mid-registration),
+  // always send them back to /signup — never to /dashboard.
+  const cameFromSignup = location.state?.from === 'signup';
+  const homePath = cameFromSignup ? '/signup' : (isAuthenticated ? '/dashboard' : '/');
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -47,7 +52,7 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
   };
 
   const handleLogin = () => {
-    navigate(isAuthenticated ? '/dashboard' : '/login');
+    navigate(cameFromSignup ? '/signup' : (isAuthenticated ? '/dashboard' : '/login'));
   };
 
   return (
