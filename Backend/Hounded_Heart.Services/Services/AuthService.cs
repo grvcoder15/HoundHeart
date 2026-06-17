@@ -189,7 +189,7 @@ namespace Hounded_Heart.Services.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:DurationInMinutes"] ?? "120")),
+                Expires = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:DurationInDays"] ?? "365")),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),

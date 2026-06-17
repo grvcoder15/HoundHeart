@@ -305,7 +305,7 @@ namespace Hounded_Heart.Services.Services
                     return null;
                 }
 
-                // Check if token is expired
+                // Check if token is expired (with 5-minute buffer)
                 if (DateTime.UtcNow >= tokens.Value.expiresAt.AddMinutes(-5))
                 {
                     _logger.LogInformation("Access token expired for user {UserId}, attempting refresh", userId);
@@ -317,10 +317,15 @@ namespace Hounded_Heart.Services.Services
                         _logger.LogInformation("Token refreshed for userId: {userId} at {time}", userId, DateTime.UtcNow);
                         return newTokens.AccessToken;
                     }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.LogWarning(ex, "Fitbit refresh token rejected for user {UserId}. Keeping stored connection until user disconnects manually.", userId);
+                        return tokens.Value.accessToken;
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to refresh token for user {UserId}", userId);
-                        return null;
+                        return tokens.Value.accessToken;
                     }
                 }
 

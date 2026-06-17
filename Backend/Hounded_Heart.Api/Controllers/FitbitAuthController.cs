@@ -513,17 +513,22 @@ namespace Hounded_Heart.Api.Controllers
                     return BadRequest(new { success = false, message = "User not found" });
                 }
 
-                var isConnected = !string.IsNullOrEmpty(user.FitbitAccessToken);
-                var isExpired = isConnected && user.FitbitTokenExpiresAt.HasValue && 
-                               DateTime.UtcNow >= user.FitbitTokenExpiresAt.Value.AddMinutes(-5);
+                var isConnected = !string.IsNullOrEmpty(user.FitbitAccessToken)
+                    || !string.IsNullOrEmpty(user.FitbitRefreshToken);
+
+                if (isConnected && !string.IsNullOrEmpty(user.FitbitRefreshToken))
+                {
+                    await _fitbitTokenService.GetValidAccessTokenAsync(userId);
+                    user = await _userRepository.GetUserByIdAsync(userId);
+                }
 
                 return Ok(new 
                 {
                     success = isConnected,
                     data = isConnected ? new 
                     {
-                        fitbitUserId = user.FitbitUserId,
-                        expiresAt = user.FitbitTokenExpiresAt,
+                        fitbitUserId = user?.FitbitUserId,
+                        expiresAt = user?.FitbitTokenExpiresAt,
                         lastSync = "Active"
                     } : null,
                     message = isConnected ? "Fitbit connected" : "Fitbit not connected"

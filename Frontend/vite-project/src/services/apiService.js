@@ -24,11 +24,18 @@ class ApiService {
     }
   }
 
-  isTokenExpiringSoon(token, bufferSeconds = 120) {
+  isTokenExpiringSoon(token, bufferSeconds = 60 * 60 * 24 * 30) {
     const payload = this.parseJwtPayload(token);
     if (!payload?.exp) return false;
     const now = Math.floor(Date.now() / 1000);
     return payload.exp <= (now + bufferSeconds);
+  }
+
+  isTokenExpired(token) {
+    const payload = this.parseJwtPayload(token);
+    if (!payload?.exp) return true;
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp <= now;
   }
 
   async refreshJwtToken(currentToken) {
@@ -67,7 +74,9 @@ class ApiService {
     if (!this.refreshPromise) {
       this.refreshPromise = this.refreshJwtToken(token)
         .catch((err) => {
-          this.logout();
+          if (this.isTokenExpired(token)) {
+            this.logout();
+          }
           throw err;
         })
         .finally(() => {
