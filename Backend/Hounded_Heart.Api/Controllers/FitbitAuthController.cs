@@ -24,6 +24,7 @@ namespace Hounded_Heart.Api.Controllers
         private readonly IWeatherService _weatherService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly AppDbContext _context;
+        private readonly IEmailService _emailService;
         private readonly ISmsService _smsService;
 
         public FitbitAuthController(
@@ -37,6 +38,7 @@ namespace Hounded_Heart.Api.Controllers
             IWeatherService weatherService,
             IServiceScopeFactory scopeFactory,
             AppDbContext context,
+            IEmailService emailService,
             ISmsService smsService)
         {
             _fitbitTokenService = fitbitTokenService;
@@ -49,6 +51,7 @@ namespace Hounded_Heart.Api.Controllers
             _weatherService = weatherService;
             _scopeFactory = scopeFactory;
             _context = context;
+            _emailService = emailService;
             _smsService = smsService;
 
             // Fitbit API requires a User-Agent header
@@ -199,9 +202,13 @@ namespace Hounded_Heart.Api.Controllers
 
                 try
                 {
-                    if (Guid.TryParse(userId, out var smsUserId) && !string.IsNullOrWhiteSpace(user?.Email))
+                    if (!string.IsNullOrWhiteSpace(user?.Email))
                     {
-                        await _smsService.SendSms(smsUserId, user.Email!, "system", "Your Fitbit is now connected! We'll start monitoring your health data.");
+                        await UserNotificationEmails.SendFitbitConnectedAsync(
+                            _emailService,
+                            _logger,
+                            user.Email!,
+                            user.FullName);
                     }
                 }
                 catch (Exception smsEx)

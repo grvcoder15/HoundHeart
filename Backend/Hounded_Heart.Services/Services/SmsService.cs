@@ -57,7 +57,8 @@ namespace Hounded_Heart.Services.Services
             try
             {
                 var subject = BuildSubject(messageType);
-                var htmlBody = $"<p>{WebUtility.HtmlEncode(body).Replace("\n", "<br/>")}</p>";
+                var encodedBody = $"<p>{WebUtility.HtmlEncode(body).Replace("\n", "<br/>")}</p>";
+                var htmlBody = EmailTemplateHelper.Build(subject, null, encodedBody);
                 await _emailService.SendEmailAsync(recipientEmail, subject, htmlBody);
 
                 await _messageLogsService.UpdateStatus(log.Id, "sent");
@@ -92,8 +93,7 @@ namespace Hounded_Heart.Services.Services
                 }
             }
 
-            return _configuration["Notifications:DefaultToEmail"]
-                ?? _configuration["SmtpSettings:FromEmail"];
+            return null;
         }
 
         private static string BuildSubject(string messageType)
