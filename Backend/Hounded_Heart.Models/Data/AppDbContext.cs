@@ -95,6 +95,17 @@ namespace Hounded_Heart.Models.Data
         // FitBark Integration
         public DbSet<FitBarkDog> FitBarkDogs { get; set; }
         public DbSet<FitBarkActivityLog> FitBarkActivityLogs { get; set; }
+        public DbSet<Course> Courses { get; set; }
+        public DbSet<CourseWaitlist> CourseWaitlists { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<CourseWaitlist>()
+                .HasIndex(x => new { x.UserId, x.CourseId })
+                .IsUnique();
+        }
     }
 }
     

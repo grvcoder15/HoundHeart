@@ -213,6 +213,7 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
   ];
 
   const comingSoonItems = [
+    { name: '🎓 Courses', path: '/courses', key: 'courses' },
     { name: '🏖️ Travel Club', path: '/travel-club', key: 'travel-club' },
     { name: '⌚ Wearable Shop', path: '/wearable-marketplace', key: 'wearable-marketplace' },
     { name: '🛍️ Store', path: '/store', key: 'store' },

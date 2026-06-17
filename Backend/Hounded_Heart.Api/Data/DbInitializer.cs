@@ -214,6 +214,146 @@ namespace Hounded_Heart.Api.Data
             }
             await context.SaveChangesAsync();
 
+            // Seed courses placeholder catalog (11 coming-soon courses)
+            var courseSeeds = new[]
+            {
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Foundations of Co-Regulation",
+                    Description = "Learn the core principles of human-dog co-regulation and how to build calm, safe, shared emotional states. This foundational course introduces practical daily rituals for nervous system alignment.",
+                    Price = 49m,
+                    IsFreeWithPlus = true,
+                    DisplayOrder = 1,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "The Body Electric: Nerve Center Activation for Human-Dog Co-Regulation",
+                    Description = "Explore how body awareness and energetic mapping support deeper connection with your dog. You will practice techniques that help activate and stabilize your internal regulation centers.",
+                    Price = 149m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 2,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Healing Through the Eyes: Building the Oxytocin Bond",
+                    Description = "Understand the science of eye contact, trust, and oxytocin release in human-canine bonding. This course teaches simple relational exercises to strengthen emotional safety and affection.",
+                    Price = 99m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 3,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Canine Anxiety: A Co-Regulatory Approach",
+                    Description = "Learn to identify anxiety patterns in dogs and respond with grounded, co-regulatory support. You will build a step-by-step calm-response framework for difficult moments.",
+                    Price = 149m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 4,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Trauma Recovery: Healing Together",
+                    Description = "Discover trauma-informed practices for healing emotional stress in both humans and dogs. The course focuses on pacing, safety, and trust restoration through shared routines.",
+                    Price = 149m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 5,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Pack Dynamics: Co-Regulation in Multi-Dog Households",
+                    Description = "Develop co-regulation strategies for homes with multiple dogs and layered energy dynamics. You will learn practical structure methods to reduce friction and improve harmony.",
+                    Price = 99m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 6,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "From Leash to Leadership: Co-Regulation Skills for Professional Life",
+                    Description = "Apply co-regulation principles from your dog relationship to leadership, communication, and workplace resilience. This course bridges emotional regulation into real-world professional settings.",
+                    Price = 149m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 7,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Healing Touch: Co-Regulatory Bodywork for You and Your Dog",
+                    Description = "Learn gentle bodywork and touch-based grounding routines for relaxation and recovery. Sessions are designed to support both nervous systems with safe physical connection.",
+                    Price = 99m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 8,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "The Aging Bond: Co-Regulation in the Senior Years",
+                    Description = "Support aging dogs and caregivers through compassionate routines that prioritize mobility, calm, and emotional steadiness. The course offers practical adaptations for late-life wellbeing.",
+                    Price = 99m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 9,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Puppy Foundations: Building the Co-Regulatory Bond from Day One",
+                    Description = "Start your puppy journey with emotionally intelligent foundations that shape lifelong trust. Learn routines that reduce overwhelm while building secure, resilient attachment.",
+                    Price = 99m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 10,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "The 30-Day Co-Regulation Challenge",
+                    Description = "Follow a guided 30-day progression of short, repeatable co-regulation practices for measurable change. Ideal for building consistency and deepening your bond through daily action.",
+                    Price = 29m,
+                    IsFreeWithPlus = false,
+                    DisplayOrder = 11,
+                    Status = "ComingSoon",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            var existingCourseTitles = await context.Courses
+                .Select(c => c.Title)
+                .ToListAsync();
+
+            var missingCourses = courseSeeds
+                .Where(c => !existingCourseTitles.Contains(c.Title))
+                .ToList();
+
+            if (missingCourses.Any())
+            {
+                await context.Courses.AddRangeAsync(missingCourses);
+                await context.SaveChangesAsync();
+            }
+
             // Seed all 7 Daily Check-in questions if not yet seeded
             var allCheckInQuestions = new[]
             {
