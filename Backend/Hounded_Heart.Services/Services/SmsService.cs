@@ -1,22 +1,31 @@
 using System;
 using System.Threading.Tasks;
+using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
-using Twilio.Types;
+using Microsoft.EntityFrameworkCore;
+using Hounded_Heart.Models.Data;
 
 namespace Hounded_Heart.Services.Services
 {
     public class SmsService : ISmsService
     {
         private readonly IMessageLogsService _messageLogsService;
-        private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+        private readonly AppDbContext _context;
         private readonly ILogger<SmsService> _logger;
+        private readonly IConfiguration _configuration;
 
-        public SmsService(IMessageLogsService messageLogsService, IConfiguration configuration, ILogger<SmsService> logger)
+        public SmsService(
+            IMessageLogsService messageLogsService,
+            IEmailService emailService,
+            AppDbContext context,
+            IConfiguration configuration,
+            ILogger<SmsService> logger)
         {
             _messageLogsService = messageLogsService;
+            _emailService = emailService;
+            _context = context;
             _configuration = configuration;
             _logger = logger;
         }
@@ -28,55 +37,75 @@ namespace Hounded_Heart.Services.Services
             string body,
             Guid? relatedAlertId = null)
         {
-            // 1. Create a pending MessageLog entry first
+            var recipientEmail = await ResolveRecipientEmailAsync(userId, toPhoneNumber);
+
+            if (string.IsNullOrWhiteSpace(recipientEmail))
+            {
+                _logger.LogWarning("Email notification skipped because no recipient email was resolved for user {UserId}.", userId);
+                return false;
+            }
+
             var log = await _messageLogsService.LogMessage(
                 userId,
                 messageType,
-                "sms",
-                toPhoneNumber,
+                "email",
+                recipientEmail,
                 body,
                 null,
                 relatedAlertId);
 
-            bool.TryParse(_configuration["Twilio:Enabled"], out bool isTwilioEnabled);
-
-            if (!isTwilioEnabled)
-            {
-                // 2. Simulated sending for testing
-                _logger.LogInformation($"SMS (disabled): {body}");
-                await _messageLogsService.UpdateStatus(log.Id, "sent");
-                return true;
-            }
-
-            // 3. Real Twilio sending
             try
             {
-                string accountSid = _configuration["Twilio:AccountSid"];
-                string authToken = _configuration["Twilio:AuthToken"];
-                string fromNumber = _configuration["Twilio:FromNumber"];
-
-                TwilioClient.Init(accountSid, authToken);
-
-                // Normalize to E.164 format: if 10-digit Indian number, add +91
-                var normalizedTo = toPhoneNumber.Trim();
-                if (!normalizedTo.StartsWith("+") && normalizedTo.Length == 10)
-                    normalizedTo = "+91" + normalizedTo;
-
-                var message = await MessageResource.CreateAsync(
-                    to: new PhoneNumber(normalizedTo),
-                    from: new PhoneNumber(fromNumber),
-                    body: body
-                );
+                var subject = BuildSubject(messageType);
+                var htmlBody = $"<p>{WebUtility.HtmlEncode(body).Replace("\n", "<br/>")}</p>";
+                await _emailService.SendEmailAsync(recipientEmail, subject, htmlBody);
 
                 await _messageLogsService.UpdateStatus(log.Id, "sent");
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send SMS via Twilio");
+                _logger.LogError(ex, "Failed to send notification email");
                 await _messageLogsService.UpdateStatus(log.Id, "failed", ex.Message);
                 return false;
             }
+        }
+
+        private async Task<string?> ResolveRecipientEmailAsync(Guid userId, string recipientHint)
+        {
+            if (!string.IsNullOrWhiteSpace(recipientHint) && recipientHint.Contains("@"))
+            {
+                return recipientHint.Trim();
+            }
+
+            if (userId != Guid.Empty)
+            {
+                var userEmail = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => u.UserId == userId)
+                    .Select(u => u.Email)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(userEmail))
+                {
+                    return userEmail.Trim();
+                }
+            }
+
+            return _configuration["Notifications:DefaultToEmail"]
+                ?? _configuration["SmtpSettings:FromEmail"];
+        }
+
+        private static string BuildSubject(string messageType)
+        {
+            return messageType switch
+            {
+                "stress_alert" => "HoundHeart Stress Alert",
+                "recovery_calm" => "HoundHeart Recovery Check-In",
+                "baseline_ready" => "HoundHeart Baseline Ready",
+                "system" => "HoundHeart Notification",
+                _ => "HoundHeart Update"
+            };
         }
     }
 }

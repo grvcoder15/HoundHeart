@@ -136,9 +136,9 @@ namespace Hounded_Heart.Api.Controllers
             {
                 var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
-                // 1. Get Activity for "Chakra Sync"
+                // 1. Get Activity for "Nerve Center Sync"
                 var activity = await _context.BondingActivities
-                    .FirstOrDefaultAsync(a => a.ActivityName == "Chakra Sync" || a.ActivityName == "Chakra Ritual");
+                    .FirstOrDefaultAsync(a => a.ActivityName == "Nerve Center Sync" || a.ActivityName == "Chakra Ritual");
 
                 Guid activityId = activity?.ActivityId ?? Guid.Empty;
                 if (activity == null)
@@ -146,7 +146,7 @@ namespace Hounded_Heart.Api.Controllers
                     var newActivity = new BondingActivity
                     {
                         ActivityId = Guid.NewGuid(),
-                        ActivityName = "Chakra Sync",
+                        ActivityName = "Nerve Center Sync",
                         Points = 2 
                     };
                     _context.BondingActivities.Add(newActivity);

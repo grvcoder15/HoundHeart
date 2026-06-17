@@ -31,6 +31,12 @@ const ProfileSetupPage = () => {
   const [dogId, setDogId] = useState(null);
   const [hasShownWelcomeToast, setHasShownWelcomeToast] = useState(false);
 
+  // Weight handling
+  const [weightUnit, setWeightUnit] = useState(() => {
+    return navigator.language === 'en-US' ? 'lb' : 'kg';
+  });
+  const [displayWeight, setDisplayWeight] = useState('');
+
   // Debug log for formData changes
   useEffect(() => {
     console.log('FormData updated:', formData);
@@ -158,6 +164,32 @@ const ProfileSetupPage = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  // Weight handling methods
+  const handleWeightChange = (e) => {
+    const val = e.target.value;
+    setDisplayWeight(val);
+    if (val === '') {
+      setFormData(prev => ({ ...prev, weight: '' }));
+      return;
+    }
+    const numVal = parseFloat(val);
+    if (!isNaN(numVal)) {
+      const weightInKg = weightUnit === 'lb' ? numVal / 2.20462 : numVal;
+      setFormData(prev => ({ ...prev, weight: weightInKg.toFixed(2) }));
+    }
+  };
+
+  const handleWeightUnitToggle = (unit) => {
+    if (unit === weightUnit) return;
+    setWeightUnit(unit);
+    if (displayWeight === '') return;
+    const numVal = parseFloat(displayWeight);
+    if (!isNaN(numVal)) {
+      const newDisplayVal = unit === 'lb' ? numVal * 2.20462 : numVal / 2.20462;
+      setDisplayWeight(newDisplayVal.toFixed(1));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -638,13 +670,33 @@ const ProfileSetupPage = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">Weight</label>
+                <div className="flex bg-gray-100 rounded-full p-1" role="group" aria-label="Weight Unit">
+                  <button
+                    type="button"
+                    onClick={() => handleWeightUnitToggle('kg')}
+                    aria-pressed={weightUnit === 'kg'}
+                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${weightUnit === 'kg' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    kg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleWeightUnitToggle('lb')}
+                    aria-pressed={weightUnit === 'lb'}
+                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${weightUnit === 'lb' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    lb
+                  </button>
+                </div>
+              </div>
               <input
                 type="number"
                 name="weight"
-                value={formData.weight}
-                onChange={handleInputChange}
-                placeholder="Kilograms"
+                value={displayWeight}
+                onChange={handleWeightChange}
+                placeholder={weightUnit === 'kg' ? "Kilograms" : "Pounds"}
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>

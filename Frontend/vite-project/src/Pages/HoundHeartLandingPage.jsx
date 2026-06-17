@@ -537,7 +537,7 @@ const HoundHeartLandingPage = () => {
                     Your own consciousness and loving energy strengthen and nourish your dog's energy flows, creating a mutual exchange that deepens your bond and supports both your health and your dog's.
                   </p>
                   <p className="text-gray-700 leading-relaxed text-lg">
-                    We draw on both ancient wisdom-such as chakra alignment-and modern biofeedback to make these benefits accessible in your daily life through wearable integration, guided practices, and intuitive tools.
+                    We draw on both ancient wisdom-such as Nerve Center alignment-and modern biofeedback to make these benefits accessible in your daily life through wearable integration, guided practices, and intuitive tools.
                   </p>
                 </div>
               )}
@@ -593,7 +593,7 @@ const HoundHeartLandingPage = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Advanced Chakra Practices</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Advanced Nerve Center Practices</h3>
                 <p className="text-gray-600">Deep dive into energy healing techniques for you and your dog</p>
               </div>
             </div>
@@ -737,8 +737,8 @@ const HoundHeartLandingPage = () => {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-900 text-lg mb-1">Unlimited Chakra Rituals</h4>
-                <p className="text-base text-gray-600">Access to all 7 chakra alignment practices and advanced guided meditations</p>
+                <h4 className="font-semibold text-gray-900 text-lg mb-1">Unlimited Nerve Center Rituals</h4>
+                <p className="text-base text-gray-600">Access to all 7 Nerve Center alignment practices and advanced guided meditations</p>
               </div>
               <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1307,7 +1307,7 @@ const HoundHeartLandingPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
         >
-          Discover the spiritual connection between you and your canine companion through guided chakra practices,
+          Discover the spiritual connection between you and your canine companion through guided Nerve Center practices,
           mindful journaling, and a supportive community of fellow dog lovers.
         </motion.p>
 
@@ -1506,14 +1506,14 @@ const HoundHeartLandingPage = () => {
               style={{ transitionDelay: '0.2s' }}
             >
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-orange-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={ChakraRitualsIcon} alt="Chakra Rituals" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+                <img src={ChakraRitualsIcon} alt="Nerve Center Rituals" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">Chakra Rituals</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">Nerve Center Rituals</h3>
               <p className="text-gray-600 mb-4 text-sm leading-relaxed">
                 Experience guided meditation and energy alignment practices designed for you and your canine companion.
               </p>
               <button
-                onClick={() => handleTryNow('Chakra Rituals')}
+                onClick={() => handleTryNow('Nerve Center Rituals')}
                 className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
               >
                 Try Now →

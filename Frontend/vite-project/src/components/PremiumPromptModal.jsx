@@ -48,7 +48,7 @@ const PremiumPromptModal = ({ isOpen, onClose, messageText }) => {
 
                 {/* Benefits */}
                 <div className="space-y-2 mb-6">
-                    {['Full Sacred Guide Access', 'Download PDF', 'Unlimited Chakra Rituals', 'Premium Features'].map((benefit, idx) => (
+                    {['Full Sacred Guide Access', 'Download PDF', 'Unlimited Nerve Center Rituals', 'Premium Features'].map((benefit, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
                             <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

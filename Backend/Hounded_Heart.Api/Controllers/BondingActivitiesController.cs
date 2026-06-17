@@ -73,7 +73,7 @@ namespace Hounded_Heart.Api.Controllers
                         if (a.ActivityName == "Energy Check-in" && hasCheckInToday)
                             isCompleted = true;
                             
-                        if (a.ActivityName == "Chakra Sync" && hasChakraSyncToday)
+                        if (a.ActivityName == "Nerve Center Sync" && hasChakraSyncToday)
                             isCompleted = true;
 
                         resultList.Add(new {

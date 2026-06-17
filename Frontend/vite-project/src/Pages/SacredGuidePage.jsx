@@ -40,17 +40,24 @@ const SacredGuidePage = () => {
 
         // 2. Fetch active Sacred Guide + check platform settings
         const loadGuide = async () => {
+            // Step A: Load the guide — isolated so nothing below can block it
             try {
                 const res = await apiService.getActiveSacredGuide();
                 const guide = res?.data;
-                if (guide?.sacredGuideId) {
-                    setSacredGuideId(guide.sacredGuideId);
+                // Support both camelCase (sacredGuideId) and PascalCase (SacredGuideId) from API
+                const guideId = guide?.sacredGuideId || guide?.SacredGuideId;
+                if (guideId) {
+                    setSacredGuideId(guideId);
                     setGuideData(guide);
                     if (guide.price != null) setGuidePrice(guide.price);
 
-                    // 3. Check if user already joined waitlist
-                    const statusRes = await apiService.getSacredGuideWaitlistStatus(guide.sacredGuideId);
-                    if (statusRes?.data?.joined) setHasJoined(true);
+                    // Step B: Waitlist check is SEPARATE — failure here never blocks the book
+                    try {
+                        const statusRes = await apiService.getSacredGuideWaitlistStatus(guideId);
+                        if (statusRes?.data?.joined) setHasJoined(true);
+                    } catch (_) {
+                        // New users won't have a waitlist entry — that's perfectly fine
+                    }
                 }
             } catch (err) {
                 console.error('Error loading guide:', err);

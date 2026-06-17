@@ -193,7 +193,7 @@ const LandingPage = () => {
                 variants={itemVariants}
               >
                 Connect with your canine companion on a deeper level through spiritual wellness, 
-                chakra alignment, and daily energetic rituals. Where most wellness apps treat symptoms, 
+                Nerve Center alignment, and daily energetic rituals. Where most wellness apps treat symptoms, 
                 Inner Current heals the sacred bond between you and your dog.
               </motion.p>
               <motion.div 
@@ -453,7 +453,7 @@ const LandingPage = () => {
               </motion.div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Get Personalized Practices</h3>
               <p className="text-gray-600">
-                Our AI instantly matches you with the perfect chakra alignment and bonding rituals for your situation
+                Our AI instantly matches you with the perfect Nerve Center alignment and bonding rituals for your situation
               </p>
             </motion.div>
 
@@ -471,7 +471,7 @@ const LandingPage = () => {
               </motion.div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Practice & Connect</h3>
               <p className="text-gray-600">
-                Follow guided meditations, perform chakra sync rituals, and watch your bonded score grow
+                Follow guided meditations, perform Nerve Center sync rituals, and watch your bonded score grow
               </p>
             </motion.div>
           </motion.div>
@@ -526,7 +526,7 @@ const LandingPage = () => {
                 </div>
               </div>
               <p className="text-gray-600 italic mb-6">
-                "Inner Current has transformed my relationship with Luna. The chakra sync rituals have brought us closer than ever, and I can feel our energetic bond strengthening daily."
+                "Inner Current has transformed my relationship with Luna. The Nerve Center sync rituals have brought us closer than ever, and I can feel our energetic bond strengthening daily."
               </p>
               <div className="flex items-center">
                 <motion.div 
@@ -642,7 +642,7 @@ const LandingPage = () => {
               </motion.div>
               <p className="text-gray-400 max-w-md">
                 Connecting conscious pet parents with their canine companions through spiritual wellness, 
-                chakra alignment, and daily energetic rituals.
+                Nerve Center alignment, and daily energetic rituals.
               </p>
             </div>
 

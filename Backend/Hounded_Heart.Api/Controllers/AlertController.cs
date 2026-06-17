@@ -26,18 +26,18 @@ namespace Hounded_Heart.Api.Controllers
         }
 
         /// <summary>
-        /// TEST ONLY — bypasses all stress math and directly fires a WellnessAlert + SMS.
-        /// Use this to verify Twilio SMS delivery without needing a baseline.
+        /// TEST ONLY — bypasses all stress math and directly fires a WellnessAlert + email notification.
+        /// Use this to verify SMTP delivery without needing a baseline.
         /// </summary>
         [HttpPost("force-test/{userId}/{dogId}")]
         public async Task<IActionResult> ForceTestAlert(Guid userId, Guid dogId)
         {
             if (_environment.IsProduction())
                 return NotFound();
-            var humanProfile = await _context.HumanProfiles
-                .FirstOrDefaultAsync(h => h.UserId == userId);
-
-            var phoneNumber = humanProfile?.PhoneNumber;
+            var userEmail = await _context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
 
             var alert = new WellnessAlert
             {
@@ -58,22 +58,22 @@ namespace Hounded_Heart.Api.Controllers
             _context.WellnessAlerts.Add(alert);
             await _context.SaveChangesAsync();
 
-            bool smsSent = false;
-            string smsNote = "No phone number found in HumanProfiles for this user.";
+            bool emailSent = false;
+            string emailNote = "No email found for this user.";
 
-            if (!string.IsNullOrEmpty(phoneNumber))
+            if (!string.IsNullOrWhiteSpace(userEmail))
             {
-                string smsBody = $"HoundHeart TEST Alert: Your body shows signs of stress. Your dog is resting nearby. Sit quietly with them and focus on their breathing.";
-                smsSent = await _smsService.SendSms(userId, phoneNumber, "stress_alert", smsBody, alert.Id);
-                smsNote = smsSent ? $"SMS sent to {phoneNumber}" : $"SMS failed for {phoneNumber} — check MessageLogs";
+                string smsBody = "HoundHeart TEST Alert: Your body shows signs of stress. Your dog is resting nearby. Sit quietly with them and focus on their breathing.";
+                emailSent = await _smsService.SendSms(userId, userEmail, "stress_alert", smsBody, alert.Id);
+                emailNote = emailSent ? "Email notification sent successfully." : "Email notification failed — check MessageLogs";
             }
 
             return Ok(ResponseHelper.Success(new
             {
                 AlertId = alert.Id,
-                SmsSent = smsSent,
-                PhoneNumber = phoneNumber,
-                Note = smsNote
+                EmailSent = emailSent,
+                Email = userEmail,
+                Note = emailNote
             }, "Force test alert fired.", 200));
         }
 

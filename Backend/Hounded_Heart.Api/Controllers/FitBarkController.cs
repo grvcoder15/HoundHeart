@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 using Hounded_Heart.Models.Data;
 using Hounded_Heart.Models.Models;
 using Hounded_Heart.Services.Services;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Hounded_Heart.Api.Controllers
 {
@@ -21,24 +24,52 @@ namespace Hounded_Heart.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<FitBarkController> _logger;
         private readonly ISmsService _smsService;
+        private readonly IMemoryCache _memoryCache;
 
-        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger, ISmsService smsService)
+        public FitBarkController(IFitBarkService fitBarkService, AppDbContext context, IConfiguration configuration, ILogger<FitBarkController> logger, ISmsService smsService, IMemoryCache memoryCache)
         {
             _fitBarkService = fitBarkService;
             _context = context;
             _configuration = configuration;
             _logger = logger;
             _smsService = smsService;
+            _memoryCache = memoryCache;
+        }
+
+        private Guid? ResolveCurrentUserId()
+        {
+            var userIdClaim = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+            {
+                return userId;
+            }
+
+            return null;
         }
 
         [HttpGet("auth/authorize")]
-        public async Task<IActionResult> Authorize()
+        public async Task<IActionResult> Authorize([FromQuery] Guid? userId = null)
         {
             try
             {
                 var authUrl = await _fitBarkService.GetAuthorizationUrlAsync();
                 var redirectUri = _configuration["FitBark:RedirectUri"] ?? string.Empty;
                 var requiresManualCode = string.Equals(redirectUri.Trim(), "urn:ietf:wg:oauth:2.0:oob", StringComparison.OrdinalIgnoreCase);
+                var effectiveUserId = userId ?? ResolveCurrentUserId();
+
+                if (effectiveUserId.HasValue && effectiveUserId.Value != Guid.Empty)
+                {
+                    var uri = new Uri(authUrl);
+                    var parsedQuery = QueryHelpers.ParseQuery(uri.Query);
+                    if (parsedQuery.TryGetValue("state", out var stateValues))
+                    {
+                        var state = stateValues.FirstOrDefault();
+                        if (!string.IsNullOrWhiteSpace(state))
+                        {
+                            _memoryCache.Set($"fitbark_oauth_user_{state}", effectiveUserId.Value, TimeSpan.FromMinutes(15));
+                        }
+                    }
+                }
 
                 return Ok(new
                 {
@@ -70,15 +101,29 @@ namespace Hounded_Heart.Api.Controllers
 
             try
             {
-                var toNumber = _configuration["Twilio:ToNumber"];
-                if (!string.IsNullOrEmpty(toNumber))
+                Guid? currentUserId = ResolveCurrentUserId();
+                if (!currentUserId.HasValue && !string.IsNullOrWhiteSpace(state) && _memoryCache.TryGetValue($"fitbark_oauth_user_{state}", out Guid cachedUserId))
                 {
-                    await _smsService.SendSms(Guid.Empty, toNumber, "system", "🐾 HoundHeart: Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                    currentUserId = cachedUserId;
+                }
+
+                if (currentUserId.HasValue)
+                {
+                    var userEmail = await _context.Users
+                        .AsNoTracking()
+                        .Where(u => u.UserId == currentUserId.Value)
+                        .Select(u => u.Email)
+                        .FirstOrDefaultAsync();
+
+                    if (!string.IsNullOrWhiteSpace(userEmail))
+                    {
+                        await _smsService.SendSms(currentUserId.Value, userEmail, "system", "Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to send FitBark connected SMS");
+                _logger.LogWarning(ex, "Failed to send FitBark connected email notification");
             }
 
             // Auto-fetch and save dog details after successful token exchange
@@ -146,15 +191,29 @@ namespace Hounded_Heart.Api.Controllers
 
             try
             {
-                var toNumber = _configuration["Twilio:ToNumber"];
-                if (!string.IsNullOrEmpty(toNumber))
+                var effectiveUserId = request.UserId ?? Guid.Empty;
+                if (effectiveUserId == Guid.Empty)
                 {
-                    await _smsService.SendSms(Guid.Empty, toNumber, "system", "🐾 HoundHeart: Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                    effectiveUserId = ResolveCurrentUserId() ?? Guid.Empty;
+                }
+
+                if (effectiveUserId != Guid.Empty)
+                {
+                    var userEmail = await _context.Users
+                        .AsNoTracking()
+                        .Where(u => u.UserId == effectiveUserId)
+                        .Select(u => u.Email)
+                        .FirstOrDefaultAsync();
+
+                    if (!string.IsNullOrWhiteSpace(userEmail))
+                    {
+                        await _smsService.SendSms(effectiveUserId, userEmail, "system", "Your FitBark device is now connected! We'll start tracking your dog's activity.");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to send FitBark connected SMS");
+                _logger.LogWarning(ex, "Failed to send FitBark connected email notification");
             }
 
             // Auto-fetch and save dog details after successful token exchange
@@ -275,9 +334,36 @@ namespace Hounded_Heart.Api.Controllers
         }
 
         [HttpPost("auth/disconnect")]
-        public IActionResult Disconnect()
+        public async Task<IActionResult> Disconnect([FromQuery] Guid? userId = null)
         {
-            _fitBarkService.Disconnect();
+            var effectiveUserId = userId ?? ResolveCurrentUserId();
+            _fitBarkService.Disconnect(effectiveUserId);
+
+            if (effectiveUserId.HasValue && effectiveUserId.Value != Guid.Empty)
+            {
+                try
+                {
+                    var userEmail = await _context.Users
+                        .AsNoTracking()
+                        .Where(u => u.UserId == effectiveUserId.Value)
+                        .Select(u => u.Email)
+                        .FirstOrDefaultAsync();
+
+                    if (!string.IsNullOrWhiteSpace(userEmail))
+                    {
+                        await _smsService.SendSms(
+                            effectiveUserId.Value,
+                            userEmail,
+                            "system",
+                            "Your FitBark device has been disconnected successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send FitBark disconnected email notification");
+                }
+            }
+
             return Ok(new
             {
                 success = true,
@@ -604,6 +690,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             public string? Code { get; set; }
             public string? State { get; set; }
+            public Guid? UserId { get; set; }
         }
     }
 }

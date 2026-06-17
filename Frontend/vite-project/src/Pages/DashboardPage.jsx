@@ -36,7 +36,7 @@ const ACTIVITY_CATEGORIES = {
   'Training Session': 'Physical',
 
   // Spiritual / Ritual
-  'Chakra Sync': 'Spiritual',
+  'Nerve Center Sync': 'Spiritual',
   'Synchronized Breathing': 'Spiritual',
   'Meditation Together': 'Spiritual',
   'Bedtime Blessing': 'Spiritual',
@@ -59,6 +59,7 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [bondTab, setBondTab] = useState('checkins');
   const [progressTimeframe, setProgressTimeframe] = useState('this-week');
+  const [isMuted, setIsMuted] = useState(true);
 
   // Handle cross-page actions (like opening change password from other pages)
   useEffect(() => {
@@ -174,7 +175,7 @@ const DashboardPage = () => {
       if (!deepEqual(wlPrevRef.current.baseline, newBaseline)) {
         setWlBaseline(newBaseline);
         wlPrevRef.current.baseline = newBaseline;
-        
+
         if (newBaseline?.humanBaselineEstablished || newBaseline?.dogBaselineEstablished) {
           if (!localStorage.getItem('baseline_formed_popup_shown')) {
             showPopup('baseline_formed');
@@ -491,27 +492,27 @@ const DashboardPage = () => {
   const historicalScoresMap = calendarScoresMap;
 
   const getHistoricalWellnessData = (score) => {
-    if(!score) return { status: 'No Data', hrv: '--', bondSync: '--', hrvStability: 0, sharedActivity: 0, dogCalm: 0, sleep: 0 };
-    if(score >= 70) return { status: 'Calm', hrv: parseFloat((48 + score*0.1).toFixed(1)), bondSync: score, hrvStability: Math.min(100, score+5), sharedActivity: Math.min(100, score+2), dogCalm: Math.max(0, score-10), sleep: Math.min(100, score+3) };
-    if(score >= 50) return { status: 'Moderate', hrv: parseFloat((35 + score*0.15).toFixed(1)), bondSync: score, hrvStability: score, sharedActivity: Math.min(100, score+5), dogCalm: Math.max(0, score-5), sleep: Math.max(0, score-2) };
-    return { status: 'Stressed', hrv: parseFloat((25 + score*0.2).toFixed(1)), bondSync: score, hrvStability: Math.max(0, score-5), sharedActivity: Math.min(100, score+10), dogCalm: Math.max(0, score-15), sleep: Math.max(0, score-10) };
+    if (!score) return { status: 'No Data', hrv: '--', bondSync: '--', hrvStability: 0, sharedActivity: 0, dogCalm: 0, sleep: 0 };
+    if (score >= 70) return { status: 'Calm', hrv: parseFloat((48 + score * 0.1).toFixed(1)), bondSync: score, hrvStability: Math.min(100, score + 5), sharedActivity: Math.min(100, score + 2), dogCalm: Math.max(0, score - 10), sleep: Math.min(100, score + 3) };
+    if (score >= 50) return { status: 'Moderate', hrv: parseFloat((35 + score * 0.15).toFixed(1)), bondSync: score, hrvStability: score, sharedActivity: Math.min(100, score + 5), dogCalm: Math.max(0, score - 5), sleep: Math.max(0, score - 2) };
+    return { status: 'Stressed', hrv: parseFloat((25 + score * 0.2).toFixed(1)), bondSync: score, hrvStability: Math.max(0, score - 5), sharedActivity: Math.min(100, score + 10), dogCalm: Math.max(0, score - 15), sleep: Math.max(0, score - 10) };
   };
 
   const liveWellnessData = wlSyncScore
     ? {
-        hrv: wlSyncScore.humanHRV ?? wlStressStatus?.currentHRV ?? '--',
-        status: wlSyncScore.humanStatus?.label ?? (wlSyncScore.score >= 70 ? 'Calm' : wlSyncScore.score >= 45 ? 'Moderate' : 'Stressed'),
-        bondSync: wlSyncScore.score,
-        hrvStability: wlSyncScore.hrvStabilityScore ?? 0,
-        sharedActivity: wlSyncScore.sharedActivityScore ?? 0,
-        dogCalm: wlSyncScore.dogCalmScore ?? 0,
-        sleep: wlSyncScore.sleepQualityScore ?? 0,
-        humanScore: wlSyncScore.humanHealthScore ?? null,
-        humanSummary: wlSyncScore.humanStatus?.summary ?? '',
-        dogStatus: wlSyncScore.dogStatus?.label ?? 'Unknown',
-        dogScore: wlSyncScore.dogHealthScore ?? null,
-        dogSummary: wlSyncScore.dogStatus?.summary ?? '',
-      }
+      hrv: wlSyncScore.humanHRV ?? wlStressStatus?.currentHRV ?? '--',
+      status: wlSyncScore.humanStatus?.label ?? (wlSyncScore.score >= 70 ? 'Calm' : wlSyncScore.score >= 45 ? 'Moderate' : 'Stressed'),
+      bondSync: wlSyncScore.score,
+      hrvStability: wlSyncScore.hrvStabilityScore ?? 0,
+      sharedActivity: wlSyncScore.sharedActivityScore ?? 0,
+      dogCalm: wlSyncScore.dogCalmScore ?? 0,
+      sleep: wlSyncScore.sleepQualityScore ?? 0,
+      humanScore: wlSyncScore.humanHealthScore ?? null,
+      humanSummary: wlSyncScore.humanStatus?.summary ?? '',
+      dogStatus: wlSyncScore.dogStatus?.label ?? 'Unknown',
+      dogScore: wlSyncScore.dogHealthScore ?? null,
+      dogSummary: wlSyncScore.dogStatus?.summary ?? '',
+    }
     : { hrv: '--', status: 'No Data', bondSync: null, hrvStability: 0, sharedActivity: 0, dogCalm: 0, sleep: 0, humanScore: null, humanSummary: '', dogStatus: 'Unknown', dogScore: null, dogSummary: '' };
   const wellnessData = selectedHistoricalDate
     ? getHistoricalWellnessData(historicalScoresMap[selectedHistoricalDate])
@@ -523,7 +524,7 @@ const DashboardPage = () => {
   const getStatusTextColor = (status) => status === 'Calm' ? 'text-green-700' : status === 'Moderate' ? 'text-orange-500' : 'text-red-600';
   const isStressed = wellnessData.status === 'Stressed';
   const isModerate = wellnessData.status === 'Moderate';
-  const formatLastUpdated = (s) => s < 60 ? `${s}s ago` : `${Math.floor(s/60)}m ago`;
+  const formatLastUpdated = (s) => s < 60 ? `${s}s ago` : `${Math.floor(s / 60)}m ago`;
 
   // Baseline State
   const [baselineData, setBaselineData] = useState({ hr: 72, hrv: 48.4, steps: 566, sleep: 83 });
@@ -1259,7 +1260,7 @@ const DashboardPage = () => {
 
       const currentScoreInt = Math.round(score);
       setBondedScore(currentScoreInt);
-      
+
       const lastKnownScore = localStorage.getItem('last_known_bond_score');
       if (lastKnownScore) {
         const diff = currentScoreInt - parseInt(lastKnownScore, 10);
@@ -1320,7 +1321,7 @@ const DashboardPage = () => {
         fetchBondedScore();
         fetchDashboardStats();
       }
-      
+
       loadBondingActivities(); // Refresh activities tab immediately
 
       // Refresh ratings from server to reflect persisted values
@@ -1509,7 +1510,7 @@ const DashboardPage = () => {
       const todayLocalDate = formatLocalDate(new Date());
       if (chakraCompletedDate === todayLocalDate) {
         activitiesWithProps
-          .filter(a => (a.activityName || '').trim().toLowerCase() === 'chakra sync')
+          .filter(a => (a.activityName || '').trim().toLowerCase() === 'nerve center sync')
           .forEach(a => todayIds.add(normalizeId(a.activityId)));
       }
 
@@ -1749,20 +1750,20 @@ const DashboardPage = () => {
         Behaviors: selectedBehaviors // Send selected behaviors
       };
 
-      console.log('Syncing Chakra with data:', syncData);
+      console.log('Syncing Nerve Center with data:', syncData);
 
       const response = await apiService.syncChakra(syncData);
 
-      console.log('Chakra Sync Response:', response);
+      console.log('Nerve Center Sync Response:', response);
 
       // Extract data from response wrapper
       const syncData_response = response?.data || response;
 
       if (syncData_response) {
         setHarmonyScore(syncData_response.harmonyScore || 0);
-        setSuggestedRitual(syncData_response.dominantBlockage ? `${syncData_response.dominantBlockage} Chakra Healing` : 'Chakra Sync Ritual');
+        setSuggestedRitual(syncData_response.dominantBlockage ? `${syncData_response.dominantBlockage} Nerve Center Healing` : 'Nerve Center Sync Ritual');
         setRitualDescription(syncData_response.dominantBlockage
-          ? `Focus on your ${syncData_response.dominantBlockage} chakra to restore balance and harmony.`
+          ? `Focus on your ${syncData_response.dominantBlockage} nerve center to restore balance and harmony.`
           : 'Align your energy centers with your companion through guided meditation.');
 
         // Update UI with adjusted scores if available
@@ -1781,12 +1782,12 @@ const DashboardPage = () => {
           if (chakra) {
             setRecommendedChakra({
               ...chakra,
-              audio: syncData_response.audioUrl && syncData_response.audioUrl !== 'Audio not available for this chakra yet.'
+              audio: syncData_response.audioUrl && syncData_response.audioUrl !== 'Audio not available for this nerve center yet.'
                 ? syncData_response.audioUrl
                 : chakra.audio
             });
             // Store audio URL for playback
-            if (syncData_response.audioUrl && syncData_response.audioUrl !== 'Audio not available for this chakra yet.') {
+            if (syncData_response.audioUrl && syncData_response.audioUrl !== 'Audio not available for this nerve center yet.') {
               localStorage.setItem('currentChakraAudio', syncData_response.audioUrl);
             } else {
               localStorage.removeItem('currentChakraAudio');
@@ -1825,7 +1826,7 @@ const DashboardPage = () => {
   const chakraData = [
     {
       id: 1,
-      name: "Root Chakra",
+      name: "Root Nerve Center",
       location: "Base of spine",
       color: "red",
       timer: "1:00",
@@ -1842,7 +1843,7 @@ const DashboardPage = () => {
     },
     {
       id: 2,
-      name: "Sacral Chakra",
+      name: "Sacral Nerve Center",
       location: "Below navel",
       color: "orange",
       timer: "1:00",
@@ -1859,7 +1860,7 @@ const DashboardPage = () => {
     },
     {
       id: 3,
-      name: "Solar Plexus",
+      name: "Solar Plexus Nerve Center",
       location: "Above navel",
       color: "yellow",
       timer: "1:00",
@@ -1876,7 +1877,7 @@ const DashboardPage = () => {
     },
     {
       id: 4,
-      name: "Heart Chakra",
+      name: "Heart Nerve Center",
       location: "Center of chest",
       color: "green",
       timer: "1:30",
@@ -1893,7 +1894,7 @@ const DashboardPage = () => {
     },
     {
       id: 5,
-      name: "Throat Chakra",
+      name: "Throat Nerve Center",
       location: "Base of throat",
       color: "blue",
       timer: "1:00",
@@ -1910,7 +1911,7 @@ const DashboardPage = () => {
     },
     {
       id: 6,
-      name: "Third Eye",
+      name: "Insight Nerve Center",
       location: "Between eyebrows",
       color: "indigo",
       timer: "1:30",
@@ -1927,7 +1928,7 @@ const DashboardPage = () => {
     },
     {
       id: 7,
-      name: "Crown Chakra",
+      name: "Crown Nerve Center",
       location: "Top of head",
       color: "purple",
       timer: "1:30",
@@ -2091,7 +2092,7 @@ const DashboardPage = () => {
   })();
 
   const handleStartRitual = async () => {
-    console.log('Start Guided Chakra Ritual clicked');
+    console.log('Start Guided Nerve Center Ritual clicked');
 
     // Prepare data for sync
     const chakraData = {
@@ -2112,7 +2113,7 @@ const DashboardPage = () => {
         setRitualDescription(response.ritualDescription);
         setHarmonyScore(response.harmonyScore);
         setShowRitualView(true);
-        toast.success("Chakra alignment calculated!");
+        toast.success("Nerve Center alignment calculated!");
       }
     } catch (err) {
       console.error("Sync failed", err);
@@ -2145,11 +2146,12 @@ const DashboardPage = () => {
       const currentStepChakra = chakraData[currentChakraStep - 1];
       let audioUrl = recommendedChakra?.audio || localStorage.getItem('currentChakraAudio') || currentStepChakra?.audio;
 
-      if (audioUrl && audioUrl !== 'Audio not available for this chakra yet.') {
+      if (audioUrl && audioUrl !== 'Audio not available for this nerve center yet.') {
         let currentAudio = audioInstance;
 
         if (!currentAudio || currentAudio.src !== audioUrl) {
           currentAudio = new Audio(audioUrl);
+          currentAudio.muted = isMuted;
 
           currentAudio.onloadedmetadata = () => {
             setAudioDuration(currentAudio.duration);
@@ -2175,9 +2177,9 @@ const DashboardPage = () => {
                 if (wasAwarded) {
                   toast.success("Harmony Ritual Complete! +2 Bonded Points Awarded. ✨");
                 } else if (alreadyDone) {
-                  toast.success("Chakra ritual already completed for today.");
+                  toast.success("Nerve Center ritual already completed for today.");
                 } else {
-                  toast.success("Chakra ritual completion saved.");
+                  toast.success("Nerve Center ritual completion saved.");
                 }
 
                 // Persist local completion marker to avoid same-session visual mismatch.
@@ -2187,7 +2189,7 @@ const DashboardPage = () => {
                 setCompletedActivityIds(prev => {
                   const next = new Set(prev);
                   bondingActivities
-                    .filter(a => (a.activityName || '').trim().toLowerCase() === 'chakra sync')
+                    .filter(a => (a.activityName || '').trim().toLowerCase() === 'nerve center sync')
                     .forEach(a => next.add(normalizeId(a.activityId)));
                   return next;
                 });
@@ -2210,6 +2212,14 @@ const DashboardPage = () => {
     }
   };
 
+  const handleMuteToggle = () => {
+    setIsMuted(prev => {
+      const next = !prev;
+      if (audioInstance) audioInstance.muted = next;
+      return next;
+    });
+  };
+
   const handleSeek = (e) => {
     const seekTime = (e.target.value / 100) * audioDuration;
     if (audioInstance) {
@@ -2217,6 +2227,7 @@ const DashboardPage = () => {
       setAudioProgress(e.target.value);
     }
   };
+
 
   const handleResetAudio = () => {
     if (audioInstance) {
@@ -2356,28 +2367,37 @@ const DashboardPage = () => {
     }
   };
 
-  // Chakra navigation functions
-  const handlePreviousChakra = () => {
-    if (currentChakraStep > 1) {
-      const newStep = currentChakraStep - 1;
-      setCurrentChakraStep(newStep);
-      setRecommendedChakra(chakraData[newStep - 1]);
-      if (chakraData[newStep - 1]?.audio) {
-        localStorage.setItem('currentChakraAudio', chakraData[newStep - 1].audio);
-      }
+const handlePreviousChakra = () => {
+  if (currentChakraStep > 1) {
+    const newStep = currentChakraStep - 1;
+    setCurrentChakraStep(newStep);
+    setRecommendedChakra(chakraData[newStep - 1]);
+    if (chakraData[newStep - 1]?.audio) {
+      localStorage.setItem('currentChakraAudio', chakraData[newStep - 1].audio);
     }
-  };
+    setAudioDuration(0);
+    setAudioCurrentTime(0);
+    setAudioProgress(0);
+    setIsPlaying(false);
+    if (audioInstance) { audioInstance.pause(); audioInstance.currentTime = 0; }
+  }
+};
 
-  const handleNextChakra = () => {
-    if (currentChakraStep < 7) {
-      const newStep = currentChakraStep + 1;
-      setCurrentChakraStep(newStep);
-      setRecommendedChakra(chakraData[newStep - 1]);
-      if (chakraData[newStep - 1]?.audio) {
-        localStorage.setItem('currentChakraAudio', chakraData[newStep - 1].audio);
-      }
+const handleNextChakra = () => {
+  if (currentChakraStep < 7) {
+    const newStep = currentChakraStep + 1;
+    setCurrentChakraStep(newStep);
+    setRecommendedChakra(chakraData[newStep - 1]);
+    if (chakraData[newStep - 1]?.audio) {
+      localStorage.setItem('currentChakraAudio', chakraData[newStep - 1].audio);
     }
-  };
+    setAudioDuration(0);
+    setAudioCurrentTime(0);
+    setAudioProgress(0);
+    setIsPlaying(false);
+    if (audioInstance) { audioInstance.pause(); audioInstance.currentTime = 0; }
+  }
+};
 
   return (
 
@@ -2760,7 +2780,7 @@ const DashboardPage = () => {
                 {/* Chakra Sync - Plus/Premium */}
                 <button
                   onClick={() => hasChakraSyncAccess ? handleQuickAction('chakra-sync') : handleUpgrade()}
-                  title={hasChakraSyncAccess ? 'Open Chakra Sync' : 'Plus/Premium Feature - Upgrade to access'}
+                  title={hasChakraSyncAccess ? 'Open Nerve Center Sync' : 'Plus/Premium Feature - Upgrade to access'}
                   className={`bg-white text-gray-800 p-4 rounded-xl shadow-sm relative transition-all duration-300 ${hasChakraSyncAccess
                     ? 'hover:shadow-lg transform hover:scale-105 border-2 border-transparent'
                     : 'opacity-50 cursor-not-allowed'
@@ -2779,7 +2799,7 @@ const DashboardPage = () => {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </div>
-                    <h3 className={`text-lg font-semibold mb-2 ${hasChakraSyncAccess ? 'text-gray-900' : 'text-gray-500'}`}>Chakra Sync</h3>
+                    <h3 className={`text-lg font-semibold mb-2 ${hasChakraSyncAccess ? 'text-gray-900' : 'text-gray-500'}`}>Nerve Center Sync</h3>
                     <p className={`text-sm ${hasChakraSyncAccess ? 'text-gray-500' : 'text-gray-400'}`}>Align your energy with your dog</p>
                   </div>
                 </button>
@@ -2911,7 +2931,7 @@ const DashboardPage = () => {
                                   ))}
                                 </div>
                               )}
-                              
+
                               {/* Show image thumbnail if available */}
                               {entry.imageUrl && (
                                 <div className="mt-3">
@@ -2925,7 +2945,7 @@ const DashboardPage = () => {
                             </div>
                           );
                         })}
-                        
+
                         {/* Add Create Entry Button Below Recent Memories */}
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <button
@@ -3158,9 +3178,8 @@ const DashboardPage = () => {
                       { label: 'Activity Scan', icon: '🏃', done: recalibrateProgress > 75 },
                       { label: 'Sleep Pattern', icon: '😴', done: recalibrateProgress > 90 },
                     ].map(item => (
-                      <div key={item.label} className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
-                        item.done ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-100'
-                      }`}>
+                      <div key={item.label} className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${item.done ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-100'
+                        }`}>
                         <span className="text-lg">{item.icon}</span>
                         <span className={`text-sm font-medium flex-1 text-left ${item.done ? 'text-green-700' : 'text-gray-500'}`}>{item.label}</span>
                         {item.done
@@ -3215,8 +3234,8 @@ const DashboardPage = () => {
                         {wlBaseline?.humanBaselineEstablished
                           ? 'Your baseline is complete!'
                           : wlVitalsCount >= wlRequiredCount
-                          ? 'Ready to create baseline!'
-                          : `~${Math.ceil((wlRequiredCount - wlVitalsCount) * 1.5)} min remaining`}
+                            ? 'Ready to create baseline!'
+                            : `~${Math.ceil((wlRequiredCount - wlVitalsCount) * 1.5)} min remaining`}
                       </p>
 
                       {/* Progress bar */}
@@ -3228,8 +3247,8 @@ const DashboardPage = () => {
                             background: wlBaseline?.humanBaselineEstablished
                               ? 'linear-gradient(90deg,#22c55e,#16a34a)'
                               : wlVitalsCount >= wlRequiredCount
-                              ? 'linear-gradient(90deg,#fbbf24,#f59e0b)'
-                              : 'linear-gradient(90deg,#ec4899,#f43f5e)'
+                                ? 'linear-gradient(90deg,#fbbf24,#f59e0b)'
+                                : 'linear-gradient(90deg,#ec4899,#f43f5e)'
                           }}
                         ></div>
                       </div>
@@ -3280,224 +3299,223 @@ const DashboardPage = () => {
               /* ── Baseline established: show live wellness dashboard ──────── */
               <div className={`space-y-4 transition-all duration-500 ${isRecalibrating ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
 
-              {/* Header info row */}
-              <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  <span>{wlWeather?.locationName || 'Detecting location...'}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {selectedHistoricalDate ? (
-                    <button
-                      onClick={() => setSelectedHistoricalDate(null)}
-                      className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1.5 rounded-full text-white shadow-md hover:from-blue-600 hover:to-indigo-600 transition"
-                    >
-                      <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                      <span className="font-semibold text-sm">Today / Live Data</span>
-                    </button>
-                  ) : (
-                    <>
-                      <div className={`w-2 h-2 rounded-full animate-pulse ${wlActiveAlert ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                      <span>Last updated {wlSecondsSince}s ago</span>
-                    </>
+                {/* Header info row */}
+                <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span>{wlWeather?.locationName || 'Detecting location...'}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {selectedHistoricalDate ? (
+                      <button
+                        onClick={() => setSelectedHistoricalDate(null)}
+                        className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1.5 rounded-full text-white shadow-md hover:from-blue-600 hover:to-indigo-600 transition"
+                      >
+                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        <span className="font-semibold text-sm">Today / Live Data</span>
+                      </button>
+                    ) : (
+                      <>
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${wlActiveAlert ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                        <span>Last updated {wlSecondsSince}s ago</span>
+                      </>
+                    )}
+                  </div>
+                  {wlWeather && (
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                      <span>{Math.round(wlWeather.temperatureCelsius || 0)}°C • {wlWeather.condition || ''}</span>
+                    </div>
                   )}
                 </div>
-                {wlWeather && (
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-                    <span>{Math.round(wlWeather.temperatureCelsius || 0)}°C • {wlWeather.condition || ''}</span>
-                  </div>
-                )}
-              </div>
 
-              {/* ── You + Dog status cards ──────────────────────────────────── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* You Card — driven by real API */}
-                {(() => {
-                  const hasAlert = !!wlActiveAlert;
-                  const humanStatus = wlSyncScore?.humanStatus;
-                  const currentHRV = wlSyncScore?.humanHRV ?? wlActiveAlert?.hrvAtAlert ?? wlStressStatus?.currentHRV ?? null;
-                  const baselineHRV = wlBaseline?.avgHRV ?? null;
-                  const statusLabel = humanStatus?.label ?? (hasAlert ? 'Stressed' : 'Calm');
-                  const humanScore = humanStatus?.score ?? wlSyncScore?.humanHealthScore ?? null;
-                  const isHumanStressed = statusLabel === 'Stressed';
-                  const isHumanModerate = statusLabel === 'Moderate';
-                  return (
-                    <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${
-                      isHumanStressed ? 'bg-red-50 border-red-200' : isHumanModerate ? 'bg-orange-50 border-orange-100' : 'bg-blue-50/50 border-blue-100'
-                    }`}>
-                      <div className="absolute top-6 right-6">
-                        <svg className={`w-6 h-6 ${isHumanStressed ? 'text-red-500' : isHumanModerate ? 'text-orange-400' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                {/* ── You + Dog status cards ──────────────────────────────────── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* You Card — driven by real API */}
+                  {(() => {
+                    const hasAlert = !!wlActiveAlert;
+                    const humanStatus = wlSyncScore?.humanStatus;
+                    const currentHRV = wlSyncScore?.humanHRV ?? wlActiveAlert?.hrvAtAlert ?? wlStressStatus?.currentHRV ?? null;
+                    const baselineHRV = wlBaseline?.avgHRV ?? null;
+                    const statusLabel = humanStatus?.label ?? (hasAlert ? 'Stressed' : 'Calm');
+                    const humanScore = humanStatus?.score ?? wlSyncScore?.humanHealthScore ?? null;
+                    const isHumanStressed = statusLabel === 'Stressed';
+                    const isHumanModerate = statusLabel === 'Moderate';
+                    return (
+                      <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${isHumanStressed ? 'bg-red-50 border-red-200' : isHumanModerate ? 'bg-orange-50 border-orange-100' : 'bg-blue-50/50 border-blue-100'
+                        }`}>
+                        <div className="absolute top-6 right-6">
+                          <svg className={`w-6 h-6 ${isHumanStressed ? 'text-red-500' : isHumanModerate ? 'text-orange-400' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        </div>
+                        <div className="text-sm font-medium text-gray-500 mb-4">You</div>
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className={`w-3 h-3 rounded-full ${isHumanStressed ? 'bg-red-500 animate-pulse' : isHumanModerate ? 'bg-orange-400' : 'bg-green-500'}`}></div>
+                          <div className={`text-lg font-bold ${isHumanStressed ? 'text-red-600' : isHumanModerate ? 'text-orange-500' : 'text-green-700'}`}>{statusLabel}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-sm text-gray-600">HRV: <span className="font-medium text-gray-900">{currentHRV != null ? `${currentHRV.toFixed(1)} ms` : '—'}</span></div>
+                          {humanScore != null && <div className="text-sm text-gray-600">Health Score: <span className="font-medium text-gray-900">{humanScore}/100</span></div>}
+                          {baselineHRV != null && <div className="text-xs text-gray-400">Baseline: {baselineHRV.toFixed(1)} ms</div>}
+                          {currentHRV != null && baselineHRV != null && currentHRV < baselineHRV && (
+                            <div className={`text-xs font-semibold mt-1 ${currentHRV < 35 ? 'text-red-500' : 'text-orange-500'}`}>
+                              ↓ {(baselineHRV - currentHRV).toFixed(1)} ms below baseline
+                            </div>
+                          )}
+                          {currentHRV != null && baselineHRV != null && currentHRV >= baselineHRV && (
+                            <div className="text-xs font-semibold mt-1 text-green-600">↑ Above baseline</div>
+                          )}
+                          {humanStatus?.summary && <div className="text-xs text-gray-500 pt-1">{humanStatus.summary}</div>}
+                        </div>
                       </div>
-                      <div className="text-sm font-medium text-gray-500 mb-4">You</div>
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className={`w-3 h-3 rounded-full ${isHumanStressed ? 'bg-red-500 animate-pulse' : isHumanModerate ? 'bg-orange-400' : 'bg-green-500'}`}></div>
-                        <div className={`text-lg font-bold ${isHumanStressed ? 'text-red-600' : isHumanModerate ? 'text-orange-500' : 'text-green-700'}`}>{statusLabel}</div>
+                    );
+                  })()}
+
+                  {/* Dog Card — driven by real API */}
+                  {!wlIsDogConnected ? (
+                    <div className="rounded-2xl p-4 shadow-sm border bg-orange-50/50 border-orange-100 relative">
+                      <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                        <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="w-8 h-8 text-orange-400" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                          </svg>
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-lg font-bold text-gray-900 mb-2">Connect Your Dog's Device</h3>
+                          <p className="text-gray-500 text-sm max-w-xs">Please connect your dog's FitBark collar to start collecting health data and create your dog's wellness baseline.</p>
+                        </div>
+                        <button
+                          onClick={() => navigate('/integrations')}
+                          className="mt-2 px-4 py-2 bg-orange-400 text-white rounded-full text-sm font-medium hover:bg-orange-500 transition-colors"
+                        >
+                          Connect Dog Device
+                        </button>
                       </div>
-                      <div className="space-y-1">
-                        <div className="text-sm text-gray-600">HRV: <span className="font-medium text-gray-900">{currentHRV != null ? `${currentHRV.toFixed(1)} ms` : '—'}</span></div>
-                        {humanScore != null && <div className="text-sm text-gray-600">Health Score: <span className="font-medium text-gray-900">{humanScore}/100</span></div>}
-                        {baselineHRV != null && <div className="text-xs text-gray-400">Baseline: {baselineHRV.toFixed(1)} ms</div>}
-                        {currentHRV != null && baselineHRV != null && currentHRV < baselineHRV && (
-                          <div className={`text-xs font-semibold mt-1 ${currentHRV < 35 ? 'text-red-500' : 'text-orange-500'}`}>
-                            ↓ {(baselineHRV - currentHRV).toFixed(1)} ms below baseline
+                    </div>
+                  ) : (
+                    (() => {
+                      const dogStatus = wlSyncScore?.dogStatus;
+                      const dogState = dogStatus?.label || wlDogVitals?.state || 'Unknown';
+                      const dogCalm = dogStatus?.score ?? wlSyncScore?.dogHealthScore ?? wlDogVitals?.calmScore ?? wlSyncScore?.dogCalmScore ?? null;
+                      const dogActivity = wlDogVitals?.activityScore ?? null;
+                      const dogAnxious = dogState === 'Anxious' || (dogCalm != null && dogCalm < 30);
+                      const dogRestless = dogState === 'Restless' || (!dogAnxious && dogCalm != null && dogCalm < 55);
+                      return (
+                        <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${dogAnxious ? 'bg-red-50 border-red-200' : dogRestless ? 'bg-orange-50 border-orange-100' : 'bg-orange-50/50 border-orange-100'
+                          }`}>
+                          <div className="absolute top-6 right-6">
+                            <svg className={`w-6 h-6 ${dogAnxious ? 'text-red-500' : dogRestless ? 'text-orange-400' : 'text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
                           </div>
-                        )}
-                        {currentHRV != null && baselineHRV != null && currentHRV >= baselineHRV && (
-                          <div className="text-xs font-semibold mt-1 text-green-600">↑ Above baseline</div>
-                        )}
-                        {humanStatus?.summary && <div className="text-xs text-gray-500 pt-1">{humanStatus.summary}</div>}
+                          <div className="text-sm font-medium text-gray-500 mb-4">Your Dog</div>
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className={`w-3 h-3 rounded-full ${dogAnxious ? 'bg-red-500' : dogRestless ? 'bg-orange-400' : 'bg-orange-500'}`}></div>
+                            <div className={`text-lg font-bold ${dogAnxious ? 'text-red-600' : dogRestless ? 'text-orange-500' : 'text-orange-500'}`}>
+                              {dogCalm != null ? (dogAnxious ? 'Anxious' : dogRestless ? 'Restless' : dogState) : dogState}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            {dogCalm != null && <div className="text-sm text-gray-600">Health Score: <span className="font-medium text-gray-900">{dogCalm}/100</span></div>}
+                            {dogActivity != null && <div className="text-sm text-gray-600">Activity: <span className="font-medium text-gray-900">{dogActivity}</span></div>}
+                            {dogStatus?.summary && <div className="text-xs text-gray-500 pt-1">{dogStatus.summary}</div>}
+                          </div>
+                        </div>
+                      );
+                    })()
+                  )}
+                </div>
+
+                {/* ── Bond Sync Score ─────────────────────────────────────────── */}
+                {(wlSyncScore || (selectedHistoricalDate && calendarDateDetail)) && (() => {
+                  const isHistory = !!(selectedHistoricalDate && calendarDateDetail);
+                  const activeScore = isHistory ? calendarDateDetail.score : wlSyncScore.score;
+                  const activeTitle = isHistory ? calendarDateDetail.scoreTitle : wlSyncScore.scoreTitle;
+                  const activeDesc = isHistory ? calendarDateDetail.scoreDescription : wlSyncScore.scoreDescription;
+                  const activeAction = isHistory ? calendarDateDetail.scoreAction : wlSyncScore.scoreAction;
+                  const activeDisclaimer = isHistory ? calendarDateDetail.disclaimer : wlSyncScore.disclaimer;
+                  return (
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+                      {isHistory && (
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">
+                            📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          <button
+                            onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
+                            className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
+                          >✕ Back to Today</button>
+                        </div>
+                      )}
+                      <div className={`text-6xl font-bold mb-2 transition-colors duration-700 ${getScoreColor(activeScore)}`}>
+                        {isLoadingDateDetail ? '…' : activeScore}
                       </div>
+                      <div className="text-sm font-medium text-gray-500 mb-4">Bond Sync Score</div>
+
+                      {/* Live sub-metrics (only shown for today) */}
+                      {!isHistory && (
+                        <div className="grid grid-cols-4 gap-4">
+                          {[
+                            { label: 'HRV Stability', value: wlSyncScore.hrvStabilityScore },
+                            { label: 'Shared Activity', value: wlSyncScore.sharedActivityScore },
+                            { label: 'Dog Calm', value: wlSyncScore.dogCalmScore },
+                            { label: 'Sleep', value: wlSyncScore.sleepQualityScore },
+                          ].map(metric => (
+                            <div key={metric.label} className="text-left space-y-2">
+                              <div className="text-xs text-gray-600">{metric.label}</div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className={`h-1.5 rounded-full transition-all duration-700 ${getBarColor(metric.value)}`}
+                                  style={{ width: `${metric.value}%` }}
+                                ></div>
+                              </div>
+                              <div className="text-xs font-semibold text-gray-800">{metric.value}/100</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Historical metric tiles */}
+                      {isHistory && calendarDateDetail.detailedMetrics && (
+                        <div className="grid grid-cols-3 gap-3 mb-4">
+                          {[
+                            { icon: '❤️', label: 'Avg Heart Rate', value: calendarDateDetail.detailedMetrics.avgHeartRate > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm` : 'Processing...' },
+                            { icon: '📡', label: 'Avg HRV', value: calendarDateDetail.detailedMetrics.avgHRV > 0 ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms` : 'Processing...' },
+                            { icon: '👟', label: 'Total Steps', value: calendarDateDetail.detailedMetrics.totalSteps > 0 ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString() : 'Processing...' },
+                            { icon: '😴', label: 'Avg Sleep (min)', value: calendarDateDetail.detailedMetrics.avgSleepScore > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min` : 'Processing...' },
+                            { icon: '🧠', label: 'Avg Stress', value: calendarDateDetail.detailedMetrics.avgStressScore > 0 ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore) : 'Processing...' },
+                            { icon: '📊', label: 'Data Points', value: calendarDateDetail.detailedMetrics.dataPointsCount || '--' },
+                          ].map((m, i) => (
+                            <div key={i} className="bg-gray-50 rounded-xl p-3 flex flex-col items-center text-center">
+                              <span className="text-base mb-1">{m.icon}</span>
+                              <span className="text-sm font-bold text-gray-800">{m.value}</span>
+                              <span className="text-[10px] text-gray-400 mt-0.5">{m.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* AI Bond Narrative */}
+                      {activeTitle && (
+                        <div className="mt-10 border-t border-gray-100 pt-8 text-left">
+                          <h3 className={`text-lg font-bold mb-3 ${getScoreColor(activeScore)}`}>
+                            {activeTitle}
+                          </h3>
+                          <p className="text-gray-700 leading-relaxed mb-4">
+                            {activeDesc}
+                          </p>
+                          {activeAction && (
+                            <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
+                              <h4 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wide">What To Do</h4>
+                              <p className="text-slate-700 text-sm leading-relaxed">{activeAction}</p>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-400 italic">{activeDisclaimer}</p>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
 
-                {/* Dog Card — driven by real API */}
-                {!wlIsDogConnected ? (
-                  <div className="rounded-2xl p-4 shadow-sm border bg-orange-50/50 border-orange-100 relative">
-                    <div className="flex flex-col items-center justify-center space-y-4 py-6">
-                      <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center">
-                        <svg viewBox="0 0 24 24" className="w-8 h-8 text-orange-400" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-                        </svg>
-                      </div>
-                      <div className="text-center">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Connect Your Dog's Device</h3>
-                        <p className="text-gray-500 text-sm max-w-xs">Please connect your dog's FitBark collar to start collecting health data and create your dog's wellness baseline.</p>
-                      </div>
-                      <button
-                        onClick={() => navigate('/integrations')}
-                        className="mt-2 px-4 py-2 bg-orange-400 text-white rounded-full text-sm font-medium hover:bg-orange-500 transition-colors"
-                      >
-                        Connect Dog Device
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  (() => {
-                    const dogStatus = wlSyncScore?.dogStatus;
-                    const dogState = dogStatus?.label || wlDogVitals?.state || 'Unknown';
-                    const dogCalm = dogStatus?.score ?? wlSyncScore?.dogHealthScore ?? wlDogVitals?.calmScore ?? wlSyncScore?.dogCalmScore ?? null;
-                    const dogActivity = wlDogVitals?.activityScore ?? null;
-                    const dogAnxious = dogState === 'Anxious' || (dogCalm != null && dogCalm < 30);
-                    const dogRestless = dogState === 'Restless' || (!dogAnxious && dogCalm != null && dogCalm < 55);
-                    return (
-                      <div className={`rounded-2xl p-4 shadow-sm border relative transition-all duration-700 ${dogAnxious ? 'bg-red-50 border-red-200' : dogRestless ? 'bg-orange-50 border-orange-100' : 'bg-orange-50/50 border-orange-100'
-                        }`}>
-                        <div className="absolute top-6 right-6">
-                          <svg className={`w-6 h-6 ${dogAnxious ? 'text-red-500' : dogRestless ? 'text-orange-400' : 'text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
-                        </div>
-                        <div className="text-sm font-medium text-gray-500 mb-4">Your Dog</div>
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className={`w-3 h-3 rounded-full ${dogAnxious ? 'bg-red-500' : dogRestless ? 'bg-orange-400' : 'bg-orange-500'}`}></div>
-                          <div className={`text-lg font-bold ${dogAnxious ? 'text-red-600' : dogRestless ? 'text-orange-500' : 'text-orange-500'}`}>
-                            {dogCalm != null ? (dogAnxious ? 'Anxious' : dogRestless ? 'Restless' : dogState) : dogState}
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          {dogCalm != null && <div className="text-sm text-gray-600">Health Score: <span className="font-medium text-gray-900">{dogCalm}/100</span></div>}
-                          {dogActivity != null && <div className="text-sm text-gray-600">Activity: <span className="font-medium text-gray-900">{dogActivity}</span></div>}
-                          {dogStatus?.summary && <div className="text-xs text-gray-500 pt-1">{dogStatus.summary}</div>}
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
-              </div>
-
-              {/* ── Bond Sync Score ─────────────────────────────────────────── */}
-              {(wlSyncScore || (selectedHistoricalDate && calendarDateDetail)) && (() => {
-                const isHistory = !!(selectedHistoricalDate && calendarDateDetail);
-                const activeScore = isHistory ? calendarDateDetail.score : wlSyncScore.score;
-                const activeTitle = isHistory ? calendarDateDetail.scoreTitle : wlSyncScore.scoreTitle;
-                const activeDesc = isHistory ? calendarDateDetail.scoreDescription : wlSyncScore.scoreDescription;
-                const activeAction = isHistory ? calendarDateDetail.scoreAction : wlSyncScore.scoreAction;
-                const activeDisclaimer = isHistory ? calendarDateDetail.disclaimer : wlSyncScore.disclaimer;
-                return (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-                    {isHistory && (
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">
-                          📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                        </span>
-                        <button
-                          onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
-                          className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
-                        >✕ Back to Today</button>
-                      </div>
-                    )}
-                    <div className={`text-6xl font-bold mb-2 transition-colors duration-700 ${getScoreColor(activeScore)}`}>
-                      {isLoadingDateDetail ? '…' : activeScore}
-                    </div>
-                    <div className="text-sm font-medium text-gray-500 mb-4">Bond Sync Score</div>
-
-                    {/* Live sub-metrics (only shown for today) */}
-                    {!isHistory && (
-                      <div className="grid grid-cols-4 gap-4">
-                        {[
-                          { label: 'HRV Stability',   value: wlSyncScore.hrvStabilityScore },
-                          { label: 'Shared Activity', value: wlSyncScore.sharedActivityScore },
-                          { label: 'Dog Calm',         value: wlSyncScore.dogCalmScore },
-                          { label: 'Sleep',            value: wlSyncScore.sleepQualityScore },
-                        ].map(metric => (
-                          <div key={metric.label} className="text-left space-y-2">
-                            <div className="text-xs text-gray-600">{metric.label}</div>
-                            <div className="w-full bg-gray-200 rounded-full h-1.5">
-                              <div
-                                className={`h-1.5 rounded-full transition-all duration-700 ${getBarColor(metric.value)}`}
-                                style={{ width: `${metric.value}%` }}
-                              ></div>
-                            </div>
-                            <div className="text-xs font-semibold text-gray-800">{metric.value}/100</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Historical metric tiles */}
-                    {isHistory && calendarDateDetail.detailedMetrics && (
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        {[
-                          { icon: '❤️', label: 'Avg Heart Rate', value: calendarDateDetail.detailedMetrics.avgHeartRate > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm` : 'Processing...' },
-                          { icon: '📡', label: 'Avg HRV', value: calendarDateDetail.detailedMetrics.avgHRV > 0 ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms` : 'Processing...' },
-                          { icon: '👟', label: 'Total Steps', value: calendarDateDetail.detailedMetrics.totalSteps > 0 ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString() : 'Processing...' },
-                          { icon: '😴', label: 'Avg Sleep (min)', value: calendarDateDetail.detailedMetrics.avgSleepScore > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min` : 'Processing...' },
-                          { icon: '🧠', label: 'Avg Stress', value: calendarDateDetail.detailedMetrics.avgStressScore > 0 ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore) : 'Processing...' },
-                          { icon: '📊', label: 'Data Points', value: calendarDateDetail.detailedMetrics.dataPointsCount || '--' },
-                        ].map((m, i) => (
-                          <div key={i} className="bg-gray-50 rounded-xl p-3 flex flex-col items-center text-center">
-                            <span className="text-base mb-1">{m.icon}</span>
-                            <span className="text-sm font-bold text-gray-800">{m.value}</span>
-                            <span className="text-[10px] text-gray-400 mt-0.5">{m.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* AI Bond Narrative */}
-                    {activeTitle && (
-                      <div className="mt-10 border-t border-gray-100 pt-8 text-left">
-                        <h3 className={`text-lg font-bold mb-3 ${getScoreColor(activeScore)}`}>
-                          {activeTitle}
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed mb-4">
-                          {activeDesc}
-                        </p>
-                        {activeAction && (
-                          <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
-                            <h4 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wide">What To Do</h4>
-                            <p className="text-slate-700 text-sm leading-relaxed">{activeAction}</p>
-                          </div>
-                        )}
-                        <p className="text-xs text-gray-400 italic">{activeDisclaimer}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* ── Wellness Alert / All Good box ────────────────────────────── */}
-              {/* {(() => {
+                {/* ── Wellness Alert / All Good box ────────────────────────────── */}
+                {/* {(() => {
                 const hasAlert = !!wlActiveAlert;
                 const suggestion = wlActiveAlert?.suggestion || '';
                 return (
@@ -3541,350 +3559,349 @@ const DashboardPage = () => {
                 );
               })()} */}
 
-              {/* ── Baseline Info Card ───────────────────────────────────────── */}
-              {(wlBaseline || (selectedHistoricalDate && calendarDateDetail?.detailedMetrics)) && (() => {
-                const isHistory = !!(selectedHistoricalDate && calendarDateDetail?.detailedMetrics);
-                const m = isHistory ? calendarDateDetail.detailedMetrics : null;
-                return (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                    {/* High-temp notice — live only */}
-                    {!isHistory && wlWeather?.temperatureCelsius > 30 && (
-                      <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 mb-4 text-sm text-orange-600 font-semibold">
-                        <span>🌡️</span>
-                        <span>
-                          {Math.round(wlWeather.temperatureCelsius)}°C detected — HR +{((wlWeather.temperatureCelsius - 30) * 0.5).toFixed(1)} bpm and
-                          HRV -{((wlWeather.temperatureCelsius - 30) * 0.3).toFixed(1)} ms adjustment applied
-                        </span>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Avg HR</div>
-                        <div className="text-lg font-bold text-gray-900">
-                          {isHistory ? `${Math.round(m.avgHeartRate ?? 0)} bpm` : `${Math.round(wlBaseline.avgHeartRate ?? 0)} bpm`}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Avg HRV</div>
-                        <div className="text-lg font-bold text-gray-900">
-                          {isHistory ? `${(m.avgHRV ?? 0).toFixed(1)} ms` : `${(wlBaseline.avgHRV ?? 0).toFixed(1)} ms`}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">{isHistory ? 'Total Steps' : 'Avg Steps'}</div>
-                        <div className="text-lg font-bold text-gray-900">
-                          {isHistory ? Math.round(m.totalSteps ?? 0).toLocaleString() : Math.round(wlBaseline.avgSteps ?? 0).toLocaleString()}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Sleep Score</div>
-                        <div className="text-lg font-bold text-gray-900">
-                          {isHistory ? Math.round(m.avgSleepScore ?? 0) : Math.round(wlBaseline.avgSleepScore ?? 0)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Progress Calendar */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">Progress Calendar</h3>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={backfillLast30DaysSummaries}
-                      disabled={isBackfillingCalendar || isLoadingCalendar}
-                      className="px-3 py-2 text-xs font-semibold rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      {isBackfillingCalendar ? 'Backfilling...' : 'Backfill Last 30 Days'}
-                    </button>
-                    <select
-                      value={progressTimeframe}
-                      onChange={(e) => setProgressTimeframe(e.target.value)}
-                      className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2 outline-none"
-                    >
-                      <option value="this-week">This Week</option>
-                      <option value="last-week">Last Week</option>
-                      <option value="this-month">This Month</option>
-                    </select>
-                  </div>
-                </div>
-
-              {(() => {
-                const today = new Date();
-                const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-                // We use historicalScoresMap directly from component state
-                const mockScores = historicalScoresMap;
-
-                const getDotColor = (score) => {
-                  if (score === null || score === undefined) return 'bg-gray-200';
-                  if (score >= 70) return 'bg-green-500';
-                  if (score >= 50) return 'bg-orange-400';
-                  return 'bg-red-500';
-                };
-                const getScoreTextColor = (score) => {
-                  if (score === null || score === undefined) return 'text-gray-300';
-                  if (score >= 70) return 'text-green-600';
-                  if (score >= 50) return 'text-orange-500';
-                  return 'text-red-500';
-                };
-                const getCellBg = (score, isToday, isSelected) => {
-                  if (isSelected) return 'bg-indigo-50 border-indigo-400 ring-2 ring-indigo-300 transform scale-105 shadow-md';
-                  if (isToday) return 'bg-blue-50 border-blue-300 ring-2 ring-blue-200';
-                  if (score === null || score === undefined) return 'bg-gray-50 border-gray-100 hover:border-gray-200';
-                  if (score >= 70) return 'bg-green-50 border-green-100 hover:border-green-200';
-                  if (score >= 50) return 'bg-orange-50 border-orange-100 hover:border-orange-200';
-                  return 'bg-red-50 border-red-100 hover:border-red-200';
-                };
-
-                const handleDateClick = (dateObj, isFuture) => {
-                  if (isFuture) return;
-                  const dateStr = formatLocalDate(dateObj);
-                  const todayStr = formatLocalDate(today);
-                  if (dateStr === todayStr) {
-                    setSelectedHistoricalDate(null);
-                    setCalendarDateDetail(null);
-                  } else {
-                    setSelectedHistoricalDate(dateStr);
-                    fetchDateDetail(dateStr);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
-                };
-
-                if (progressTimeframe === 'this-month') {
-                  // Full calendar grid for current month
-                  const year = today.getFullYear();
-                  const month = today.getMonth();
-                  const monthName = today.toLocaleString('default', { month: 'long', year: 'numeric' });
-                  const firstDay = new Date(year, month, 1).getDay();
-                  const daysInMonth = new Date(year, month + 1, 0).getDate();
-                  const cells = [];
-                  for (let i = 0; i < firstDay; i++) cells.push(null);
-                  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-                  while (cells.length % 7 !== 0) cells.push(null);
-
+                {/* ── Baseline Info Card ───────────────────────────────────────── */}
+                {(wlBaseline || (selectedHistoricalDate && calendarDateDetail?.detailedMetrics)) && (() => {
+                  const isHistory = !!(selectedHistoricalDate && calendarDateDetail?.detailedMetrics);
+                  const m = isHistory ? calendarDateDetail.detailedMetrics : null;
                   return (
-                    <div>
-                      <p className="text-center text-sm font-semibold text-gray-600 mb-4">{monthName}</p>
-                      <div className="grid grid-cols-7 gap-1 mb-2">
-                        {DAY_NAMES.map(d => (
-                          <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-1">
-                        {cells.map((day, idx) => {
-                          if (!day) return <div key={`empty-${idx}`} className="h-16" />;
-                          // Match the ISO date logic used for keys
-                          const dObj = new Date(year, month, day);
-                          const dateKey = formatLocalDate(dObj);
-                          
-                          const score = mockScores[dateKey];
-                          const isToday = dObj.toDateString() === today.toDateString();
-                          const isFuture = dObj > today;
-                          const isSelected = dateKey === selectedHistoricalDate;
-                          return (
-                            <div 
-                              key={dateKey} 
-                              onClick={() => handleDateClick(dObj, isFuture)}
-                              className={`h-16 rounded-xl border p-1 flex flex-col items-center justify-between transition-all duration-300 ${!isFuture ? 'cursor-pointer hover:-translate-y-1' : ''} ${isFuture ? 'bg-gray-50 border-gray-100 opacity-40' : getCellBg(score, isToday, isSelected)}`}
-                            >
-                              <span className={`text-xs font-bold ${isToday ? 'text-blue-600' : isSelected ? 'text-indigo-700' : 'text-gray-500'}`}>{day}</span>
-                              {!isFuture && (
-                                <>
-                                  <div className={`w-2.5 h-2.5 rounded-full ${getDotColor(score)}`}></div>
-                                  <span className={`text-[10px] font-semibold ${getScoreTextColor(score)}`}>
-                                    {score != null ? score : '--'}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                      {/* High-temp notice — live only */}
+                      {!isHistory && wlWeather?.temperatureCelsius > 30 && (
+                        <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 mb-4 text-sm text-orange-600 font-semibold">
+                          <span>🌡️</span>
+                          <span>
+                            {Math.round(wlWeather.temperatureCelsius)}°C detected — HR +{((wlWeather.temperatureCelsius - 30) * 0.5).toFixed(1)} bpm and
+                            HRV -{((wlWeather.temperatureCelsius - 30) * 0.3).toFixed(1)} ms adjustment applied
+                          </span>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Avg HR</div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {isHistory ? `${Math.round(m.avgHeartRate ?? 0)} bpm` : `${Math.round(wlBaseline.avgHeartRate ?? 0)} bpm`}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Avg HRV</div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {isHistory ? `${(m.avgHRV ?? 0).toFixed(1)} ms` : `${(wlBaseline.avgHRV ?? 0).toFixed(1)} ms`}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">{isHistory ? 'Total Steps' : 'Avg Steps'}</div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {isHistory ? Math.round(m.totalSteps ?? 0).toLocaleString() : Math.round(wlBaseline.avgSteps ?? 0).toLocaleString()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 mb-1">Sleep Score</div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {isHistory ? Math.round(m.avgSleepScore ?? 0) : Math.round(wlBaseline.avgSleepScore ?? 0)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
-                }
+                })()}
 
-                // Weekly view (this-week / last-week)
-                const dayOfWeek = today.getDay();
-                const startOfThisWeek = new Date(today);
-                startOfThisWeek.setDate(today.getDate() - dayOfWeek + 1); // Monday start
-                const startDate = new Date(startOfThisWeek);
-                if (progressTimeframe === 'last-week') startDate.setDate(startDate.getDate() - 7);
-
-                const weekDays = Array.from({ length: 7 }, (_, i) => {
-                  const d = new Date(startDate);
-                  d.setDate(startDate.getDate() + i);
-                  return d;
-                });
-
-                return (
-                  <div>
-                    <p className="text-center text-sm font-semibold text-gray-600 mb-4">
-                      {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </p>
-                    <div className="grid grid-cols-7 gap-2">
-                      {weekDays.map((d, i) => {
-                        const dateKey = formatLocalDate(d);
-                        const score = mockScores[dateKey];
-                        const isToday = d.toDateString() === today.toDateString();
-                        const isFuture = d > today;
-                        const isSelected = dateKey === selectedHistoricalDate;
-                        return (
-                          <div 
-                            key={dateKey} 
-                            onClick={() => handleDateClick(d, isFuture)}
-                            className={`rounded-2xl border p-3 flex flex-col items-center space-y-2 transition-all duration-300 ${!isFuture ? 'cursor-pointer hover:-translate-y-1' : ''} ${isFuture ? 'bg-gray-50 border-gray-100 opacity-40' : getCellBg(score, isToday, isSelected)}`}
-                          >
-                            <span className="text-xs font-semibold text-gray-400">{DAY_NAMES[(d.getDay())]}</span>
-                            <span className={`text-lg font-bold ${isToday ? 'text-blue-600' : isSelected ? 'text-indigo-700' : 'text-gray-700'}`}>{d.getDate()}</span>
-                            {!isFuture && <div className={`w-3 h-3 rounded-full ${getDotColor(score)}`}></div>}
-                            {!isFuture && (
-                              <span className={`text-xs font-bold ${getScoreTextColor(score)}`}>{score != null ? score : '--'}</span>
-                            )}
-                          </div>
-                        );
-                      })}
+                {/* Progress Calendar */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-gray-900">Progress Calendar</h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={backfillLast30DaysSummaries}
+                        disabled={isBackfillingCalendar || isLoadingCalendar}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        {isBackfillingCalendar ? 'Backfilling...' : 'Backfill Last 30 Days'}
+                      </button>
+                      <select
+                        value={progressTimeframe}
+                        onChange={(e) => setProgressTimeframe(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2 outline-none"
+                      >
+                        <option value="this-week">This Week</option>
+                        <option value="last-week">Last Week</option>
+                        <option value="this-month">This Month</option>
+                      </select>
                     </div>
                   </div>
-                );
-              })()}
 
-              {/* Legend */}
-              <div className="flex justify-center space-x-6 text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500"></div><span>Calm (≥70)</span></div>
-                <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div><span>Moderate (50–69)</span></div>
-                <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500"></div><span>Stressed (&lt;50)</span></div>
-                <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div><span>No data</span></div>
-              </div>
+                  {(() => {
+                    const today = new Date();
+                    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-              {/* Date detail is shown in the main dashboard area above, not here */}
-              {false && (
-                <div id="calendar-detail-panel" className="mt-4 pt-6 border-t border-gray-100">
-                  {/* Header row */}
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-base font-bold text-gray-800">
-                      📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    </h4>
-                    <button
-                      onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
-                      className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
-                    >
-                      ✕ Close
-                    </button>
-                  </div>
+                    // We use historicalScoresMap directly from component state
+                    const mockScores = historicalScoresMap;
 
-                  {isLoadingDateDetail ? (
-                    <div className="flex items-center justify-center py-6">
-                      <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin mr-2"></div>
-                      <span className="text-sm text-gray-500">Loading data...</span>
-                    </div>
-                  ) : calendarDateDetail ? (
-                    <div className="space-y-4">
-                      {/* Bond Sync Score */}
-                      <div className="flex items-center space-x-3">
-                        <span className={`text-lg font-extrabold ${
-                          calendarDateDetail.score >= 70 ? 'text-green-500'
-                          : calendarDateDetail.score >= 50 ? 'text-orange-400'
-                          : 'text-red-500'
-                        }`}>{calendarDateDetail.score}</span>
+                    const getDotColor = (score) => {
+                      if (score === null || score === undefined) return 'bg-gray-200';
+                      if (score >= 70) return 'bg-green-500';
+                      if (score >= 50) return 'bg-orange-400';
+                      return 'bg-red-500';
+                    };
+                    const getScoreTextColor = (score) => {
+                      if (score === null || score === undefined) return 'text-gray-300';
+                      if (score >= 70) return 'text-green-600';
+                      if (score >= 50) return 'text-orange-500';
+                      return 'text-red-500';
+                    };
+                    const getCellBg = (score, isToday, isSelected) => {
+                      if (isSelected) return 'bg-indigo-50 border-indigo-400 ring-2 ring-indigo-300 transform scale-105 shadow-md';
+                      if (isToday) return 'bg-blue-50 border-blue-300 ring-2 ring-blue-200';
+                      if (score === null || score === undefined) return 'bg-gray-50 border-gray-100 hover:border-gray-200';
+                      if (score >= 70) return 'bg-green-50 border-green-100 hover:border-green-200';
+                      if (score >= 50) return 'bg-orange-50 border-orange-100 hover:border-orange-200';
+                      return 'bg-red-50 border-red-100 hover:border-red-200';
+                    };
+
+                    const handleDateClick = (dateObj, isFuture) => {
+                      if (isFuture) return;
+                      const dateStr = formatLocalDate(dateObj);
+                      const todayStr = formatLocalDate(today);
+                      if (dateStr === todayStr) {
+                        setSelectedHistoricalDate(null);
+                        setCalendarDateDetail(null);
+                      } else {
+                        setSelectedHistoricalDate(dateStr);
+                        fetchDateDetail(dateStr);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    };
+
+                    if (progressTimeframe === 'this-month') {
+                      // Full calendar grid for current month
+                      const year = today.getFullYear();
+                      const month = today.getMonth();
+                      const monthName = today.toLocaleString('default', { month: 'long', year: 'numeric' });
+                      const firstDay = new Date(year, month, 1).getDay();
+                      const daysInMonth = new Date(year, month + 1, 0).getDate();
+                      const cells = [];
+                      for (let i = 0; i < firstDay; i++) cells.push(null);
+                      for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+                      while (cells.length % 7 !== 0) cells.push(null);
+
+                      return (
                         <div>
-                          <p className="text-sm font-bold text-gray-800">{calendarDateDetail.scoreTitle}</p>
-                          <p className="text-xs text-gray-400">
-                            Bond Sync Score · {calendarDateDetail.trend === 'realtime' ? 'Live data' : `Trend: ${calendarDateDetail.trend ?? 'stable'}`}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Metrics grid — real values from HumanDailySummaries, 'Processing...' if null/0 */}
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          {
-                            label: 'Avg Heart Rate',
-                            value: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
-                              ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm`
-                              : 'Processing...',
-                            icon: '❤️',
-                            hasData: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
-                          },
-                          {
-                            label: 'Avg HRV',
-                            value: calendarDateDetail.detailedMetrics?.avgHRV > 0
-                              ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms`
-                              : 'Processing...',
-                            icon: '📡',
-                            hasData: calendarDateDetail.detailedMetrics?.avgHRV > 0
-                          },
-                          {
-                            label: 'Total Steps',
-                            value: calendarDateDetail.detailedMetrics?.totalSteps > 0
-                              ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString()
-                              : 'Processing...',
-                            icon: '👟',
-                            hasData: calendarDateDetail.detailedMetrics?.totalSteps > 0
-                          },
-                          {
-                            label: 'Avg Sleep (min)',
-                            value: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
-                              ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min`
-                              : 'Processing...',
-                            icon: '😴',
-                            hasData: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
-                          },
-                          {
-                            label: 'Avg Stress',
-                            value: calendarDateDetail.detailedMetrics?.avgStressScore > 0
-                              ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore)
-                              : 'Processing...',
-                            icon: '🧠',
-                            hasData: calendarDateDetail.detailedMetrics?.avgStressScore > 0
-                          },
-                          {
-                            label: 'Data Points',
-                            value: calendarDateDetail.detailedMetrics?.dataPointsCount > 0
-                              ? calendarDateDetail.detailedMetrics.dataPointsCount
-                              : '--',
-                            icon: '📊',
-                            hasData: true
-                          },
-                        ].map((m, i) => (
-                          <div key={i} className="bg-gray-50 rounded-xl p-3 flex flex-col items-center text-center">
-                            <span className="text-lg mb-1">{m.icon}</span>
-                            <span className={`text-sm font-bold ${m.hasData ? 'text-gray-800' : 'text-gray-400 text-xs italic'}`}>{m.value}</span>
-                            <span className="text-[10px] text-gray-400 mt-0.5">{m.label}</span>
+                          <p className="text-center text-sm font-semibold text-gray-600 mb-4">{monthName}</p>
+                          <div className="grid grid-cols-7 gap-1 mb-2">
+                            {DAY_NAMES.map(d => (
+                              <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+                            ))}
                           </div>
-                        ))}
+                          <div className="grid grid-cols-7 gap-1">
+                            {cells.map((day, idx) => {
+                              if (!day) return <div key={`empty-${idx}`} className="h-16" />;
+                              // Match the ISO date logic used for keys
+                              const dObj = new Date(year, month, day);
+                              const dateKey = formatLocalDate(dObj);
+
+                              const score = mockScores[dateKey];
+                              const isToday = dObj.toDateString() === today.toDateString();
+                              const isFuture = dObj > today;
+                              const isSelected = dateKey === selectedHistoricalDate;
+                              return (
+                                <div
+                                  key={dateKey}
+                                  onClick={() => handleDateClick(dObj, isFuture)}
+                                  className={`h-16 rounded-xl border p-1 flex flex-col items-center justify-between transition-all duration-300 ${!isFuture ? 'cursor-pointer hover:-translate-y-1' : ''} ${isFuture ? 'bg-gray-50 border-gray-100 opacity-40' : getCellBg(score, isToday, isSelected)}`}
+                                >
+                                  <span className={`text-xs font-bold ${isToday ? 'text-blue-600' : isSelected ? 'text-indigo-700' : 'text-gray-500'}`}>{day}</span>
+                                  {!isFuture && (
+                                    <>
+                                      <div className={`w-2.5 h-2.5 rounded-full ${getDotColor(score)}`}></div>
+                                      <span className={`text-[10px] font-semibold ${getScoreTextColor(score)}`}>
+                                        {score != null ? score : '--'}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Weekly view (this-week / last-week)
+                    const dayOfWeek = today.getDay();
+                    const startOfThisWeek = new Date(today);
+                    startOfThisWeek.setDate(today.getDate() - dayOfWeek + 1); // Monday start
+                    const startDate = new Date(startOfThisWeek);
+                    if (progressTimeframe === 'last-week') startDate.setDate(startDate.getDate() - 7);
+
+                    const weekDays = Array.from({ length: 7 }, (_, i) => {
+                      const d = new Date(startDate);
+                      d.setDate(startDate.getDate() + i);
+                      return d;
+                    });
+
+                    return (
+                      <div>
+                        <p className="text-center text-sm font-semibold text-gray-600 mb-4">
+                          {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </p>
+                        <div className="grid grid-cols-7 gap-2">
+                          {weekDays.map((d, i) => {
+                            const dateKey = formatLocalDate(d);
+                            const score = mockScores[dateKey];
+                            const isToday = d.toDateString() === today.toDateString();
+                            const isFuture = d > today;
+                            const isSelected = dateKey === selectedHistoricalDate;
+                            return (
+                              <div
+                                key={dateKey}
+                                onClick={() => handleDateClick(d, isFuture)}
+                                className={`rounded-2xl border p-3 flex flex-col items-center space-y-2 transition-all duration-300 ${!isFuture ? 'cursor-pointer hover:-translate-y-1' : ''} ${isFuture ? 'bg-gray-50 border-gray-100 opacity-40' : getCellBg(score, isToday, isSelected)}`}
+                              >
+                                <span className="text-xs font-semibold text-gray-400">{DAY_NAMES[(d.getDay())]}</span>
+                                <span className={`text-lg font-bold ${isToday ? 'text-blue-600' : isSelected ? 'text-indigo-700' : 'text-gray-700'}`}>{d.getDate()}</span>
+                                {!isFuture && <div className={`w-3 h-3 rounded-full ${getDotColor(score)}`}></div>}
+                                {!isFuture && (
+                                  <span className={`text-xs font-bold ${getScoreTextColor(score)}`}>{score != null ? score : '--'}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Legend */}
+                  <div className="flex justify-center space-x-6 text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500"></div><span>Calm (≥70)</span></div>
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div><span>Moderate (50–69)</span></div>
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500"></div><span>Stressed (&lt;50)</span></div>
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div><span>No data</span></div>
+                  </div>
+
+                  {/* Date detail is shown in the main dashboard area above, not here */}
+                  {false && (
+                    <div id="calendar-detail-panel" className="mt-4 pt-6 border-t border-gray-100">
+                      {/* Header row */}
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-base font-bold text-gray-800">
+                          📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </h4>
+                        <button
+                          onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
+                        >
+                          ✕ Close
+                        </button>
                       </div>
 
-                      {/* What This Means */}
-                      {calendarDateDetail.scoreDescription && (
-                        <div className="bg-blue-50 rounded-xl p-4">
-                          <p className="text-xs font-semibold text-blue-700 mb-1">What This Means</p>
-                          <p className="text-xs text-blue-800 leading-relaxed">{calendarDateDetail.scoreDescription}</p>
+                      {isLoadingDateDetail ? (
+                        <div className="flex items-center justify-center py-6">
+                          <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                          <span className="text-sm text-gray-500">Loading data...</span>
                         </div>
-                      )}
+                      ) : calendarDateDetail ? (
+                        <div className="space-y-4">
+                          {/* Bond Sync Score */}
+                          <div className="flex items-center space-x-3">
+                            <span className={`text-lg font-extrabold ${calendarDateDetail.score >= 70 ? 'text-green-500'
+                              : calendarDateDetail.score >= 50 ? 'text-orange-400'
+                                : 'text-red-500'
+                              }`}>{calendarDateDetail.score}</span>
+                            <div>
+                              <p className="text-sm font-bold text-gray-800">{calendarDateDetail.scoreTitle}</p>
+                              <p className="text-xs text-gray-400">
+                                Bond Sync Score · {calendarDateDetail.trend === 'realtime' ? 'Live data' : `Trend: ${calendarDateDetail.trend ?? 'stable'}`}
+                              </p>
+                            </div>
+                          </div>
 
-                      {/* What To Do */}
-                      {calendarDateDetail.scoreAction && (
-                        <div className="bg-green-50 rounded-xl p-4">
-                          <p className="text-xs font-semibold text-green-700 mb-1">What To Do</p>
-                          <p className="text-xs text-green-800 leading-relaxed">{calendarDateDetail.scoreAction}</p>
+                          {/* Metrics grid — real values from HumanDailySummaries, 'Processing...' if null/0 */}
+                          <div className="grid grid-cols-3 gap-3">
+                            {[
+                              {
+                                label: 'Avg Heart Rate',
+                                value: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
+                                  ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm`
+                                  : 'Processing...',
+                                icon: '❤️',
+                                hasData: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
+                              },
+                              {
+                                label: 'Avg HRV',
+                                value: calendarDateDetail.detailedMetrics?.avgHRV > 0
+                                  ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms`
+                                  : 'Processing...',
+                                icon: '📡',
+                                hasData: calendarDateDetail.detailedMetrics?.avgHRV > 0
+                              },
+                              {
+                                label: 'Total Steps',
+                                value: calendarDateDetail.detailedMetrics?.totalSteps > 0
+                                  ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString()
+                                  : 'Processing...',
+                                icon: '👟',
+                                hasData: calendarDateDetail.detailedMetrics?.totalSteps > 0
+                              },
+                              {
+                                label: 'Avg Sleep (min)',
+                                value: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
+                                  ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min`
+                                  : 'Processing...',
+                                icon: '😴',
+                                hasData: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
+                              },
+                              {
+                                label: 'Avg Stress',
+                                value: calendarDateDetail.detailedMetrics?.avgStressScore > 0
+                                  ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore)
+                                  : 'Processing...',
+                                icon: '🧠',
+                                hasData: calendarDateDetail.detailedMetrics?.avgStressScore > 0
+                              },
+                              {
+                                label: 'Data Points',
+                                value: calendarDateDetail.detailedMetrics?.dataPointsCount > 0
+                                  ? calendarDateDetail.detailedMetrics.dataPointsCount
+                                  : '--',
+                                icon: '📊',
+                                hasData: true
+                              },
+                            ].map((m, i) => (
+                              <div key={i} className="bg-gray-50 rounded-xl p-3 flex flex-col items-center text-center">
+                                <span className="text-lg mb-1">{m.icon}</span>
+                                <span className={`text-sm font-bold ${m.hasData ? 'text-gray-800' : 'text-gray-400 text-xs italic'}`}>{m.value}</span>
+                                <span className="text-[10px] text-gray-400 mt-0.5">{m.label}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* What This Means */}
+                          {calendarDateDetail.scoreDescription && (
+                            <div className="bg-blue-50 rounded-xl p-4">
+                              <p className="text-xs font-semibold text-blue-700 mb-1">What This Means</p>
+                              <p className="text-xs text-blue-800 leading-relaxed">{calendarDateDetail.scoreDescription}</p>
+                            </div>
+                          )}
+
+                          {/* What To Do */}
+                          {calendarDateDetail.scoreAction && (
+                            <div className="bg-green-50 rounded-xl p-4">
+                              <p className="text-xs font-semibold text-green-700 mb-1">What To Do</p>
+                              <p className="text-xs text-green-800 leading-relaxed">{calendarDateDetail.scoreAction}</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <div className="text-lg mb-3">📭</div>
+                          <p className="text-sm font-semibold text-gray-600">No data available for this date</p>
+                          <p className="text-xs text-gray-400 mt-1">Daily summary has not been generated yet for this day</p>
                         </div>
                       )}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="text-lg mb-3">📭</div>
-                      <p className="text-sm font-semibold text-gray-600">No data available for this date</p>
-                      <p className="text-xs text-gray-400 mt-1">Daily summary has not been generated yet for this day</p>
                     </div>
                   )}
                 </div>
-              )}
               </div>
-            </div>
             )}
           </>
         )}
@@ -3920,7 +3937,7 @@ const DashboardPage = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-lg font-bold text-purple-600 mb-1">7</div>
-                        <div className="text-sm text-gray-900">Chakra Harmony</div>
+                        <div className="text-sm text-gray-900">Nerve Center Harmony</div>
                       </div>
                     </div>
                   </div>
@@ -3971,7 +3988,7 @@ const DashboardPage = () => {
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
-                Chakra Sync
+                Nerve Center Sync
               </button>
               <button
                 onClick={() => setBondTab('activities')}
@@ -4002,7 +4019,7 @@ const DashboardPage = () => {
                     const completedCount = rituals.filter(r => r.isCompleted).length;
                     const totalRituals = rituals.length;
                     console.log('🎯 Progress Calculation:', { completedCount, totalRituals, rituals });
-                    
+
                     // Handle empty rituals case
                     if (totalRituals === 0) {
                       console.warn('⚠️ No rituals available for today');
@@ -4023,7 +4040,7 @@ const DashboardPage = () => {
                         </div>
                       );
                     }
-                    
+
                     const completionPercentage = Math.round((completedCount / totalRituals) * 100);
                     const progressBarWidth = (completedCount / totalRituals) * 100;
                     console.log('📊 Completion %:', completionPercentage, 'Progress bar width:', progressBarWidth);
@@ -4315,7 +4332,7 @@ const DashboardPage = () => {
                   <>
                     {/* Header */}
                     <div className="text-center mb-4">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">Chakra Alignment Meditation</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Nerve Center Alignment Meditation</h3>
                       <p className="text-gray-600">Sync your energy centers with your companion</p>
                     </div>
 
@@ -4331,7 +4348,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-orange-600">Root Chakra</span>
+                            <span className="text-sm font-medium text-orange-600">Root Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{rootChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4361,7 +4378,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Sacral Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Sacral Nerve Center</span>
                             <span className="text-sm font-medium text-green-600">{sacralChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4391,7 +4408,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-yellow-600">Solar Plexus Chakra</span>
+                            <span className="text-sm font-medium text-yellow-600">Solar Plexus Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{solarPlexusChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4421,7 +4438,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Heart Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Heart Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{heartChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4455,7 +4472,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Throat Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Throat Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{throatChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4485,7 +4502,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Third Eye Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Insight Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{thirdEyeChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4515,7 +4532,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-900">Crown Chakra</span>
+                            <span className="text-sm font-medium text-gray-900">Crown Nerve Center</span>
                             <span className="text-sm font-medium text-gray-900">{crownChakra}/10</span>
                           </div>
                           <div className="relative">
@@ -4547,7 +4564,7 @@ const DashboardPage = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Sync Chakras & Get Recommendation</span>
+                      <span>Sync Nerve Center & Get Recommendation</span>
                     </button>
                   </>
                 )}
@@ -4561,7 +4578,7 @@ const DashboardPage = () => {
                         <svg className="w-6 h-6 text-purple-600 mr-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
-                        <h3 className="text-lg font-bold text-purple-800">{suggestedRitual || 'Chakra Sync Ritual'}</h3>
+                        <h3 className="text-lg font-bold text-purple-800">{suggestedRitual || 'Nerve Center Sync Ritual'}</h3>
                         <svg className="w-6 h-6 text-purple-600 ml-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
@@ -4576,7 +4593,7 @@ const DashboardPage = () => {
                       {harmonyScore > 0 && (
                         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4 max-w-md mx-auto">
                           <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">Your Chakra Harmony Score</p>
+                            <p className="text-sm text-gray-600 mb-1">Your Nerve Center Harmony Score</p>
                             <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                             <p className="text-xs text-gray-500 mt-1">
                               {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
@@ -4703,7 +4720,7 @@ const DashboardPage = () => {
                       {/* Header Section */}
                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div className="flex justify-between items-center mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900">Chakra Healing Ritual</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">Nerve Center Healing Ritual</h3>
                           <span className="text-purple-600 font-semibold">Focused Session</span>
                         </div>
                         <div className="w-full bg-purple-100 rounded-full h-3 mb-3">
@@ -4740,7 +4757,7 @@ const DashboardPage = () => {
                                         recommendedChakra?.color === 'purple' ? 'text-purple-600' :
                                           'text-gray-600'
                               }`}>
-                              {recommendedChakra?.name || 'Root Chakra'}
+                              {recommendedChakra?.name || 'Root Nerve Center'}
                             </h4>
                             <div className="w-2 h-2 bg-red-500 rounded-full ml-2"></div>
                           </div>
@@ -4751,7 +4768,7 @@ const DashboardPage = () => {
                         {harmonyScore > 0 && (
                           <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mb-4 max-w-md mx-auto">
                             <div className="text-center">
-                              <p className="text-sm text-gray-600 mb-1">Your Chakra Harmony Score</p>
+                              <p className="text-sm text-gray-600 mb-1">Your Nerve Center Harmony Score</p>
                               <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                               <p className="text-xs text-gray-500 mt-1">
                                 {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
@@ -4771,8 +4788,8 @@ const DashboardPage = () => {
                           {/* Progress Bar & Timer */}
                           <div className="max-w-xs mx-auto mb-4">
                             <div className="flex justify-between text-xs text-gray-500 mb-1 font-mono">
-                              <span>{formatTime(audioCurrentTime)}</span>
-                              <span>{formatTime(audioDuration)}</span>
+                              <span>{isPlaying ? formatTime(audioCurrentTime) : '0:00'}</span>
+                              <span>{isPlaying ? formatTime(audioDuration) : (chakraData[currentChakraStep - 1]?.timer || '1:00')}</span>
                             </div>
                             <input
                               type="range"
@@ -4826,6 +4843,21 @@ const DashboardPage = () => {
                             <span className="text-lg">{isPlaying ? 'Pause' : 'Start Ritual'}</span>
                           </button>
 
+                          <button
+                            onClick={handleMuteToggle}
+                            className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-all"
+                            title={isMuted ? 'Unmute' : 'Mute'}
+                          >
+                            {isMuted ? (
+                              <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06A8.99 8.99 0 0 0 17.73 18l2 2L21 18.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                              </svg>
+                            )}
+                          </button>
                           <button
                             onClick={handleResetAudio}
                             className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-all hover:rotate-180"
@@ -4920,28 +4952,28 @@ const DashboardPage = () => {
                         if (isCompleted) return;
 
                         // 2. Custom tab routing based on activity name
-                        if (activity.activityName === 'Chakra Sync') {
+                        if (activity.activityName === 'Nerve Center Sync') {
                           setActiveTab('bond-building');
                           setBondTab('Chakra-sync');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                           return;
                         }
-                        
+
                         if (activity.activityName === 'Energy Check-in') {
                           setActiveTab('bond-building');
                           setBondTab('checkins');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                           return;
                         }
-                        
+
                         const ritualActivities = [
-                          'Bedtime Blessing', 
-                          'Morning Intention Setting', 
-                          'Mindful Walk', 
-                          'Gratitude Moment', 
+                          'Bedtime Blessing',
+                          'Morning Intention Setting',
+                          'Mindful Walk',
+                          'Gratitude Moment',
                           'Evening Reflection'
                         ];
-                        
+
                         if (ritualActivities.includes(activity.activityName)) {
                           setActiveTab('bond-building');
                           setBondTab('daily-rituals');
@@ -5502,14 +5534,14 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-semibold text-gray-900">Unlimited Chakra Rituals</h4>
+                            <h4 className="font-semibold text-gray-900">Unlimited nerve center Rituals</h4>
                             <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full flex items-center justify-center">
                               <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-600">Access to all 7 chakra alignment practices and advanced guided meditations</p>
+                          <p className="text-sm text-gray-600">Access to all 7 nerve center alignment practices and advanced guided meditations</p>
                         </div>
                       </div>
 
@@ -5648,10 +5680,10 @@ const DashboardPage = () => {
                     Maybe Later
                   </button>
                   <button
-                      onClick={() => {
-                        setShowPricingModal(false);
-                        navigate('/subscription');
-                      }}
+                    onClick={() => {
+                      setShowPricingModal(false);
+                      navigate('/subscription');
+                    }}
                     className="px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
                   >
                     Upgrade to Premium

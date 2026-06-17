@@ -108,13 +108,13 @@ namespace Hounded_Heart.Services.Services
             // Note: Dashboard logic counts scores >= 7
             switch (chakra.ChakraName)
             {
-                case "Root Chakra": log.RootScore = 10; break;
-                case "Sacral Chakra": log.SacralScore = 10; break;
-                case "Solar Plexus": log.SolarPlexusScore = 10; break;
-                case "Heart Chakra": log.HeartScore = 10; break;
-                case "Throat Chakra": log.ThroatScore = 10; break;
-                case "Third Eye": log.ThirdEyeScore = 10; break;
-                case "Crown Chakra": log.CrownScore = 10; break;
+                case "Root Nerve Center": log.RootScore = 10; break;
+                case "Sacral Nerve Center": log.SacralScore = 10; break;
+                case "Solar Plexus Nerve Center": log.SolarPlexusScore = 10; break;
+                case "Heart Nerve Center": log.HeartScore = 10; break;
+                case "Throat Nerve Center": log.ThroatScore = 10; break;
+                case "Insight Nerve Center": log.ThirdEyeScore = 10; break;
+                case "Crown Nerve Center": log.CrownScore = 10; break;
             }
         }
 
