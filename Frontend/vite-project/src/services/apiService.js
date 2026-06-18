@@ -448,8 +448,10 @@ class ApiService {
       // Store token and user data if registration successful (support varied shapes/casing)
       const d = response?.data || response || {};
       const token = d.Token || d.token;
+      const refreshToken = d.RefreshToken || d.refreshToken;
       const userId = d.UserId || d.userId || d.userid;
       if (token) localStorage.setItem('token', token);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
       if (userId) localStorage.setItem('userId', userId);
       if (token || userId) localStorage.setItem('isAuthenticated', 'true');
       // Seed basic user object for header initials
@@ -2151,6 +2153,9 @@ class ApiService {
       // Store token if verification successful
       if (response?.data?.Token) {
         localStorage.setItem('token', response.data.Token);
+      }
+      if (response?.data?.RefreshToken) {
+        localStorage.setItem('refreshToken', response.data.RefreshToken);
       }
 
       return response;
