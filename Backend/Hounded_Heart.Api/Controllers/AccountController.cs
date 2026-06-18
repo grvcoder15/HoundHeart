@@ -82,7 +82,7 @@ namespace Hounded_Heart.Api.Controllers
                     Email = dto.Email,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     FullName = dto.FullName,
-                    RoleId = 1,
+                    RoleId = 2,
                     IsActive = true,
                     IsDeleted = false,
                     IsTermAccepted = dto.IsTermsAccepted,

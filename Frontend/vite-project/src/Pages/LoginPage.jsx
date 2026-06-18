@@ -221,11 +221,13 @@ const LoginPage = () => {
       if (result?.data) {
         const d = result.data;
         const token = d.Token || d.token;
+        const refreshToken = d.RefreshToken || d.refreshToken;
         const userId = d.UserId || d.userId;
         const email = d.Email || d.email;
         console.log('token', token);
         console.log('userId', userId);
         if (token) localStorage.setItem('token', token);
+        if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 
         if (userId) localStorage.setItem('userId', userId);
         localStorage.setItem('user', JSON.stringify({

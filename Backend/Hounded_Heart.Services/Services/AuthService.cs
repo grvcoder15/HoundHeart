@@ -61,7 +61,7 @@ namespace Hounded_Heart.Services.Services
                         UserId = Guid.NewGuid(),
                         FullName = payload.GivenName,
                         Email = payload.Email,
-                        RoleId = 1, // 1 = Regular User, 2 = Premium/Admin
+                        RoleId = 2, // 2 = Regular User
                         IsPremium = false,
                         TierLevel = "free",
                         CreatedOn = DateTime.UtcNow,
@@ -88,15 +88,19 @@ namespace Hounded_Heart.Services.Services
                         return ResponseHelper.Fail<object>("Your account is banned.", 403);
                     }
 
-                    // 🔧 Fix: Revert accidental upgrades. Anyone who was mistakenly given RoleId=2 (Premium/Admin) via Google login should be reset to 1.
-                    if (user.IsGoogleSignIn && user.RoleId == 2 && !user.IsPremium)
+                    // Fix: Ensure RoleId is 2 for standard users (removed accidental downgrade to 1)
+                    if (user.IsGoogleSignIn && user.RoleId == 1 && !user.IsPremium)
                     {
-                        user.RoleId = 1;
+                        user.RoleId = 2;
                         await _context.SaveChangesAsync();
                     }
                 }
 
                 var token = GenerateJwtToken(user.UserId, user.Email);
+                var refreshToken = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
 
                 // ✅ Final response
                 return ResponseHelper.Success<object>(
@@ -106,6 +110,7 @@ namespace Hounded_Heart.Services.Services
                         FullName = user.FullName,
                         Email = user.Email,
                         Token = token,
+                        RefreshToken = refreshToken
                     },
                     "Signin successful via Google.",
                     200
@@ -156,6 +161,10 @@ namespace Hounded_Heart.Services.Services
                 }
 
                 var token = GenerateJwtToken(user.UserId, user.Email);
+                var refreshToken = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
 
                 return ResponseHelper.Success<object>(
                     new
@@ -164,6 +173,7 @@ namespace Hounded_Heart.Services.Services
                         FullName = user.FullName,
                         Email = user.Email,
                         Token = token,
+                        RefreshToken = refreshToken
                     },
                     "Signin successful via Apple (Sandbox).",
                     200
