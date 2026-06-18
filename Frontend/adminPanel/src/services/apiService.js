@@ -63,7 +63,7 @@ class ApiService {
     async login(credentials) {
         console.log('Attempting login with:', credentials.email);
         try {
-            const response = await this.makeRequest('/Account/login', {
+            const response = await this.makeRequest('/Account/admin-login', {
                 method: 'POST',
                 body: JSON.stringify({
                     Email: credentials.email,
