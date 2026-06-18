@@ -39,7 +39,9 @@ class ApiService {
   }
 
   async refreshJwtToken(currentToken) {
-     const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) throw new Error('No refresh token available');
+
     const response = await fetch(`${API_BASE_URL}/Account/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,6 +55,7 @@ class ApiService {
     const json = await response.json();
     const newToken = json?.data?.token || json?.token || json?.data?.Token;
     const newRefreshToken = json?.data?.refreshToken || json?.refreshToken || json?.data?.RefreshToken;
+    
     if (!newToken) {
       throw new Error('Refresh response did not return a token.');
     }
@@ -128,6 +131,29 @@ class ApiService {
       console.log('Response headers:', response.headers);
 
       if (!response.ok) {
+        if (response.status === 401 && !this.isAuthEndpoint(endpoint)) {
+          // Attempt refresh
+          const currentToken = localStorage.getItem('token');
+          if (currentToken && !this.refreshPromise) {
+            this.refreshPromise = this.refreshJwtToken(currentToken).catch(err => {
+              this.logout();
+              throw new Error("Session expired, please login again");
+            }).finally(() => {
+              this.refreshPromise = null;
+            });
+          }
+          
+          if (this.refreshPromise) {
+            const newToken = await this.refreshPromise;
+            finalOptions.headers['Authorization'] = `Bearer ${newToken}`;
+            const retryResponse = await fetch(url, finalOptions);
+            if (!retryResponse.ok) {
+              throw new Error(`Retry failed with status: ${retryResponse.status}`);
+            }
+            return await retryResponse.json().catch(() => ({}));
+          }
+        }
+
         const contentType = response.headers.get('content-type') || '';
         let errorData;
         if (contentType.includes('application/json')) {
@@ -501,16 +527,19 @@ class ApiService {
       if (response?.data) {
         const d = response.data;
         const token = d.Token || d.token;
+        const refreshToken = d.RefreshToken || d.refreshToken;
         
         const userId = d.UserId || d.userId || d.userid;
         const email = d.Email || d.email;
         const roleId = d.RoleId || d.roleId;
+        const isAdmin = d.IsAdmin || d.isAdmin || false;
 
         if (token) localStorage.setItem('token', token);
         if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
         if (userId) localStorage.setItem('userId', userId);
-        localStorage.setItem('user', JSON.stringify({ userId, email, roleId }));
+        localStorage.setItem('user', JSON.stringify({ userId, email, roleId, isAdmin }));
         localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
       }
 
       return response;
@@ -1396,24 +1425,27 @@ class ApiService {
 
 
   // Logout (only removes auth state, preserves device connections and remember me)
-  logout() {
-    // Backend ko refresh token invalidate karne ke liye call karo
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`${API_BASE_URL}/Account/logout`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      }).catch(() => {}); // Error ignore karo, logout toh hoga hi
+  async logout() {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      try {
+        await fetch(`${API_BASE_URL}/Account/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ UserId: userId })
+        });
+      } catch (e) {
+        console.warn('Backend logout call failed', e);
+      }
     }
-    
+
     const authKeys = [
       'token', 
+      'refreshToken',
       'userId', 
       'user', 
       'isAuthenticated', 
+      'isAdmin',
       'UserprofilPhotoUrl', 
       'DogprofilPhotoUrl', 
       'dogName', 
@@ -1421,6 +1453,11 @@ class ApiService {
     ];
     authKeys.forEach(key => localStorage.removeItem(key));
     sessionStorage.clear(); // Safe to clear session storage as it's volatile anyway
+    
+    // Optionally redirect to login if we want to force immediate UI change
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/admin') {
+       window.location.href = '/login';
+    }
   }
   // Get Breathing Patterns
   async getBreathingPatterns() {

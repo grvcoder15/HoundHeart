@@ -600,6 +600,7 @@ namespace Hounded_Heart.Api.Controllers
                         UserId = user.UserId,
                         Email = user.Email,
                         RoleId = user.RoleId,
+                        IsAdmin = user.IsAdmin,
                         IsEmailVerified = false,
                         Message = "Please verify your email. Check your inbox for the verification code."
                     };
@@ -619,6 +620,7 @@ namespace Hounded_Heart.Api.Controllers
                     UserId = user.UserId,
                     Email = user.Email,
                     RoleId = user.RoleId,
+                    IsAdmin = user.IsAdmin,
                     IsEmailVerified = true
                 };
                 return Ok(ResponseHelper.Success(response2, "Login Successful", 200));
@@ -626,6 +628,74 @@ namespace Hounded_Heart.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ResponseHelper.Fail<string>($"Login failed: {ex.Message}", 500));
+            }
+        }
+
+        [HttpPost("admin-login")]
+        public async Task<IActionResult> AdminLogin([FromBody] LoginDto dto)
+        {
+            try
+            {
+                if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                {
+                    return BadRequest(ResponseHelper.Fail<string>("Email and Password are required", 400));
+                }
+                var user = _context.Users
+                    .Where(x => x.Email.ToLower() == dto.Email.ToLower() && !x.IsDeleted && x.IsActive)
+                    .FirstOrDefault();
+                if (user == null)
+                {
+                    return NotFound(ResponseHelper.Fail<string>($"Invalid email or user not found: {dto.Email}", 404));
+                }
+                if (user.IsGoogleSignIn)
+                {
+                    return NotFound(ResponseHelper.Fail<object>(
+                        "This account is registered via Google Sign-In. Please use Google to log in."
+                    ));
+                }
+
+                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+
+                if (!isPasswordValid)
+                {
+                    return Unauthorized(ResponseHelper.Fail<string>("Invalid password", 401));
+                }
+
+                if (user.Status == "Suspended")
+                {
+                    return StatusCode(403, ResponseHelper.Fail<object>("Your account is suspended. Please contact support."));
+                }
+                if (user.Status == "Banned")
+                {
+                    return StatusCode(403, ResponseHelper.Fail<object>("Your account is banned."));
+                }
+
+                if (!user.IsAdmin && user.RoleId != 2) // Check if user is an admin
+                {
+                    return StatusCode(403, ResponseHelper.Fail<object>("Access Denied. Admin privileges are required."));
+                }
+
+                var token = GenerateJwtToken(user.UserId, user.Email);
+                var refreshToken = GenerateRefreshToken();
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
+
+                var response = new
+                {
+                    Token = token,
+                    RefreshToken = refreshToken,
+                    UserId = user.UserId,
+                    Email = user.Email,
+                    RoleId = user.RoleId,
+                    IsAdmin = user.IsAdmin,
+                    IsEmailVerified = user.IsEmailVerified
+                };
+                return Ok(ResponseHelper.Success(response, "Admin Login Successful", 200));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<string>($"Admin login failed: {ex.Message}", 500));
             }
         }
 

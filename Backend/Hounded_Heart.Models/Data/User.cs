@@ -22,6 +22,8 @@ namespace Hounded_Heart.Models.Dtos
         public string? PasswordHash { get; set; }
 
         public int? RoleId { get; set; }
+        
+        public bool IsAdmin { get; set; } = false;
 
         public DateTime CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
