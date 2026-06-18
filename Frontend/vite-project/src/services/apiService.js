@@ -39,10 +39,11 @@ class ApiService {
   }
 
   async refreshJwtToken(currentToken) {
+     const refreshToken = localStorage.getItem('refreshToken');
     const response = await fetch(`${API_BASE_URL}/Account/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: currentToken })
+      body: JSON.stringify({ token: currentToken, refreshToken: refreshToken })
     });
 
     if (!response.ok) {
@@ -51,11 +52,13 @@ class ApiService {
 
     const json = await response.json();
     const newToken = json?.data?.token || json?.token || json?.data?.Token;
+    const newRefreshToken = json?.data?.refreshToken || json?.refreshToken || json?.data?.RefreshToken;
     if (!newToken) {
       throw new Error('Refresh response did not return a token.');
     }
 
     localStorage.setItem('token', newToken);
+    if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
     return newToken;
   }
 
@@ -74,9 +77,7 @@ class ApiService {
     if (!this.refreshPromise) {
       this.refreshPromise = this.refreshJwtToken(token)
         .catch((err) => {
-          if (this.isTokenExpired(token)) {
-            this.logout();
-          }
+          // Never auto-logout. Only log out when manually clicked by the user.
           throw err;
         })
         .finally(() => {
@@ -500,11 +501,13 @@ class ApiService {
       if (response?.data) {
         const d = response.data;
         const token = d.Token || d.token;
+        
         const userId = d.UserId || d.userId || d.userid;
         const email = d.Email || d.email;
         const roleId = d.RoleId || d.roleId;
 
         if (token) localStorage.setItem('token', token);
+        if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
         if (userId) localStorage.setItem('userId', userId);
         localStorage.setItem('user', JSON.stringify({ userId, email, roleId }));
         localStorage.setItem('isAuthenticated', 'true');
@@ -1392,15 +1395,32 @@ class ApiService {
 
 
 
-  // Logout (preserves Remember Me credentials)
+  // Logout (only removes auth state, preserves device connections and remember me)
   logout() {
-    const rememberMeEmail = localStorage.getItem('rememberMeEmail');
-    const rememberMePassword = localStorage.getItem('rememberMePassword');
-    localStorage.clear();
-    if (rememberMeEmail && rememberMePassword) {
-      localStorage.setItem('rememberMeEmail', rememberMeEmail);
-      localStorage.setItem('rememberMePassword', rememberMePassword);
+    // Backend ko refresh token invalidate karne ke liye call karo
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${API_BASE_URL}/Account/logout`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }).catch(() => {}); // Error ignore karo, logout toh hoga hi
     }
+    
+    const authKeys = [
+      'token', 
+      'userId', 
+      'user', 
+      'isAuthenticated', 
+      'UserprofilPhotoUrl', 
+      'DogprofilPhotoUrl', 
+      'dogName', 
+      'bondedScore'
+    ];
+    authKeys.forEach(key => localStorage.removeItem(key));
+    sessionStorage.clear(); // Safe to clear session storage as it's volatile anyway
   }
   // Get Breathing Patterns
   async getBreathingPatterns() {

@@ -9,10 +9,15 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
   const [activeTab, setActiveTab] = useState(initialTab); // Use initialTab prop or default to Privacy Policy tab
   const isAuthenticated = apiService.isAuthenticated() && !!apiService.getToken();
 
-  // If the user arrived here from the signup page (mid-registration),
+  // If the user is mid-registration (signup page or terms/privacy opened from it),
   // always send them back to /signup — never to /dashboard.
-  const cameFromSignup = location.state?.from === 'signup';
-  const homePath = cameFromSignup ? '/signup' : (isAuthenticated ? '/dashboard' : '/');
+  const inRegistrationFlow =
+    location.state?.from === 'signup' ||
+    sessionStorage.getItem('registrationInProgress') === 'true';
+  const homePath = inRegistrationFlow ? '/signup' : (isAuthenticated ? '/dashboard' : '/');
+  const backLabel = inRegistrationFlow
+    ? 'Back to Sign Up'
+    : (isAuthenticated ? 'Back to Dashboard' : 'Back to Home');
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -43,7 +48,11 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
   };
 
   const handleFooterNavigation = (path) => {
-    navigate(path);
+    if (inRegistrationFlow) {
+      navigate(path, { state: { from: 'signup' } });
+    } else {
+      navigate(path);
+    }
     window.scrollTo(0, 0);
   };
 
@@ -52,7 +61,7 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
   };
 
   const handleLogin = () => {
-    navigate(cameFromSignup ? '/signup' : (isAuthenticated ? '/dashboard' : '/login'));
+    navigate(inRegistrationFlow ? '/signup' : (isAuthenticated ? '/dashboard' : '/login'));
   };
 
   return (
@@ -101,7 +110,7 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
                   onClick={handleLogin}
                   className="text-gray-700 hover:text-purple-600 font-medium transition-all duration-300 hover:scale-105"
                 >
-                  {isAuthenticated ? 'Dashboard' : 'Login/Register'}
+                  {isAuthenticated && !inRegistrationFlow ? 'Dashboard' : 'Login/Register'}
                 </button>
               </div>
             </div>
@@ -165,7 +174,7 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                   </svg>
-                  {isAuthenticated ? 'Back to Dashboard' : 'Back to Home'}
+                  {backLabel}
                 </button>
               </div>
 
@@ -475,7 +484,7 @@ const PrivacyPolicyPage = ({ showHeaderFooter = true, initialTab = 'general' }) 
                   onClick={handleHomeClick}
                   className="text-purple-600 hover:text-purple-700 font-medium transition-colors"
                 >
-                  ← Back to Home
+                  ← {backLabel}
                 </button>
               </div>
 

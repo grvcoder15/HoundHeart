@@ -4,6 +4,7 @@ using Hounded_Heart.Models.DTOs;
 using Hounded_Heart.Models.Models;
 using Hounded_Heart.Api.Response;
 using Hounded_Heart.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -177,11 +178,17 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     _memoryCache.Remove(verifiedEmailKey); // Clean up verified email marker
                     var token = GenerateJwtToken(user.UserId, user.Email);
+                    var refreshToken = GenerateRefreshToken();
+                    user.RefreshToken = refreshToken;
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                    await _context.SaveChangesAsync();
+
                     return Ok(ResponseHelper.Success(new
                     {
                         UserId = user.UserId,
                         Email = user.Email,
                         Token = token,
+                        RefreshToken = refreshToken,
                         RequiresEmailVerification = false
                     }, "Registration successful! Welcome to HoundHeart.", 200));
                 }
@@ -312,12 +319,17 @@ namespace Hounded_Heart.Api.Controllers
 
                 // Generate JWT token now that email is verified
                 var token = GenerateJwtToken(user.UserId, user.Email);
+                var refreshToken = GenerateRefreshToken();
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
 
                 return Ok(ResponseHelper.Success(new
                 {
                     UserId = user.UserId,
                     Email = user.Email,
-                    Token = token
+                    Token = token,
+                    RefreshToken = refreshToken
                 }, "Email verified successfully! You can now access HoundHeart.", 200));
             }
             catch (Exception ex)
@@ -595,9 +607,15 @@ namespace Hounded_Heart.Api.Controllers
                 }
 
                 var token2 = GenerateJwtToken(user.UserId, user.Email);
+                var refreshToken2 = GenerateRefreshToken();
+                user.RefreshToken = refreshToken2;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
+
                 var response2 = new
                 {
                     Token = token2,
+                    RefreshToken = refreshToken2,
                     UserId = user.UserId,
                     Email = user.Email,
                     RoleId = user.RoleId,
@@ -1075,10 +1093,10 @@ namespace Hounded_Heart.Api.Controllers
         }
 
         [HttpPost("refresh")]
-        public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request?.Token))
-                return BadRequest(ResponseHelper.Fail<string>("Token is required.", 400));
+            if (string.IsNullOrWhiteSpace(request?.Token) || string.IsNullOrWhiteSpace(request?.RefreshToken))
+                return BadRequest(ResponseHelper.Fail<string>("Access Token and Refresh Token are required.", 400));
 
             try
             {
@@ -1103,13 +1121,46 @@ namespace Hounded_Heart.Api.Controllers
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                     return Unauthorized(ResponseHelper.Fail<string>("Invalid token claims.", 401));
 
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return Unauthorized(ResponseHelper.Fail<string>("Invalid or expired refresh token.", 401));
+                }
+
                 var newToken = GenerateJwtToken(userId, emailClaim ?? string.Empty);
-                return Ok(ResponseHelper.Success(new { token = newToken }, "Token refreshed successfully.", 200));
+                var newRefreshToken = GenerateRefreshToken();
+
+                user.RefreshToken = newRefreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                await _context.SaveChangesAsync();
+
+                return Ok(ResponseHelper.Success(new { token = newToken, refreshToken = newRefreshToken }, "Token refreshed successfully.", 200));
             }
             catch (Exception)
             {
                 return Unauthorized(ResponseHelper.Fail<string>("Invalid or tampered token.", 401));
             }
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(ResponseHelper.Fail<string>("Invalid token.", 401));
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(ResponseHelper.Success<string>(null, "Logged out successfully.", 200));
         }
 
         private string GenerateJwtToken(Guid id, string emailAddress)
@@ -1118,14 +1169,14 @@ namespace Hounded_Heart.Api.Controllers
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()),     // ✅ gives you user ID from token
-                new Claim(ClaimTypes.Email, emailAddress),               // ✅ allows accessing user's email
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),     // gives you user ID from token
+                new Claim(ClaimTypes.Email, emailAddress),               // allows accessing user's email
                 new Claim(ClaimTypes.Name, emailAddress)                 // (optional) for User.Identity.Name
             };
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:DurationInDays"] ?? "365")),
+                Expires = DateTime.UtcNow.AddMinutes(15), // Access token short lived (15 mins)
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),
@@ -1137,10 +1188,21 @@ namespace Hounded_Heart.Api.Controllers
             return tokenHandler.WriteToken(token2);
         }
 
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
     }
 
     public class RefreshTokenRequest
     {
         public string Token { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
     }
 }

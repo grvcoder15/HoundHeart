@@ -36,6 +36,8 @@ const SignupPage = () => {
 
   // Scroll animation effect
   useEffect(() => {
+    sessionStorage.setItem('registrationInProgress', 'true');
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -214,6 +216,8 @@ const SignupPage = () => {
         localStorage.setItem('userId', response.data.UserId);
       }
 
+      sessionStorage.removeItem('registrationInProgress');
+
       // Redirect to welcome page directly
       setTimeout(() => {
         navigate('/welcome', { replace: true });
@@ -230,10 +234,12 @@ const SignupPage = () => {
   };
 
   const handleSignIn = () => {
+    sessionStorage.removeItem('registrationInProgress');
     navigate('/login');
   };
 
   const handleClose = () => {
+    sessionStorage.removeItem('registrationInProgress');
     navigate('/');
   };
 
