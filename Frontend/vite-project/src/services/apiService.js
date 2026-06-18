@@ -515,6 +515,7 @@ class ApiService {
   // User Login - matches your .NET 8 API
   async loginUser(credentials) {
     try {
+      // Normal user login API call
       const response = await this.makeRequest('/Account/login', {
         method: 'POST',
         body: JSON.stringify({

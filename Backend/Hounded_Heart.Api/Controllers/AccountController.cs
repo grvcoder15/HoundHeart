@@ -550,6 +550,7 @@ namespace Hounded_Heart.Api.Controllers
             return match.Success ? match.Groups[1].Value : null;
         }
 
+        // Normal user login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
