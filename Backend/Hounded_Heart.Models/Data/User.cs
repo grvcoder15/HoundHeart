@@ -46,6 +46,11 @@ namespace Hounded_Heart.Models.Dtos
         [MaxLength(255)]
         public string? StripeCustomerId { get; set; }
 
+        // JWT Refresh Token
+        [MaxLength(500)]
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
         // Fitbit Integration
         [MaxLength(500)]
         public string? FitbitAccessToken { get; set; }

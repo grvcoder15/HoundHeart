@@ -696,9 +696,8 @@ const ProfileSettingsPage = () => {
     // Close the dropdown first
     setShowProfileDropdown(false);
 
-    // Clear all localStorage and sessionStorage on logout
-    localStorage.clear();
-    sessionStorage.clear();
+    // Use apiService to handle logout properly (preserves non-auth data like device connections)
+    apiService.logout();
 
     // Show logout message
     console.log('User logged out successfully');

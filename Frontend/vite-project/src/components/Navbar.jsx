@@ -175,18 +175,8 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
       // Close the dropdown first
       setShowProfileDropdown(false);
 
-      // Preserve Remember Me credentials before clearing localStorage
-      const rememberMeEmail = localStorage.getItem('rememberMeEmail');
-      const rememberMePassword = localStorage.getItem('rememberMePassword');
-
-      // Clear all localStorage on logout
-      localStorage.clear();
-
-      // Restore Remember Me credentials if they existed
-      if (rememberMeEmail && rememberMePassword) {
-        localStorage.setItem('rememberMeEmail', rememberMeEmail);
-        localStorage.setItem('rememberMePassword', rememberMePassword);
-      }
+      // Use apiService to handle logout properly (preserves non-auth data like device connections)
+      apiService.logout();
 
       // Navigate to landing page
       navigate('/', { replace: true });
