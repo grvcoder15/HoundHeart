@@ -671,7 +671,7 @@ namespace Hounded_Heart.Api.Controllers
                     return StatusCode(403, ResponseHelper.Fail<object>("Your account is banned."));
                 }
 
-                if (!user.IsAdmin && user.RoleId != 2) // Check if user is an admin
+                if (!user.IsAdmin) // Check if user is an admin
                 {
                     return StatusCode(403, ResponseHelper.Fail<object>("Access Denied. Admin privileges are required."));
                 }
