@@ -249,7 +249,10 @@ namespace Hounded_Heart.Api.Controllers
 </html>";
 
                 try { await _emailService.SendEmailAsync(dto.Email.Trim(), "Verify Your HoundHeart Email", body); }
-                catch (Exception emailEx) { Console.WriteLine($"Signup OTP email failed: {emailEx.Message}"); }
+                catch (Exception emailEx) { 
+                    Console.WriteLine($"Signup OTP email failed: {emailEx.Message}"); 
+                    return StatusCode(500, ResponseHelper.Fail<string>($"Email failed to send: {emailEx.Message}", 500));
+                }
 
                 return Ok(ResponseHelper.Success<string>(null, "Verification code sent to your email.", 200));
             }
