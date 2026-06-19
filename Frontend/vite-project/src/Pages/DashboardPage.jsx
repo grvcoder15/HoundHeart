@@ -1719,6 +1719,7 @@ const DashboardPage = () => {
   const [thirdEyeChakra, setThirdEyeChakra] = useState(_storedChakra?.thirdEye ?? 5);
   const [crownChakra, setCrownChakra] = useState(_storedChakra?.crown ?? 5);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [activeInstruction, setActiveInstruction] = useState(null);
 
 
   // New: Behaviors State (Source 8)
@@ -1732,6 +1733,117 @@ const DashboardPage = () => {
         return [...prev, behavior];
       }
     });
+  };
+
+  const nerveCenterInstructions = {
+    root: {
+      key: 'root',
+      title: 'Root Nerve Center — Practice',
+      color: 'from-red-500 via-red-600 to-red-700',
+      textColor: 'text-red-600',
+      governs: 'Safety, groundedness, survival, physical security',
+      instruction: "Sit on the floor with your dog. Feel the ground beneath both of you, one shared surface, one shared gravity. Place your hands on your dog's body and feel their weight, their warmth, their solidity. Notice how your dog responds: a sigh, a lean, a shift of their body against yours. Let their cues guide you. Allow your awareness to drop into the base of your spine. Breathe into the sense of being held by the earth and let your dog's presence deepen that grounding. Stay for 5 minutes."
+    },
+    sacral: {
+      key: 'sacral',
+      title: 'Sacral Nerve Center — Practice',
+      color: 'from-orange-500 via-orange-600 to-orange-700',
+      textColor: 'text-orange-600',
+      governs: 'Emotion, pleasure, creativity, flow, adaptability',
+      instruction: "During play with your dog, allow yourself to fully feel the joy. Do not moderate it. Do not feel silly about it. Let the laughter, the delight, and the silliness flow through your body. Notice how your dog responds when you are fully, unguardedly joyful versus when you are performing enjoyment while remaining emotionally contained."
+    },
+    solarPlexus: {
+      key: 'solarPlexus',
+      title: 'Solar Plexus Nerve Center — Practice',
+      color: 'from-yellow-500 via-yellow-600 to-yellow-700',
+      textColor: 'text-yellow-600',
+      governs: 'Personal power, confidence, will, self-trust, gut instincts',
+      instruction: "Before a walk, stand still for one minute. Place your hand on your upper abdomen. Take three slow breaths directly into that area. Set a clear, calm intention for the walk. Feel your own authority, not aggressive or domineering, but present and decided. Notice how your dog responds to this version of you compared to a scattered, phone-checking, undecided version."
+    },
+    heart: {
+      key: 'heart',
+      title: 'Heart Nerve Center — Practice',
+      color: 'from-green-500 via-green-600 to-green-700',
+      textColor: 'text-green-600',
+      governs: 'Love, compassion, connection, bonding, emotional openness',
+      instruction: "Sit quietly with your dog. Place your hand on your heart. Think of a moment of genuine love, for your dog, for anyone, for anything. Let that feeling build in your chest. Feel it expand. Now look at your dog. Let the feeling flow through your eyes, your hands, your presence. Do nothing else. Simply be with your dog in a state of open-hearted love."
+    },
+    throat: {
+      key: 'throat',
+      title: 'Throat Nerve Center — Practice',
+      color: 'from-blue-500 via-blue-600 to-blue-700',
+      textColor: 'text-blue-600',
+      governs: 'Expression, communication, truth, voice',
+      instruction: "Hum to your dog. Humming activates the vagus nerve, relaxes the jaw and throat, and produces a vibration that many dogs find deeply calming. Sit with your dog, place a hand on them if they are receptive, and hum low and slow. Sustain a single note for 5 to 10 seconds at a time and repeat for two minutes."
+    },
+    thirdEye: {
+      key: 'thirdEye',
+      title: 'Insight Nerve Center — Practice',
+      color: 'from-purple-500 via-purple-600 to-purple-700',
+      textColor: 'text-purple-600',
+      governs: 'Intuition, perception, insight, awareness',
+      instruction: "Spend 10 minutes watching your dog with no agenda. Do not interact. Do not interpret. Simply observe. Notice what they do with their ears, their eyes, their tail, their weight, their breathing. Watch the micro-movements. Let go of any narrative such as 'he is being clingy' or 'she is being stubborn' and simply see the being in front of you."
+    },
+    crown: {
+      key: 'crown',
+      title: 'Crown Nerve Center — Practice',
+      color: 'from-violet-500 via-violet-600 to-violet-700',
+      textColor: 'text-violet-600',
+      governs: 'Connection to something larger, purpose, meaning, transcendence',
+      instruction: "At the end of each day, take one minute to sit with your dog and silently or aloud acknowledge the relationship. Acknowledge not what your dog does for you, and not what you do for your dog, but the relationship itself, this improbable, cross-species bond that somehow works. Feel gratitude for it."
+    }
+  };
+
+  const isNerveCenterDoneToday = (centerKey) => {
+    const today = new Date().toLocaleDateString();
+    return !!localStorage.getItem(`nerveCenter_done_${userId}_${centerKey}_${today}`);
+  };
+
+  const handleMarkNerveCenterDone = async (centerKey) => {
+    const today = new Date().toLocaleDateString();
+    const storageKey = `nerveCenter_done_${userId}_${centerKey}_${today}`;
+    if (localStorage.getItem(storageKey)) return;
+
+    let updatedRoot = rootChakra;
+    let updatedSacral = sacralChakra;
+    let updatedSolarPlexus = solarPlexusChakra;
+    let updatedHeart = heartChakra;
+    let updatedThroat = throatChakra;
+    let updatedThirdEye = thirdEyeChakra;
+    let updatedCrown = crownChakra;
+
+    switch(centerKey) {
+      case 'root': updatedRoot = Math.min(10, rootChakra + 1); setRootChakra(updatedRoot); break;
+      case 'sacral': updatedSacral = Math.min(10, sacralChakra + 1); setSacralChakra(updatedSacral); break;
+      case 'solarPlexus': updatedSolarPlexus = Math.min(10, solarPlexusChakra + 1); setSolarPlexusChakra(updatedSolarPlexus); break;
+      case 'heart': updatedHeart = Math.min(10, heartChakra + 1); setHeartChakra(updatedHeart); break;
+      case 'throat': updatedThroat = Math.min(10, throatChakra + 1); setThroatChakra(updatedThroat); break;
+      case 'thirdEye': updatedThirdEye = Math.min(10, thirdEyeChakra + 1); setThirdEyeChakra(updatedThirdEye); break;
+      case 'crown': updatedCrown = Math.min(10, crownChakra + 1); setCrownChakra(updatedCrown); break;
+    }
+
+    localStorage.setItem(storageKey, 'true');
+    setActiveInstruction(null);
+
+    try {
+      const syncData = {
+        UserId: userId,
+        PetId: null,
+        RootScore: updatedRoot,
+        SacralScore: updatedSacral,
+        SolarPlexusScore: updatedSolarPlexus,
+        HeartScore: updatedHeart,
+        ThroatScore: updatedThroat,
+        ThirdEyeScore: updatedThirdEye,
+        CrownScore: updatedCrown,
+        Behaviors: selectedBehaviors
+      };
+      await apiService.syncChakra(syncData);
+      toast.success('Practice marked as done and progress synced!');
+    } catch (err) {
+      console.error('Failed to sync nerve center update', err);
+      toast.error('Practice marked as done, but failed to sync to server.');
+    }
   };
 
   const handleChakraSync = async () => {
@@ -4368,7 +4480,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.root)}
+                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            aria-label="View Root Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
 
                       {/* Sacral Chakra */}
@@ -4398,7 +4522,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.sacral)}
+                            className="text-gray-400 hover:text-orange-600 transition-colors"
+                            aria-label="View Sacral Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
 
                       {/* Solar Plexus Chakra */}
@@ -4428,7 +4564,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.solarPlexus)}
+                            className="text-gray-400 hover:text-yellow-600 transition-colors"
+                            aria-label="View Solar Plexus Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
 
                       {/* Heart Chakra */}
@@ -4458,10 +4606,22 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-full flex items-center justify-center shadow-md">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                          </svg>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.heart)}
+                            className="text-gray-400 hover:text-green-600 transition-colors"
+                            aria-label="View Heart Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-full flex items-center justify-center shadow-md">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
 
@@ -4492,7 +4652,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.throat)}
+                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                            aria-label="View Throat Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
 
                       {/* Third Eye Chakra */}
@@ -4522,7 +4694,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.thirdEye)}
+                            className="text-gray-400 hover:text-purple-600 transition-colors"
+                            aria-label="View Insight Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
 
                       {/* Crown Chakra */}
@@ -4552,7 +4736,19 @@ const handleNextChakra = () => {
                             />
                           </div>
                         </div>
-                        <div className="w-6 h-6 bg-gradient-to-br from-violet-500 via-violet-600 to-violet-700 rounded-full shadow-md"></div>
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => setActiveInstruction(nerveCenterInstructions.crown)}
+                            className="text-gray-400 hover:text-violet-600 transition-colors"
+                            aria-label="View Crown Nerve Center Practice"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <div className="w-6 h-6 bg-gradient-to-br from-violet-500 via-violet-600 to-violet-700 rounded-full shadow-md"></div>
+                        </div>
                       </div>
                     </div>
 
@@ -4566,6 +4762,61 @@ const handleNextChakra = () => {
                       </svg>
                       <span>Sync Nerve Center & Get Recommendation</span>
                     </button>
+
+                    {/* Instruction Modal */}
+                    {activeInstruction && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative animate-fadeIn">
+                          {/* Top gradient accent */}
+                          <div className={`h-3 bg-gradient-to-r ${activeInstruction.color}`}></div>
+                          
+                          <div className="p-6">
+                            <button
+                              onClick={() => setActiveInstruction(null)}
+                              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            
+                            <h3 className={`text-xl font-bold mb-2 ${activeInstruction.textColor}`}>
+                              {activeInstruction.title}
+                            </h3>
+                            <p className="text-sm text-gray-500 italic mb-4">
+                              Governs: {activeInstruction.governs}
+                            </p>
+                            
+                            <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+                              <p className="text-gray-700 leading-relaxed text-sm">
+                                {activeInstruction.instruction}
+                              </p>
+                            </div>
+                            
+                            <button
+                              onClick={() => handleMarkNerveCenterDone(activeInstruction.key)}
+                              disabled={isNerveCenterDoneToday(activeInstruction.key)}
+                              className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md flex justify-center items-center ${
+                                isNerveCenterDoneToday(activeInstruction.key)
+                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                  : `bg-gradient-to-r ${activeInstruction.color} text-white hover:opacity-90 transform hover:-translate-y-0.5`
+                              }`}
+                            >
+                              {isNerveCenterDoneToday(activeInstruction.key) ? (
+                                <>
+                                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  Completed Today
+                                </>
+                              ) : (
+                                'Mark as Done'
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 

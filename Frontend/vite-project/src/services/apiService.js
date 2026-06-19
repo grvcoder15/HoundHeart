@@ -10,6 +10,10 @@ class ApiService {
       endpoint.includes('/Account/register') ||
       endpoint.includes('/Account/Google-LoginSignup') ||
       endpoint.includes('/Account/Apple-LoginSignup') ||
+      endpoint.includes('/Account/send-signup-otp') ||
+      endpoint.includes('/Account/verify-signup-otp') ||
+      endpoint.includes('/Account/MailSendchangespassword') ||
+      endpoint.includes('/Account/VerifyOtp') ||
       endpoint.includes('/Account/refresh');
   }
 
@@ -92,6 +96,9 @@ class ApiService {
   }
 
   async getAuthHeaders(endpoint = '') {
+    if (this.isAuthEndpoint(endpoint)) {
+      return {};
+    }
     const token = await this.getValidToken(endpoint);
     if (!token) return {};
     return { Authorization: `Bearer ${token}` };
