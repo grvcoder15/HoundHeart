@@ -1,4 +1,4 @@
-﻿using Hounded_Heart.Models.Dtos;
+using Hounded_Heart.Models.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace Hounded_Heart.Models.Data
     {
         public int Id { get; set; }
         public Guid UserId { get; set; }
+        public Guid? DogId { get; set; }
         public Guid ActivityId { get; set; }
         public DateTime ActivityDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

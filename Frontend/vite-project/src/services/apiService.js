@@ -606,6 +606,46 @@ class ApiService {
     }
   }
 
+  async updateDogDetails(detailsData) {
+    try {
+      const endpoint = '/Account/update-dog-details';
+      const headers = await this.getAuthHeaders(endpoint);
+
+      // Helper: convert empty string to null (backend DateTime? can't parse "")
+      const toNullableDate = (val) => (val && val.trim() !== '') ? val : null;
+      const toNullableStr = (val) => (val && val.trim() !== '') ? val.trim() : null;
+
+      const payload = {
+        userId: detailsData.userId,
+        age: detailsData.age ? parseInt(detailsData.age, 10) : null,
+        dogPhotoUrl: toNullableStr(detailsData.dogPhotoUrl),
+        status: detailsData.status || 'Alive',
+        dateOfDeath: toNullableDate(detailsData.dateOfDeath),
+        dateLost: toNullableDate(detailsData.dateLost),
+        memoryNote: toNullableStr(detailsData.memoryNote)
+      };
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to update dog details: ${errText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating dog details:', error);
+      throw error;
+    }
+  }
+
   // Add dog profile - matches your .NET 8 API
   async addDogProfile(dogData) {
     try {

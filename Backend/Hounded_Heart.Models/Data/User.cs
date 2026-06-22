@@ -78,8 +78,7 @@ namespace Hounded_Heart.Models.Dtos
         public string? FitBarkUserId { get; set; }
 
         // Navigation
-        //public ICollection<Dog> Dogs { get; set; }
-        public Dog Dog { get; set; }
+        public ICollection<Dog> Dogs { get; set; }
         public ICollection<UserSelectedTrait> SelectedTraits { get; set; }
         public ICollection<UserChakraProgress> ChakraProgresses { get; set; }
         public ICollection<UserCheckIn> UserCheckIns { get; set; }

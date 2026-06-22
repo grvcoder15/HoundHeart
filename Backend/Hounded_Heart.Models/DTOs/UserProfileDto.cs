@@ -20,6 +20,7 @@ namespace Hounded_Heart.Models.DTOs
         public bool IsGoogleSignIn { get; set; }
 
         public DogDto? Dog { get; set; }
+        public List<DogDto> Dogs { get; set; } = new List<DogDto>();
         public List<UserTraitDto> UserSelectedTraits { get; set; }
         public List<DogTraitDto> DogSelectedTraits { get; set; }
     }
@@ -32,6 +33,10 @@ namespace Hounded_Heart.Models.DTOs
         public int? Age { get; set; }
         public double? Weight { get; set; }
         public string? ProfilePhoto { get; set; }
+        public string? Status { get; set; }
+        public DateTime? DateOfDeath { get; set; }
+        public DateTime? DateLost { get; set; }
+        public string? MemoryNote { get; set; }
     }
     public class UserTraitDto
     {

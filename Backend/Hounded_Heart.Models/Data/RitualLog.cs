@@ -15,6 +15,8 @@ namespace Hounded_Heart.Models.Data
         [Required]
         public Guid UserId { get; set; }
 
+        public Guid? DogId { get; set; }
+
         public DateTime CompletedAt { get; set; } = DateTime.UtcNow;
 
         public bool BonusAwarded { get; set; } = false;

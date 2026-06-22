@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
@@ -15,6 +15,8 @@ namespace Hounded_Heart.Models.Dtos
 
         [Required]
         public Guid UserId { get; set; }
+
+        public Guid? DogId { get; set; }
 
         [Required]
         public Guid CheckInId { get; set; }

@@ -39,7 +39,32 @@ const ProfileSettingsPage = () => {
   });
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
-  // Device Connectivity State
+  // Dog Details & Memorial State
+  const [allDogs, setAllDogs] = useState([]);
+  const [isDogDetailsModalOpen, setIsDogDetailsModalOpen] = useState(false);
+  const [isMemoryNoteExpanded, setIsMemoryNoteExpanded] = useState(false);
+  const [dogDetailsData, setDogDetailsData] = useState({
+    status: 'Alive',
+    dateOfDeath: '',
+    dateLost: '',
+    memoryNote: '',
+    age: '',
+    breed: '',
+    dogName: ''
+  });
+  
+  // Add New Pet State
+  const [isNewPetModalOpen, setIsNewPetModalOpen] = useState(false);
+  const [addPetStep, setAddPetStep] = useState(1);
+  const [newPetTraits, setNewPetTraits] = useState([]);
+  const [dogTraits, setDogTraits] = useState([]);
+  const [isLoadingDogTraits, setIsLoadingDogTraits] = useState(false);
+  const [newPetData, setNewPetData] = useState({
+    dogName: '',
+    breed: '',
+    age: '',
+    dogPhotoUrl: ''
+  });  // Device Connectivity State
   const [petpaceModel, setPetpaceModel] = useState('');
   const [petpaceDevice, setPetpaceDevice] = useState('');
   const [humanWatchDevice, setHumanWatchDevice] = useState('');
@@ -638,8 +663,25 @@ const ProfileSettingsPage = () => {
           phoneNumber: data.phoneNumber || data.PhoneNumber || '',
           dogName: dogName,
         }));
+        
+        setDogDetailsData({
+          status: data?.dog?.status || 'Alive',
+          dateOfDeath: data?.dog?.dateOfDeath ? data.dog.dateOfDeath.substring(0,10) : '',
+          dateLost: data?.dog?.dateLost ? data.dog.dateLost.substring(0,10) : '',
+          memoryNote: data?.dog?.memoryNote || '',
+          age: data?.dog?.age || '',
+          breed: data?.dog?.breed || '',
+          dogName: dogName
+        });
+
         if (userPhoto) setUserProfilePhoto(userPhoto);
         if (dogPhoto) setDogProfilePhoto(dogPhoto);
+        
+        if (data?.dogs && data.dogs.length > 0) {
+          setAllDogs(data.dogs);
+        } else if (data?.dog) {
+          setAllDogs([data.dog]);
+        }
       } catch (_) {
         // Fallback from localStorage if API fails
         const dogName = localStorage.getItem('dogName') || '';
@@ -779,6 +821,147 @@ const ProfileSettingsPage = () => {
       handleEdit();
     }
     focusPhoneInput();
+  };
+
+  const handleSaveDogDetails = async () => {
+    setIsSaving(true);
+    try {
+      // Try multiple sources for userId
+      let userId = localStorage.getItem('userId');
+      if (!userId) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const parsed = JSON.parse(userStr);
+            userId = parsed.userId || parsed.UserId || parsed.id;
+          } catch (_) {}
+        }
+      }
+      if (!userId) {
+        throw new Error('User ID not found. Please log out and log in again.');
+      }
+
+      await apiService.updateDogDetails({
+        userId,
+        ...dogDetailsData,
+        dogPhotoUrl: dogPhotoBase64
+      });
+
+      toastService.success('Dog details updated successfully');
+
+      // Update dog photo in UI if a new one was uploaded
+      if (dogPhotoBase64) {
+        setDogProfilePhoto(dogPhotoBase64);
+      }
+
+      // Reflect saved values directly in state — no page reload needed
+      setDogDetailsData(prev => ({ ...prev }));
+
+      setIsDogDetailsModalOpen(false);
+      setDogPhotoBase64(null);
+    } catch (error) {
+      const msg = error?.message || 'Failed to update dog details';
+      toastService.error(msg);
+      console.error('handleSaveDogDetails error:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleOpenNewPetModal = async () => {
+    setIsNewPetModalOpen(true);
+    setAddPetStep(1);
+    setNewPetTraits([]);
+    
+    // Fetch dog traits if not already fetched
+    if (dogTraits.length === 0) {
+      try {
+        setIsLoadingDogTraits(true);
+        const response = await apiService.getAllDogTraits();
+        if (response && response.data) setDogTraits(response.data);
+        else if (response && Array.isArray(response)) setDogTraits(response);
+      } catch (error) {
+        console.error('Failed to fetch dog traits:', error);
+      } finally {
+        setIsLoadingDogTraits(false);
+      }
+    }
+  };
+
+  const handleTraitToggle = (traitName) => {
+    setNewPetTraits(prev => {
+      if (prev.includes(traitName)) {
+        return prev.filter(t => t !== traitName);
+      } else {
+        if (prev.length >= 3) {
+          toastService.error('You can select up to 3 traits only.');
+          return prev;
+        }
+        return [...prev, traitName];
+      }
+    });
+  };
+
+  const handleAddNewPet = async () => {
+    setIsSaving(true);
+    try {
+      const response = await apiService.addDogProfile(newPetData);
+      
+      const newDogId = response?.data?.DogId || response?.DogId || response?.data?.dogId;
+      if (newDogId && newPetTraits.length > 0) {
+          // get trait ids
+          const dogTraitIds = newPetTraits.map(traitName => {
+              const traitObj = dogTraits.find(t => (t.traitName || t.name) === traitName);
+              return traitObj ? (traitObj.traitId || traitObj.id || traitObj.TraitId) : null;
+          }).filter(id => id !== null);
+
+          if (dogTraitIds.length > 0) {
+              await apiService.saveDogTraits(newDogId, dogTraitIds);
+          }
+      }
+
+      toastService.success('New pet added successfully');
+      setIsNewPetModalOpen(false);
+
+      // Re-fetch profile from backend to show new pet without page reload
+      try {
+        const profile = await apiService.getUserProfile();
+        const data = profile?.data || profile || {};
+        const sanitize = (v) => (!v || v === 'null' || v === 'undefined') ? '' : v;
+        const dogPhoto = sanitize(data?.dog?.profilePhoto || '');
+        const dogName = data?.dog?.dogName || '';
+
+        setFormData(prev => ({
+          ...prev,
+          dogName,
+        }));
+        setDogDetailsData({
+          status: data?.dog?.status || 'Alive',
+          dateOfDeath: data?.dog?.dateOfDeath ? data.dog.dateOfDeath.substring(0, 10) : '',
+          dateLost: data?.dog?.dateLost ? data.dog.dateLost.substring(0, 10) : '',
+          memoryNote: data?.dog?.memoryNote || '',
+          age: data?.dog?.age || '',
+          breed: data?.dog?.breed || '',
+          dogName,
+        });
+        if (dogPhoto) setDogProfilePhoto(dogPhoto);
+        setNewPetData({ dogName: '', breed: '', age: '', dogPhotoUrl: '' });
+        
+        // Update allDogs array so past dogs / multiple dogs list updates immediately
+        if (data?.dogs && data.dogs.length > 0) {
+          setAllDogs(data.dogs);
+        } else if (data?.dog) {
+          setAllDogs([data.dog]);
+        }
+      } catch (_) {
+        // Silent — toast already shown, modal already closed
+      }
+    } catch (error) {
+      toastService.error('Failed to add new pet');
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSave = async () => {
@@ -1445,62 +1628,134 @@ const ProfileSettingsPage = () => {
                   </div>
                 </div>
 
-                {/* Dog Information Section */}
-                <div className="mb-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                      <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-semibold text-gray-900">Dog Information</h2>
-                  </div>
+                {/* Dog Information Sections */}
+                {allDogs && allDogs.length > 0 ? allDogs.map((dog, index) => {
+                  const isPrimary = index === 0;
+                  const currentDogProfilePhoto = isPrimary ? dogProfilePhoto : dog.profilePhoto;
+                  const currentDogName = isPrimary ? (isEditing ? tempFormData.dogName : formData.dogName) : dog.dogName;
+                  const currentDogStatus = isPrimary ? dogDetailsData.status : dog.status;
+                  const currentMemoryNote = isPrimary ? dogDetailsData.memoryNote : dog.memoryNote;
+                  const currentDeathDate = isPrimary ? dogDetailsData.dateOfDeath : dog.dateOfDeath?.substring(0, 10);
+                  const currentLostDate = isPrimary ? dogDetailsData.dateLost : dog.dateLost?.substring(0, 10);
 
-                  <div className="flex items-start space-x-6">
-                    {/* Dog Profile Picture */}
-                    <div className="relative">
-                      {dogProfilePhoto ? (
-                        <img
-                          src={dogProfilePhoto}
-                          alt="Dog Profile"
-                          className="w-20 h-20 rounded-full object-cover border-2 border-teal-400"
-                        />
-                      ) : (
-                        <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center">
-                          <span className="text-white text-2xl">🐶</span>
+                  return (
+                    <div key={dog.dogId || index} className="mb-8">
+                      <div className="flex items-center mb-6">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900">{isPrimary ? "Dog Information" : "Past Dog Information"}</h2>
+                      </div>
+
+                      <div className="flex items-start space-x-6 min-w-0 overflow-hidden">
+                        {/* Dog Profile Picture */}
+                        <div className="relative">
+                          {currentDogProfilePhoto ? (
+                            <img
+                              src={currentDogProfilePhoto}
+                              alt="Dog Profile"
+                              className="w-20 h-20 rounded-full object-cover border-2 border-teal-400"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center">
+                              <span className="text-white text-2xl">🐶</span>
+                            </div>
+                          )}
+                          {isPrimary && (
+                            <button
+                              type="button"
+                              onClick={() => triggerPhotoUpload('dogPhoto')}
+                              className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors duration-200"
+                            >
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Form Fields */}
+                        <div className="flex-1 min-w-0 space-y-4">
+                          <div>
+                            {/* Dog Name */}
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Dog's Name</label>
+                            {isPrimary && isEditing ? (
+                              <input
+                                type="text"
+                                name="dogName"
+                                value={currentDogName || ''}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            ) : (
+                              <div className="text-gray-900">{currentDogName}</div>
+                            )}
+                            
+                            {/* Memorial Note Display */}
+                            {currentDogStatus !== 'Alive' && currentMemoryNote && (
+                              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg w-full overflow-hidden">
+                                <h4 className="text-sm font-semibold text-gray-700 mb-1">
+                                  {currentDogStatus === 'Deceased' ? 'In Loving Memory' : 'Lost Pet Note'}
+                                </h4>
+                                <p
+                                  className="text-sm text-gray-600 italic break-all whitespace-pre-wrap"
+                                  style={!isMemoryNoteExpanded ? {
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                  } : {}}
+                                >
+                                  "{currentMemoryNote}"
+                                </p>
+                                {currentMemoryNote.length > 120 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsMemoryNoteExpanded(prev => !prev)}
+                                    className="text-xs text-purple-600 hover:text-purple-800 font-medium mt-1 focus:outline-none"
+                                  >
+                                    {isMemoryNoteExpanded ? 'Show less' : 'Show more'}
+                                  </button>
+                                )}
+                                <p className="text-xs text-gray-500 mt-2">
+                                  {currentDogStatus === 'Deceased' ? 'Date of passing: ' : 'Date lost: '}
+                                  {currentDogStatus === 'Deceased' ? currentDeathDate : currentLostDate}
+                                </p>
+                              </div>
+                            )}
+
+                            {isPrimary && (
+                              <div className="mt-4 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsDogDetailsModalOpen(true)}
+                                  className="inline-flex items-center justify-center rounded-md border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100 focus:outline-none"
+                                >
+                                  View More Details
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {isPrimary && (currentDogStatus === 'Deceased' || currentDogStatus === 'Lost') && (
+                        <div className="mt-6 border-t border-gray-100 pt-6 flex justify-start">
+                          <button
+                            type="button"
+                            onClick={handleOpenNewPetModal}
+                            className="inline-flex items-center text-sm font-medium text-pink-600 hover:text-pink-700"
+                          >
+                            + Add New Pet
+                          </button>
                         </div>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => triggerPhotoUpload('dogPhoto')}
-                        className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors duration-200"
-                      >
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </button>
                     </div>
-
-                    {/* Form Fields */}
-                    <div className="flex-1 space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Dog's Name</label>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            name="dogName"
-                            value={tempFormData.dogName || ''}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          />
-                        ) : (
-                          <div className="text-gray-900">{formData.dogName}</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  );
+                }) : null}
 
 
                 {/* Action Buttons - Only show when editing */}
@@ -2547,6 +2802,244 @@ const ProfileSettingsPage = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dog Details Modal */}
+      {isDogDetailsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+              <h2 className="text-2xl font-semibold text-gray-900">Dog Details</h2>
+              <button onClick={() => setIsDogDetailsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="space-y-5">
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative">
+                  {dogProfilePhoto ? (
+                    <img src={dogProfilePhoto} alt="Dog Profile" className="w-24 h-24 rounded-full object-cover border-4 border-purple-100" />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center">
+                      <span className="text-white text-3xl">🐶</span>
+                    </div>
+                  )}
+                  <button type="button" onClick={() => document.getElementById('dogPhoto-input').click()} className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-700 shadow-md">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dog's Name</label>
+                  <input type="text" value={dogDetailsData.dogName} readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-600 cursor-not-allowed" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Breed</label>
+                  <input type="text" value={dogDetailsData.breed} readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-600 cursor-not-allowed" />
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                  <input type="number" value={dogDetailsData.age} onChange={(e) => setDogDetailsData({...dogDetailsData, age: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select value={dogDetailsData.status} onChange={(e) => setDogDetailsData({...dogDetailsData, status: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
+                    <option value="Alive">Alive</option>
+                    <option value="Deceased">Deceased</option>
+                    <option value="Lost">Lost</option>
+                  </select>
+                </div>
+              </div>
+
+              {dogDetailsData.status === 'Deceased' && (
+                <div className="animate-fade-in-up">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Passing</label>
+                  <input type="date" value={dogDetailsData.dateOfDeath} onChange={(e) => setDogDetailsData({...dogDetailsData, dateOfDeath: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 mb-4" />
+                  
+                  <label className="block text-sm font-medium text-gray-700 mb-1">In Loving Memory (Note)</label>
+                  <textarea rows="3" value={dogDetailsData.memoryNote} onChange={(e) => setDogDetailsData({...dogDetailsData, memoryNote: e.target.value})} placeholder="Share a favorite memory or note..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"></textarea>
+                </div>
+              )}
+
+              {dogDetailsData.status === 'Lost' && (
+                <div className="animate-fade-in-up">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Lost</label>
+                  <input type="date" value={dogDetailsData.dateLost} onChange={(e) => setDogDetailsData({...dogDetailsData, dateLost: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 mb-4" />
+                  
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Details/Note</label>
+                  <textarea rows="3" value={dogDetailsData.memoryNote} onChange={(e) => setDogDetailsData({...dogDetailsData, memoryNote: e.target.value})} placeholder="Location lost, microchip details, or other notes..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"></textarea>
+                </div>
+              )}
+
+              <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end space-x-3">
+                <button onClick={() => setIsDogDetailsModalOpen(false)} disabled={isSaving} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button onClick={handleSaveDogDetails} disabled={isSaving} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:from-purple-600 transition-colors flex items-center">
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Pet Modal */}
+      {isNewPetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+          <div className={`bg-white rounded-xl shadow-2xl ${addPetStep === 2 ? 'max-w-4xl' : 'max-w-md'} w-full p-6 sm:p-8 transition-all duration-300 max-h-[90vh] overflow-y-auto`}>
+            
+            {addPetStep === 1 && (
+              <>
+                <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                  <h2 className="text-2xl font-semibold text-gray-900">Add New Pet</h2>
+                  <button onClick={() => setIsNewPetModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                <div className="flex flex-col items-center mb-4">
+                  <div className="relative">
+                    {dogPhotoBase64 ? (
+                      <img src={dogPhotoBase64} alt="New Pet Preview" className="w-20 h-20 rounded-full object-cover border-2 border-teal-400" />
+                    ) : (
+                      <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center">
+                        <span className="text-white text-2xl">🐶</span>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => document.getElementById('dogPhoto-input').click()} className="absolute bottom-0 right-0 w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-700 shadow-md">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dog's Name</label>
+                  <input type="text" value={newPetData.dogName} onChange={(e) => setNewPetData({...newPetData, dogName: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500" placeholder="Buddy" />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Breed</label>
+                    <input type="text" value={newPetData.breed} onChange={(e) => setNewPetData({...newPetData, breed: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500" placeholder="Golden Retriever" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                    <input type="number" value={newPetData.age} onChange={(e) => setNewPetData({...newPetData, age: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500" placeholder="3" />
+                  </div>
+                </div>
+                <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end space-x-3">
+                  <button onClick={() => setIsNewPetModalOpen(false)} disabled={isSaving} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                  <button onClick={() => setAddPetStep(2)} disabled={!newPetData.dogName} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:from-purple-600 transition-colors disabled:opacity-50">
+                    Next
+                  </button>
+                </div>
+                </div>
+              </>
+            )}
+            
+            {addPetStep === 2 && (
+              <div className="relative">
+                {/* Cancel Button - Top Right */}
+                <button
+                  onClick={() => setIsNewPetModalOpen(false)}
+                  className="absolute top-0 right-0 text-gray-600 hover:text-gray-800 transition-colors duration-200 text-base font-semibold px-3 py-1 rounded-md hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+
+                {/* Progress Bar */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8 mt-10 sm:mt-0">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-gray-700 font-medium">Step 2 of 2</span>
+                    <span className="text-gray-700 font-medium">100% complete</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `100%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  {/* Orange Icon with Star */}
+                  <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                    {newPetData.dogName || 'Your Dog'}'s Spiritual Traits
+                  </h1>
+                  <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Choose the spiritual qualities that best describe {newPetData.dogName || 'your dog'}. Select 3-5 traits that capture their essence.
+                  </p>
+                </div>
+
+                {/* Traits Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  {isLoadingDogTraits ? (
+                    <div className="col-span-1 md:col-span-3 text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">Loading dog traits...</p>
+                    </div>
+                  ) : dogTraits.length === 0 ? (
+                    <div className="col-span-1 md:col-span-3 text-center text-sm text-gray-500 py-4">No traits found.</div>
+                  ) : (
+                    dogTraits.map(trait => {
+                      const tName = trait.traitName || trait.name;
+                      const isSelected = newPetTraits.includes(tName);
+                      return (
+                        <button
+                          key={tName}
+                          onClick={() => handleTraitToggle(tName)}
+                          className={`p-4 rounded-lg border transition-all duration-300 text-left ${
+                            isSelected 
+                              ? 'border-orange-500 bg-orange-50' 
+                              : newPetTraits.length >= 3 
+                                ? 'border-gray-200 bg-gray-100 cursor-not-allowed opacity-50'
+                                : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="font-medium text-gray-900 mb-1">{tName}</div>
+                          <div className="text-sm text-gray-600">{trait.description || trait.traitDescription}</div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Selection Counter */}
+                <div className="text-center mb-8">
+                  <p className="text-gray-900 font-medium">
+                    Selected: {newPetTraits.length} traits
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {newPetTraits.length < 3
+                      ? `Select at least ${3 - newPetTraits.length} more traits for your dog`
+                      : "Maximum traits selected"}
+                  </p>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="flex justify-between items-center mt-6">
+                  <button onClick={() => setAddPetStep(1)} disabled={isSaving} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 bg-white shadow-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    Back
+                  </button>
+                  <button onClick={handleAddNewPet} disabled={isSaving || newPetTraits.length < 3} className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 transition-colors disabled:opacity-50 flex items-center gap-2 font-semibold shadow-md">
+                    {isSaving ? 'Adding...' : 'Complete Journey'}
+                    {!isSaving && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

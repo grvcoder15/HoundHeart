@@ -1,8 +1,113 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import apiService from '../services/apiService';
 import toast from '../services/toastService';
 import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
+
+// ─── Early Member Offer Banner ────────────────────────────────────────────────
+function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
+    if (!offerConfig?.isActive) return null;
+
+    const earlyPrice  = billingPeriod === 'yearly' ? offerConfig.yearlyPrice  : offerConfig.monthlyPrice;
+    const regularPrice = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
+    const savingsPct  = regularPrice > 0 ? Math.round((1 - earlyPrice / regularPrice) * 100) : 0;
+    const slotsLeft   = offerConfig.slotsRemaining ?? 0;
+
+    return (
+        <div id="early-member-banner" style={{
+            background: 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+            color: '#fff',
+            borderRadius: 16,
+            padding: '24px 32px',
+            marginBottom: 24,
+            boxShadow: '0 8px 32px rgba(124,58,237,0.3)',
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '24px'
+        }}>
+            {/* shimmer stripe */}
+            <div style={{
+                position: 'absolute', top: 0, left: '-60%', width: '40%', height: '100%',
+                background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',
+                animation: 'shimmer 2.5s infinite',
+                pointerEvents: 'none'
+            }} />
+            <style>{`@keyframes shimmer{0%{left:-60%}100%{left:120%}}`}</style>
+
+            {/* Left side: Badges and Text */}
+            <div style={{ flex: '1 1 400px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <span style={{
+                        background: 'rgba(255,255,255,0.25)',
+                        borderRadius: 99,
+                        padding: '4px 14px',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        letterSpacing: 0.4,
+                    }}>🎉 Early Member Pricing</span>
+                    <span style={{
+                        background: '#fff',
+                        color: '#7c3aed',
+                        borderRadius: 99,
+                        padding: '4px 14px',
+                        fontWeight: 800,
+                        fontSize: 13,
+                    }}>Save {savingsPct}%</span>
+                    {/* {slotsLeft > 0 && (
+                        <span style={{
+                            background: 'rgba(255,255,255,0.15)',
+                            borderRadius: 99,
+                            padding: '4px 14px',
+                            fontWeight: 600,
+                            fontSize: 13,
+                        }}>🔥 Only {slotsLeft} spots left</span>
+                    )} */}
+                </div>
+                <p style={{ margin: 0, fontSize: 14, opacity: 0.95, fontStyle: 'italic', lineHeight: 1.5, maxWidth: '90%' }}>
+                    🔒 Lock in this discounted price for as long as you stay subscribed — early members keep their rate forever.
+                </p>
+            </div>
+
+            {/* Right side: Pricing and Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+                <div style={{ fontSize: 11, opacity: 0.85, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Early Member Price</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
+                    <span style={{ textDecoration: 'line-through', opacity: 0.7, fontSize: 18, fontWeight: 600 }}>
+                        ${Number(regularPrice).toFixed(2)}
+                    </span>
+                    <span style={{ fontSize: 36, fontWeight: 900, lineHeight: 1 }}>
+                        ${Number(earlyPrice).toFixed(2)}
+                    </span>
+                    <span style={{ fontSize: 14, opacity: 0.85, fontWeight: 600 }}>/{billingPeriod === 'yearly' ? 'yr' : 'mo'}</span>
+                </div>
+                <button
+                    id="early-member-claim-btn"
+                    onClick={onClaim}
+                    style={{
+                        background: '#fff',
+                        color: '#7c3aed',
+                        border: 'none',
+                        borderRadius: 99,
+                        padding: '12px 28px',
+                        fontWeight: 800,
+                        fontSize: 15,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                        transition: 'transform 0.15s, box-shadow 0.15s'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)'; }}
+                >
+                    🚀 Claim Early Pricing
+                </button>
+            </div>
+        </div>
+    );
+}
 
 // Updated: 2026-03-10 - Direct API call to AdminSubscription endpoint
 const SubscriptionPage = () => {
@@ -12,6 +117,19 @@ const SubscriptionPage = () => {
     const [currentSubscription, setCurrentSubscription] = useState(null);
     const [loading, setLoading] = useState(false);
     const [subscribingPlanId, setSubscribingPlanId] = useState('');
+    // Fallback values matching appsettings.json — overwritten when API responds
+    const [offerConfig, setOfferConfig] = useState({
+        isActive: true,
+        endDateUtc: '2026-07-31T00:00:00Z',
+        slotsTotal: 500,
+        slotsUsed: 0,
+        slotsRemaining: 500,
+        monthlyPrice: 9.99,
+        yearlyPrice: 79.99,
+        regularMonthlyPrice: 14.99,
+        regularYearlyPrice: 119.99,
+        lockInPermanent: true
+    });
 
     // Get tab from URL or default to 'plans'
     const tabParam = searchParams.get('tab');
@@ -44,6 +162,7 @@ const SubscriptionPage = () => {
         if (activeTab === 'plans') {
             if (!plansFetched) fetchPlans();
             fetchCurrentSubscription();
+            fetchOfferConfig();
         }
         if (activeTab === 'current') {
             fetchCurrentSubscription();
@@ -53,6 +172,16 @@ const SubscriptionPage = () => {
             fetchBillingHistory();
         }
     }, [activeTab, plansFetched]);
+
+    const fetchOfferConfig = useCallback(async () => {
+        try {
+            const res = await apiService.makeRequest('/AdminSubscription/offer-config', { method: 'GET' });
+            const data = res?.data || res;
+            if (data) setOfferConfig(data);
+        } catch (err) {
+            console.warn('Could not fetch offer config:', err);
+        }
+    }, []);
 
     useEffect(() => {
         if (billingParam === 'yearly' || billingParam === 'monthly') {
@@ -462,6 +591,20 @@ const SubscriptionPage = () => {
                     <div className="p-4 lg:p-6">
                         {activeTab === 'plans' && (
                             <div>
+                                {/* Early Member Offer Banner */}
+                                <EarlyMemberBanner
+                                    offerConfig={offerConfig}
+                                    billingPeriod={billingPeriod}
+                                    onClaim={() => {
+                                        const plusPlan = plans.find(p => p.tierLevel === 'plus');
+                                        if (plusPlan && !currentSubscription) {
+                                            handleSubscribe(plusPlan.planId, plusPlan.checkoutBillingPeriod);
+                                        } else if (currentSubscription) {
+                                            handleManageSubscription();
+                                        }
+                                    }}
+                                />
+
                                 {/* Header */}
                                 <div className="text-center mb-4">
                                     <h2 className="text-xl font-bold text-gray-900 mb-1">Choose Your Plan</h2>
@@ -572,12 +715,29 @@ const SubscriptionPage = () => {
 
                                                     {/* Price */}
                                                     <div className="text-center mb-3">
-                                                        {plan.originalPrice && (
+                                                        {/* For Plus plan, show strikethrough regular price from offerConfig */}
+                                                        {plan.tierLevel === 'plus' && offerConfig?.isActive && (() => {
+                                                            const regPrice = billingPeriod === 'yearly'
+                                                                ? offerConfig.regularYearlyPrice
+                                                                : offerConfig.regularMonthlyPrice;
+                                                            return regPrice ? (
+                                                                <div className="text-xs text-gray-400 line-through mb-0.5">
+                                                                    Regular: ${Number(regPrice).toFixed(2)}/{billingPeriod === 'yearly' ? 'yr' : 'mo'}
+                                                                </div>
+                                                            ) : null;
+                                                        })()}
+                                                        {/* For Yearly toggle — show monthly*12 as original if not Plus Early Member */}
+                                                        {(plan.tierLevel !== 'plus' || !offerConfig?.isActive) && plan.originalPrice && (
                                                             <div className="text-xs text-gray-500 line-through mb-1">
                                                                 ${plan.originalPrice}
                                                             </div>
                                                         )}
                                                         <div className="flex items-baseline justify-center gap-1">
+                                                            {plan.tierLevel === 'plus' && offerConfig?.isActive && (
+                                                                <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1">
+                                                                    Early Member
+                                                                </span>
+                                                            )}
                                                             <span className="text-2xl font-bold text-gray-900">
                                                                 ${plan.price}
                                                             </span>
@@ -585,7 +745,19 @@ const SubscriptionPage = () => {
                                                                 {plan.billingLabel}
                                                             </span>
                                                         </div>
-                                                        {plan.savingsText && (
+                                                        {/* Dynamic savings % for Plus from offer config */}
+                                                        {plan.tierLevel === 'plus' && offerConfig?.isActive && (() => {
+                                                            const ep = billingPeriod === 'yearly' ? offerConfig.yearlyPrice : offerConfig.monthlyPrice;
+                                                            const rp = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
+                                                            const pct = rp > 0 ? Math.round((1 - ep / rp) * 100) : 0;
+                                                            return pct > 0 ? (
+                                                                <div className="text-xs text-emerald-600 font-bold mt-1">
+                                                                    🏷️ {pct}% off regular price — locked in forever
+                                                                </div>
+                                                            ) : null;
+                                                        })()}
+                                                        {/* Yearly savings for non-Plus */}
+                                                        {(plan.tierLevel !== 'plus' || !offerConfig?.isActive) && plan.savingsText && (
                                                             <div className="text-xs text-green-600 font-semibold mt-1">
                                                                 {plan.savingsText}
                                                             </div>
