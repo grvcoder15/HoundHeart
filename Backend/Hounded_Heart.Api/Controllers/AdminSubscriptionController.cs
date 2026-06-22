@@ -72,7 +72,7 @@ namespace Hounded_Heart.Api.Controllers
         // ═══════════════════════════════════════════════════════════════════
         [AllowAnonymous]
         [HttpGet("offer-config")]
-        public IActionResult GetOfferConfig()
+        public async Task<IActionResult> GetOfferConfig()
         {
             try
             {
@@ -91,6 +91,27 @@ namespace Hounded_Heart.Api.Controllers
                 // Auto-expire the offer if end date has passed
                 if (endDate != default && DateTime.UtcNow > endDate)
                     isActive = false;
+
+                // Validate against Pre-Registration if offer is currently active
+                if (isActive)
+                {
+                    bool isPreRegistered = false;
+                    if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                        if (!string.IsNullOrEmpty(emailClaim))
+                        {
+                            isPreRegistered = await _context.PreRegistrations
+                                .AnyAsync(pr => pr.Email.ToLower() == emailClaim.ToLower() && !pr.IsDeleted);
+                        }
+                    }
+
+                    // Only show early member prices to users who exist in the pre-registration table
+                    if (!isPreRegistered)
+                    {
+                        isActive = false;
+                    }
+                }
 
                 return Ok(ResponseHelper.Success(new
                 {
@@ -121,9 +142,36 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                // Read real Stripe price IDs from appsettings — DB may still have old placeholder values
-                var configMonthly = _configuration["Stripe:MonthlyPriceId"];
-                var configYearly  = _configuration["Stripe:YearlyPriceId"];
+                var section = _configuration.GetSection("EarlyMemberOffer");
+                bool isActive = section.GetValue<bool>("IsActive");
+                DateTime endDate = section.GetValue<DateTime>("EndDateUtc");
+                decimal regularMonthly = section.GetValue<decimal>("RegularMonthlyPrice");
+                decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
+
+                if (endDate != default && DateTime.UtcNow > endDate)
+                    isActive = false;
+
+                if (isActive)
+                {
+                    bool isPreRegistered = false;
+                    if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                        if (!string.IsNullOrEmpty(emailClaim))
+                        {
+                            isPreRegistered = await _context.PreRegistrations
+                                .AnyAsync(pr => pr.Email.ToLower() == emailClaim.ToLower() && !pr.IsDeleted);
+                        }
+                    }
+                    if (!isPreRegistered)
+                    {
+                        isActive = false;
+                    }
+                }
+
+                // Use the correct Stripe Price IDs based on eligibility
+                var configMonthly = isActive ? _configuration["Stripe:MonthlyPriceId"] : _configuration["Stripe:RegularPriceMonthly"];
+                var configYearly  = isActive ? _configuration["Stripe:YearlyPriceId"] : _configuration["Stripe:RegularPriceYearly"];
                 var configPremium = _configuration["Stripe:PremiumYearlyPriceId"];
 
                 var rawPlans = await _context.SubscriptionPlans
@@ -136,17 +184,30 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     string? stripePriceId;
                     var billing = (p.BillingPeriod ?? string.Empty).ToLower();
+                    decimal displayPrice = p.Price;
 
                     if (p.Price <= 0)
-                        stripePriceId = null;                                       // Free — no Stripe ID
-                    else if (billing == "monthly" && !string.IsNullOrEmpty(configMonthly))
-                        stripePriceId = configMonthly;                              // Plus Monthly
-                    else if (billing == "yearly" && p.Price <= 80 && !string.IsNullOrEmpty(configYearly))
-                        stripePriceId = configYearly;                               // Plus Yearly
+                    {
+                        stripePriceId = null;                                       
+                    }
+                    else if (billing == "monthly" && p.Price < 80)
+                    {
+                        stripePriceId = configMonthly;                              
+                        displayPrice = isActive ? p.Price : (regularMonthly > 0 ? regularMonthly : p.Price);
+                    }
+                    else if (billing == "yearly" && p.Price <= 80)
+                    {
+                        stripePriceId = configYearly;                               
+                        displayPrice = isActive ? p.Price : (regularYearly > 0 ? regularYearly : p.Price);
+                    }
                     else if (billing == "yearly" && p.Price > 80 && !string.IsNullOrEmpty(configPremium))
-                        stripePriceId = configPremium;                              // Premium Yearly
+                    {
+                        stripePriceId = configPremium;                              
+                    }
                     else
-                        stripePriceId = p.StripePriceId;                            // Fallback to DB value
+                    {
+                        stripePriceId = p.StripePriceId;                            
+                    }
 
                     return new
                     {
@@ -154,7 +215,7 @@ namespace Hounded_Heart.Api.Controllers
                         p.PlanName,
                         p.TierLevel,
                         p.BillingPeriod,
-                        p.Price,
+                        Price = displayPrice,
                         p.Currency,
                         StripePriceId = stripePriceId,
                         p.Description,

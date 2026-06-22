@@ -177,7 +177,20 @@ const SubscriptionPage = () => {
         try {
             const res = await apiService.makeRequest('/AdminSubscription/offer-config', { method: 'GET' });
             const data = res?.data || res;
-            if (data) setOfferConfig(data);
+            if (data) {
+                setOfferConfig(prev => ({
+                    ...prev,
+                    ...data,
+                    // Fallback to local defaults if backend returns 0 (meaning section is missing in live appsettings)
+                    isActive: data.monthlyPrice > 0 ? data.isActive : prev.isActive,
+                    monthlyPrice: data.monthlyPrice > 0 ? data.monthlyPrice : prev.monthlyPrice,
+                    yearlyPrice: data.yearlyPrice > 0 ? data.yearlyPrice : prev.yearlyPrice,
+                    regularMonthlyPrice: data.regularMonthlyPrice > 0 ? data.regularMonthlyPrice : prev.regularMonthlyPrice,
+                    regularYearlyPrice: data.regularYearlyPrice > 0 ? data.regularYearlyPrice : prev.regularYearlyPrice,
+                    slotsTotal: data.slotsTotal > 0 ? data.slotsTotal : prev.slotsTotal,
+                    slotsRemaining: data.slotsTotal > 0 ? data.slotsRemaining : prev.slotsRemaining
+                }));
+            }
         } catch (err) {
             console.warn('Could not fetch offer config:', err);
         }

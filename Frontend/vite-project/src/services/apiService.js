@@ -14,7 +14,8 @@ class ApiService {
       endpoint.includes('/Account/verify-signup-otp') ||
       endpoint.includes('/Account/MailSendchangespassword') ||
       endpoint.includes('/Account/VerifyOtp') ||
-      endpoint.includes('/Account/refresh');
+      endpoint.includes('/Account/refresh') ||
+      endpoint.includes('/PreRegister');
   }
 
   parseJwtPayload(token) {
