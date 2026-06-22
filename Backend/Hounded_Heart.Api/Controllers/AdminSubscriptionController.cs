@@ -66,7 +66,54 @@ namespace Hounded_Heart.Api.Controllers
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // GET /api/AdminSubscription/membership-plans
+        // GET /api/AdminSubscription/offer-config
+        // Returns Early Member offer configuration from appsettings.json
+        // (public — UI reads this to render pricing banner)
+        // ═══════════════════════════════════════════════════════════════════
+        [AllowAnonymous]
+        [HttpGet("offer-config")]
+        public IActionResult GetOfferConfig()
+        {
+            try
+            {
+                var section = _configuration.GetSection("EarlyMemberOffer");
+
+                bool isActive = section.GetValue<bool>("IsActive");
+                DateTime endDate = section.GetValue<DateTime>("EndDateUtc");
+                int slotsTotal = section.GetValue<int>("SlotsTotal");
+                int slotsUsed = section.GetValue<int>("SlotsUsed");
+                decimal monthlyPrice = section.GetValue<decimal>("MonthlyPrice");
+                decimal yearlyPrice = section.GetValue<decimal>("YearlyPrice");
+                decimal regularMonthly = section.GetValue<decimal>("RegularMonthlyPrice");
+                decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
+                bool lockInPermanent = section.GetValue<bool>("LockInPermanent");
+
+                // Auto-expire the offer if end date has passed
+                if (endDate != default && DateTime.UtcNow > endDate)
+                    isActive = false;
+
+                return Ok(ResponseHelper.Success(new
+                {
+                    isActive,
+                    endDateUtc = endDate,
+                    slotsTotal,
+                    slotsUsed,
+                    slotsRemaining = Math.Max(0, slotsTotal - slotsUsed),
+                    monthlyPrice,
+                    yearlyPrice,
+                    regularMonthlyPrice = regularMonthly,
+                    regularYearlyPrice = regularYearly,
+                    lockInPermanent
+                }, "Offer config retrieved successfully", 200));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Get offer config error: {ex.Message}");
+                return StatusCode(500, ResponseHelper.Fail<object>($"Error retrieving offer config: {ex.Message}"));
+            }
+        }
+
+
         // Get membership plans from SubscriptionPlans table
         // ═══════════════════════════════════════════════════════════════════
         [HttpGet("membership-plans")]

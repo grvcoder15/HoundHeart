@@ -110,7 +110,7 @@ namespace Hounded_Heart.Api.Controllers
                             p.User.FullName,
                             p.User.ProfileName,
                             p.User.ProfilePhoto,
-                            DogName = p.User.Dog != null ? p.User.Dog.DogName : null
+                            DogName = p.User.Dogs.OrderByDescending(d => d.CreatedOn).Select(d => d.DogName).FirstOrDefault()
                         },
                         // Whether the current user liked this post
                         IsLikedByMe = _context.CommunityLikes
@@ -221,7 +221,7 @@ namespace Hounded_Heart.Api.Controllers
                         u.FullName,
                         u.ProfileName,
                         u.ProfilePhoto,
-                        DogName = u.Dog != null ? u.Dog.DogName : null
+                        DogName = u.Dogs.OrderByDescending(d => d.CreatedOn).Select(d => d.DogName).FirstOrDefault()
                     })
                     .FirstOrDefaultAsync();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,6 +12,7 @@ namespace Hounded_Heart.Models.Data
         [Key]
         public Guid EntryId { get; set; }
         public Guid UserId { get; set; }
+        public Guid? DogId { get; set; }
         public string EntryType { get; set; }
         public string? Content { get; set; }
         public string? Tags { get; set; }

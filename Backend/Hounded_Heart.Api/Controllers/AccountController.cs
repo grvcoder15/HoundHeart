@@ -483,7 +483,7 @@ namespace Hounded_Heart.Api.Controllers
                 if (!userExists)
                     return NotFound(ResponseHelper.Fail<string>("User not found.", 404));
 
-                var existingDog = await _context.Dogs.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
+                var existingDog = await _context.Dogs.FirstOrDefaultAsync(d => d.UserId == dto.UserId && d.Status == "Alive");
 
                 var providedImage = dto.DogPhotoUrl?.Trim();
 
@@ -539,6 +539,79 @@ namespace Hounded_Heart.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ResponseHelper.Fail<string>($"Failed to save dog profile: {ex.Message}", 500));
+            }
+        }
+
+        [HttpPost("update-dog-details")]
+        public async Task<IActionResult> UpdateDogDetails([FromBody] UpdateDogDetailsDto dto)
+        {
+            try
+            {
+                if (dto.UserId == Guid.Empty)
+                    return BadRequest(ResponseHelper.Fail<string>("UserId is required.", 400));
+
+                var existingDog = await _context.Dogs
+                    .OrderByDescending(d => d.Status == "Alive")
+                    .ThenByDescending(d => d.CreatedOn)
+                    .FirstOrDefaultAsync(d => d.UserId == dto.UserId);
+                if (existingDog == null)
+                    return NotFound(ResponseHelper.Fail<string>("Dog profile not found.", 404));
+
+                var providedImage = dto.DogPhotoUrl?.Trim();
+                if (!string.IsNullOrWhiteSpace(providedImage))
+                {
+                    var blobUrl = await _blobService.UploadBase64ImageAsync(providedImage, $"Dog_{dto.UserId}.jpg");
+                    existingDog.ProfilePhoto = blobUrl;
+                }
+
+                if (dto.Age.HasValue) existingDog.Age = dto.Age;
+                
+                if (!string.IsNullOrWhiteSpace(dto.Status)) 
+                {
+                    existingDog.Status = dto.Status;
+                    
+                    if (dto.Status == "Alive")
+                    {
+                        existingDog.DateOfDeath = null;
+                        existingDog.DateLost = null;
+                        existingDog.MemoryNote = null;
+                    }
+                    else
+                    {
+                        existingDog.DateOfDeath = dto.DateOfDeath.HasValue
+                            ? DateTime.SpecifyKind(dto.DateOfDeath.Value, DateTimeKind.Utc)
+                            : (DateTime?)null;
+                        existingDog.DateLost = dto.DateLost.HasValue
+                            ? DateTime.SpecifyKind(dto.DateLost.Value, DateTimeKind.Utc)
+                            : (DateTime?)null;
+                        existingDog.MemoryNote = dto.MemoryNote;
+                    }
+                }
+                else
+                {
+                    existingDog.DateOfDeath = dto.DateOfDeath.HasValue
+                        ? DateTime.SpecifyKind(dto.DateOfDeath.Value, DateTimeKind.Utc)
+                        : (DateTime?)null;
+                    existingDog.DateLost = dto.DateLost.HasValue
+                        ? DateTime.SpecifyKind(dto.DateLost.Value, DateTimeKind.Utc)
+                        : (DateTime?)null;
+                    existingDog.MemoryNote = dto.MemoryNote;
+                }
+
+                existingDog.UpdatedOn = DateTime.UtcNow;
+                _context.Dogs.Update(existingDog);
+                await _context.SaveChangesAsync();
+
+                return Ok(ResponseHelper.Success(new
+                {
+                    existingDog.DogId,
+                    existingDog.Status,
+                    existingDog.MemoryNote
+                }, "Dog details updated successfully.", 200));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<string>($"Failed to update dog details: {ex.Message}", 500));
             }
         }
 
@@ -707,7 +780,7 @@ namespace Hounded_Heart.Api.Controllers
         public async Task<IActionResult> GetUserProfile(Guid userId)
         {
             var user = await _context.Users
-                .Include(u => u.Dog)
+                .Include(u => u.Dogs)
                 .FirstOrDefaultAsync(u => u.UserId == userId && !u.IsDeleted);
             if (user == null)
                 return NotFound(new { Message = "User not found." });
@@ -729,7 +802,9 @@ namespace Hounded_Heart.Api.Controllers
                 .CountAsync();
             //var journalEntryCount = await _context.JournalEntry.Where(x => x.UserId == userId).CountAsync();
             List<DogTraitDto> dogTraits = new List<DogTraitDto>();
-            if (user.Dog != null)
+            var activeDog = user.Dogs?.FirstOrDefault(d => d.Status == "Alive") ?? user.Dogs?.OrderByDescending(d => d.CreatedOn).FirstOrDefault();
+
+            if (activeDog != null)
             {
                 dogTraits = await _context.DogSelectedTraits
                     .Where(t => t.UserId == userId)
@@ -755,12 +830,32 @@ namespace Hounded_Heart.Api.Controllers
                 IsProfileSetupCompleted = user.IsProfileSetupCompleted,
                 JournalEntryCount= journalEntryCount,
                 IsGoogleSignIn =user.IsGoogleSignIn,
-                Dog = user.Dog == null ? null : new DogDto
+                Dog = activeDog == null ? null : new DogDto
                 {
-                    DogId = user.Dog.DogId,
-                    DogName = user.Dog.DogName,
-                    ProfilePhoto = user.Dog.ProfilePhoto
+                    DogId = activeDog.DogId,
+                    DogName = activeDog.DogName,
+                    Breed = activeDog.Breed,
+                    Age = activeDog.Age,
+                    Weight = activeDog.Weight,
+                    ProfilePhoto = activeDog.ProfilePhoto,
+                    Status = activeDog.Status,
+                    DateOfDeath = activeDog.DateOfDeath,
+                    DateLost = activeDog.DateLost,
+                    MemoryNote = activeDog.MemoryNote
                 },
+                Dogs = user.Dogs?.Select(d => new DogDto
+                {
+                    DogId = d.DogId,
+                    DogName = d.DogName,
+                    Breed = d.Breed,
+                    Age = d.Age,
+                    Weight = d.Weight,
+                    ProfilePhoto = d.ProfilePhoto,
+                    Status = d.Status,
+                    DateOfDeath = d.DateOfDeath,
+                    DateLost = d.DateLost,
+                    MemoryNote = d.MemoryNote
+                }).OrderByDescending(d => d.Status == "Alive").ThenByDescending(d => d.DateOfDeath ?? d.DateLost ?? DateTime.MinValue).ToList() ?? new List<DogDto>(),
                 UserSelectedTraits = userTraits,
                 DogSelectedTraits = dogTraits
             };
@@ -1009,7 +1104,7 @@ namespace Hounded_Heart.Api.Controllers
             try
             {
                 var user = await _context.Users
-                    .Include(u => u.Dog)
+                    .Include(u => u.Dogs)
                     .FirstOrDefaultAsync(u => u.UserId == dto.UserId && !u.IsDeleted);
 
                 if (user == null)
@@ -1061,7 +1156,7 @@ namespace Hounded_Heart.Api.Controllers
                 // === Handle Dog info only if provided ===
                 if (!string.IsNullOrWhiteSpace(dto.DogName) || !string.IsNullOrEmpty(dto.DogBase64Image) || dto.DogAge.HasValue || !string.IsNullOrEmpty(dto.Breed))
                 {
-                    var dog = user.Dog;
+                    var dog = user.Dogs?.FirstOrDefault(d => d.Status == "Alive") ?? user.Dogs?.OrderByDescending(d => d.CreatedOn).FirstOrDefault();
 
                     if (dog == null)
                     {
@@ -1104,17 +1199,25 @@ namespace Hounded_Heart.Api.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
+                var activeDogForResponse = user.Dogs?.FirstOrDefault(d => d.Status == "Alive") ?? user.Dogs?.OrderByDescending(d => d.CreatedOn).FirstOrDefault();
                 var response = new
                 {
                     UserId = user.UserId,
                     ProfileName = user.ProfileName,
                     Email = user.Email,
                     ProfilePhoto = user.ProfilePhoto,
-                    Dog = user.Dog == null ? null : new
+                    Dog = activeDogForResponse == null ? null : new
                     {
-                        DogId = user.Dog.DogId,
-                        DogName = user.Dog.DogName,
-                        DogProfilePhoto = user.Dog.ProfilePhoto
+                        DogId = activeDogForResponse.DogId,
+                        DogName = activeDogForResponse.DogName,
+                        Breed = activeDogForResponse.Breed,
+                        Age = activeDogForResponse.Age,
+                        Weight = activeDogForResponse.Weight,
+                        DogProfilePhoto = activeDogForResponse.ProfilePhoto,
+                        Status = activeDogForResponse.Status,
+                        DateOfDeath = activeDogForResponse.DateOfDeath,
+                        DateLost = activeDogForResponse.DateLost,
+                        MemoryNote = activeDogForResponse.MemoryNote
                     }
                 };
 

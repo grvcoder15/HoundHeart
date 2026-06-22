@@ -29,6 +29,18 @@ namespace Hounded_Heart.Models.Dtos
         public int? Age { get; set; }
         public double? Weight { get; set; }
 
+        [Column("status")]
+        public string Status { get; set; } = "Alive";
+
+        [Column("dateofdeath")]
+        public DateTime? DateOfDeath { get; set; }
+
+        [Column("datelost")]
+        public DateTime? DateLost { get; set; }
+
+        [Column("memorynote")]
+        public string? MemoryNote { get; set; }
+
         public bool IsActive { get; set; } = true;
         public bool IsDeleted { get; set; } = false;
 
