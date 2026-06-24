@@ -68,10 +68,10 @@ const AdminLayout = ({ children }) => {
         { text: 'Analytics', icon: <TrendingUp size={18} />, path: '/analytics' },
         { text: 'Settings', icon: <Settings size={18} />, path: '/settings' },
         { divider: true },
-        { text: '🚀 Travel Club', icon: <LayoutDashboard size={18} />, path: '/travel-club', comingSoon: true },
+        { text: '🚀 Partner Discounts', icon: <LayoutDashboard size={18} />, path: '/travel-club', comingSoon: true },
         { text: '🚀 Wearable Marketplace', icon: <Watch size={18} />, path: '/wearable-marketplace', comingSoon: true },
         { text: '🚀 Books Management', icon: <BookOpen size={18} />, path: '/books', comingSoon: true },
-        { text: '🚀 Store', icon: <FileText size={18} />, path: '/store', comingSoon: true },
+        { text: '🚀 Merchandise', icon: <FileText size={18} />, path: '/store' },
         { text: '🚀 Charity Partnerships', icon: <BarChart3 size={18} />, path: '/charity', comingSoon: true },
     ];
 

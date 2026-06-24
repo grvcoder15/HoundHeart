@@ -267,7 +267,7 @@ const HoundHeartLandingPage = () => {
         'Paperback HoundHeart book',
         'Official HoundHeart T-shirt',
         '$10 donation to animal welfare charities',
-        'Travel Club access and premium discounts',
+        'Partner Discounts on travel, hotels & vacations',
         'Premium Member badge in profile'
       ]
     }
@@ -975,16 +975,16 @@ const HoundHeartLandingPage = () => {
         </button>
 
         <div className="mb-5">
-          <h2 className="text-3xl font-bold text-purple-600 mb-2">Pre-Register for Launch</h2>
-          <p className="text-gray-600">Join the early list for launch access, drop alerts, and your invite-first checkout link for the HoundHeart tee.</p>
+          <h2 className="text-3xl font-bold text-purple-600 mb-2">Pre-Register Now</h2>
+          <p className="text-gray-600">Join the early access list for launch updates, product drops, exclusive HoundHeart merchandise announcements, and priority access to future releases.</p>
         </div>
 
         <div className="mb-5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-1 text-sm text-gray-700">
-              <p><span className="font-semibold text-gray-900">Shirt:</span> HoundHeart™ — My Dog Likes...</p>
-              <p><span className="font-semibold text-gray-900">Shipping:</span> Free within Continental US...</p>
-              <p><span className="font-semibold text-gray-900">Give Back:</span> $10 from every shirt...</p>
+              <p><span className="font-semibold text-gray-900">Shirt:</span> Official HoundHeart Merchandise</p>
+              <p><span className="font-semibold text-gray-900">Pricing:</span> Free Members $30 | Plus Members $12</p>
+              <p><span className="font-semibold text-gray-900">Give Back:</span> $6 supports the Legacy Project™</p>
             </div>
             <button
               type="button"
@@ -999,8 +999,8 @@ const HoundHeartLandingPage = () => {
             <div className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-sm">
                 <div className="bg-white/70 border border-purple-100 rounded-xl p-3 text-gray-700">
-                  <p className="font-semibold text-gray-900">HoundHeart™ — My Dog Likes Me Anyway</p>
-                  <p>$25. One color for all orders. Multiple sizes available.</p>
+                  <p className="font-semibold text-gray-900">Official HoundHeart Merchandise</p>
+                  <p>Free Members: $30.00 <br/> Plus Members: $12.00 (Membership Benefit)</p>
                 </div>
                 <div className="bg-white/70 border border-purple-100 rounded-xl p-3 text-gray-700">
                   <p className="font-semibold text-gray-900">Shipping</p>
@@ -1008,28 +1008,23 @@ const HoundHeartLandingPage = () => {
                 </div>
                 <div className="bg-white/70 border border-purple-100 rounded-xl p-3 text-gray-700">
                   <p className="font-semibold text-gray-900">Give Back</p>
-                  <p>$10 from every shirt supports animal welfare organizations helping dogs and other animals.</p>
+                  <p>$6 from every shirt sold supports the HoundHeart Legacy Project™.</p>
                 </div>
               </div>
 
               <div className="rounded-xl border border-purple-100 bg-white/60 p-4">
-                <h3 className="text-base font-bold text-gray-900 mb-2">Every Shirt Helps a Dog</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-2">Every Shirt Supports the HoundHeart Legacy Project™</h3>
                 <p className="text-sm text-gray-700 mb-3">
-                  $10 from each shirt sold is donated to a trusted animal welfare organization based on the purchaser's country.
+                  $6 from every shirt sold helps fund memorial tree plantings, senior dog rescue and care, research into the human-dog bond, and other HoundHeart charitable initiatives.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-1 text-sm text-gray-700 mb-3">
-                  <p><span className="font-semibold">United States:</span> Best Friends Animal Society</p>
-                  <p><span className="font-semibold">Canada:</span> Humane Canada</p>
-                  <p><span className="font-semibold">United Kingdom:</span> Dogs Trust</p>
-                  <p><span className="font-semibold">Australia:</span> RSPCA Australia</p>
-                  <p><span className="font-semibold">New Zealand:</span> SPCA New Zealand</p>
-                  <p><span className="font-semibold">Norway:</span> Dyrebeskyttelsen Norge</p>
-                  <p className="md:col-span-2"><span className="font-semibold">European Union (other EU countries):</span> Eurogroup for Animals</p>
+                  <p><span className="font-semibold">Memorial Tree Plantings</span></p>
+                  <p><span className="font-semibold">Senior Dog Rescue and Care</span></p>
+                  <p><span className="font-semibold">Research into Human-Dog Co-Regulation</span></p>
+                  <p><span className="font-semibold">Other Animal Welfare Initiatives</span></p>
                 </div>
-                <div className="text-sm text-gray-700 space-y-1">
-                  <p><span className="font-semibold">Simple Promise:</span> You buy the shirt. We donate $10. Dogs get helped.</p>
-                  <p><span className="font-semibold">Transparency:</span> Monthly donation totals will be posted on this page.</p>
-                  <p><span className="font-semibold">Checkout Note:</span> Your purchase includes a $10 donation for your region.</p>
+                <div className="text-sm text-gray-700 space-y-1 mt-3 border-t border-purple-100 pt-3">
+                  <p><span className="font-semibold">Simple Promise:</span> Funding helps support memorial tree plantings, senior dog rescue and care, research into human-dog co-regulation, and other HoundHeart charitable initiatives.</p>
                 </div>
               </div>
             </div>
