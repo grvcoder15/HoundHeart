@@ -204,10 +204,11 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
 
   const comingSoonItems = [
     { name: '🎓 Courses', path: '/courses', key: 'courses' },
-    { name: '🏖️ Travel Club', path: '/travel-club', key: 'travel-club' },
-    { name: '⌚ Wearable Shop', path: '/wearable-marketplace', key: 'wearable-marketplace' },
-    { name: '🛍️ Store', path: '/store', key: 'store' },
-    { name: '📚 Books', path: '/books', key: 'books' }
+    { name: '✈️ Partner Discounts & Deals', path: '/travel-club', key: 'travel-club' },
+    { name: '⌚ View wearable marketplace', path: '/wearable-marketplace', key: 'wearable-marketplace' },
+    { name: '🛍️ Purchase merchandise', path: '/store', key: 'store' },
+    // { name: '📚 Books', path: '/books', key: 'books' },
+    // { name: '⭐ Purchase memberships', path: '/subscription', key: 'memberships' }
   ];
 
   return (

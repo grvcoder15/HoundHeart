@@ -334,7 +334,7 @@ const SubscriptionPage = () => {
             'Paperback HoundHeart book',
             'Official HoundHeart T-shirt',
             '$10 donation to animal welfare charities',
-            'Travel Club access and premium discounts',
+            'Partner Discounts on travel, hotels & vacations',
             'Premium Member badge in profile'
         ];
 
