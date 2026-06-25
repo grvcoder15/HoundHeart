@@ -45,6 +45,10 @@ namespace Hounded_Heart.Models.Data
 
         public int DisplayOrder { get; set; } = 0;
 
+        /// <summary>Fixed charitable donation per billing period (overrides feature parsing when &gt; 0).</summary>
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal DonationAmount { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

@@ -161,7 +161,6 @@ VALUES (
         "Includes all HoundHeart Plus features",
         "Paperback HoundHeart book",
         "Official HoundHeart T-shirt",
-        "$10 donation to animal welfare charities",
         "Travel Club access and premium discounts",
         "Premium Member badge in profile"
     ]',

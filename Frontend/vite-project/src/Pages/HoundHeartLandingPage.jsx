@@ -266,7 +266,6 @@ const HoundHeartLandingPage = () => {
         'Includes all HoundHeart Plus features',
         'Paperback HoundHeart book',
         'Official HoundHeart T-shirt',
-        '$10 donation to animal welfare charities',
         'Partner Discounts on travel, hotels & vacations',
         'Premium Member badge in profile'
       ]

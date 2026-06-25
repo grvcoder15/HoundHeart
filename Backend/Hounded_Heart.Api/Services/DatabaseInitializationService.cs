@@ -56,6 +56,23 @@ namespace Hounded_Heart.Api.Services
                             ADD COLUMN IF NOT EXISTS ""TierLevel"" character varying(20) NOT NULL DEFAULT 'plus';
                         ", stoppingToken);
 
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""SubscriptionPlans""
+                            ADD COLUMN IF NOT EXISTS ""DonationAmount"" numeric(10,2) NOT NULL DEFAULT 0;
+                        ", stoppingToken);
+
+                        // Remove '$10 donation to animal welfare charities' from plan features (client request)
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            UPDATE ""SubscriptionPlans""
+                            SET ""Features"" = (
+                                SELECT jsonb_agg(elem)::text
+                                FROM jsonb_array_elements_text(""Features""::jsonb) AS elem
+                                WHERE elem NOT ILIKE '%donation%'
+                            )
+                            WHERE ""Features""::text ILIKE '%donation%';
+                        ", stoppingToken);
+                        _logger.LogInformation("✅ Charity donation feature removed from plan features (if present)");
+
                         // Ensure Rituals table exists
                         await dbContext.Database.ExecuteSqlRawAsync(@"
                             CREATE TABLE IF NOT EXISTS ""Rituals"" (
@@ -82,6 +99,125 @@ namespace Hounded_Heart.Api.Services
                             );
                             CREATE INDEX IF NOT EXISTS ""IX_RitualLogs_RitualId"" ON ""RitualLogs""(""RitualId"");
                         ", stoppingToken);
+
+                        // Ensure course content tables exist (books, videos, visuals, audio, resources, assessments)
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""CourseBookContents"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""FileUrl"" character varying(1000),
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseBookContents"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseBookContents_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseBookContents_CourseId"" ON ""CourseBookContents""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseVideos"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""VideoUrl"" character varying(1000),
+                                ""ThumbnailUrl"" character varying(1000),
+                                ""DurationSeconds"" integer,
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseVideos"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseVideos_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseVideos_CourseId"" ON ""CourseVideos""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseVisuals"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""ImageUrl"" character varying(1000),
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseVisuals"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseVisuals_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseVisuals_CourseId"" ON ""CourseVisuals""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseAudios"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""AudioUrl"" character varying(1000),
+                                ""DurationSeconds"" integer,
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseAudios"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseAudios_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseAudios_CourseId"" ON ""CourseAudios""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseResources"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""FileUrl"" character varying(1000),
+                                ""ExternalUrl"" character varying(1000),
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseResources"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseResources_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseResources_CourseId"" ON ""CourseResources""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseAssessments"" (
+                                ""Id"" uuid NOT NULL,
+                                ""CourseId"" uuid NOT NULL,
+                                ""AssessmentType"" character varying(50) NOT NULL,
+                                ""Title"" character varying(300) NOT NULL,
+                                ""Description"" character varying(2000),
+                                ""PassingScorePercent"" integer NOT NULL,
+                                ""DisplayOrder"" integer NOT NULL,
+                                ""IsPublished"" boolean NOT NULL,
+                                ""CreatedAt"" timestamp with time zone NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone,
+                                CONSTRAINT ""PK_CourseAssessments"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseAssessments_Courses_CourseId"" FOREIGN KEY (""CourseId"") REFERENCES ""Courses""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseAssessments_CourseId"" ON ""CourseAssessments""(""CourseId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseAssessmentQuestions"" (
+                                ""Id"" uuid NOT NULL,
+                                ""AssessmentId"" uuid NOT NULL,
+                                ""QuestionText"" character varying(1000) NOT NULL,
+                                ""DisplayOrder"" integer NOT NULL,
+                                CONSTRAINT ""PK_CourseAssessmentQuestions"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseAssessmentQuestions_CourseAssessments_AssessmentId"" FOREIGN KEY (""AssessmentId"") REFERENCES ""CourseAssessments""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseAssessmentQuestions_AssessmentId"" ON ""CourseAssessmentQuestions""(""AssessmentId"");
+
+                            CREATE TABLE IF NOT EXISTS ""CourseAssessmentOptions"" (
+                                ""Id"" uuid NOT NULL,
+                                ""QuestionId"" uuid NOT NULL,
+                                ""OptionText"" character varying(500) NOT NULL,
+                                ""IsCorrect"" boolean NOT NULL,
+                                CONSTRAINT ""PK_CourseAssessmentOptions"" PRIMARY KEY (""Id""),
+                                CONSTRAINT ""FK_CourseAssessmentOptions_CourseAssessmentQuestions_QuestionId"" FOREIGN KEY (""QuestionId"") REFERENCES ""CourseAssessmentQuestions""(""Id"") ON DELETE CASCADE
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_CourseAssessmentOptions_QuestionId"" ON ""CourseAssessmentOptions""(""QuestionId"");
+                        ", stoppingToken);
+                        _logger.LogInformation("✅ Course content tables verified");
                     }
 
                     // Seed Database

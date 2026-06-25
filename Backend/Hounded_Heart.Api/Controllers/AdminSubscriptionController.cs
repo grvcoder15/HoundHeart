@@ -1,6 +1,7 @@
 using Hounded_Heart.Api.Response;
 using Hounded_Heart.Models.Data;
 using Hounded_Heart.Models.DTOs;
+using Hounded_Heart.Services.Helpers;
 using Hounded_Heart.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -485,6 +486,24 @@ namespace Hounded_Heart.Api.Controllers
                     .Where(s => s.Status == "active" || s.Status == "canceled")
                     .SumAsync(s => s.Amount ?? 0);
 
+                var shirtGiveBackAmount = _configuration.GetValue<decimal>("CharityDonation:PremiumShirtGiveBackAmount", 6m);
+                var activePlans = await _context.SubscriptionPlans
+                    .Where(p => p.IsActive)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var activeSubsForDonation = await _context.Subscriptions
+                    .Where(s => (s.Status ?? "") == "active" && !s.CancelAtPeriodEnd)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                decimal donationAmount = 0;
+                foreach (var sub in activeSubsForDonation)
+                {
+                    var plan = SubscriptionDonationHelper.ResolvePlan(sub, activePlans);
+                    donationAmount += SubscriptionDonationHelper.CalculateDonation(sub, plan, shirtGiveBackAmount);
+                }
+
                 var stats = new SubscriptionStatsDto
                 {
                     TotalSubscriptions = totalSubscriptions,
@@ -494,7 +513,8 @@ namespace Hounded_Heart.Api.Controllers
                     TrialingSubscriptions = trialingSubscriptions,
                     MonthlyRecurringRevenue = Math.Round(monthlyRecurringRevenue, 2),
                     YearlyRecurringRevenue = Math.Round(monthlyRecurringRevenue * 12, 2),
-                    TotalRevenue = Math.Round(totalRevenue, 2)
+                    TotalRevenue = Math.Round(totalRevenue, 2),
+                    DonationAmount = Math.Round(donationAmount, 2)
                 };
 
                 return Ok(ResponseHelper.Success(stats, "Statistics retrieved successfully", 200));
