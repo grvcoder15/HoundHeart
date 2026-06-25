@@ -239,10 +239,10 @@ const SubscriptionsPage = () => {
                                 display: 'block',
                                 textTransform: 'uppercase'
                             }}>
-                                MRR
+                                Donation Amount
                             </Typography>
                             <Typography variant="h3" fontWeight="800" sx={{ color: '#a855f7' }}>
-                                ${stats.monthlyRecurringRevenue.toFixed(2)}
+                                ${(stats.donationAmount ?? stats.DonationAmount ?? 0).toFixed(2)}
                             </Typography>
                         </Paper>
 

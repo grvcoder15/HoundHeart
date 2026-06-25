@@ -105,7 +105,8 @@ namespace Hounded_Heart.Api.Controllers
                     userId.Value,
                     user.Email,
                     user.FullName,
-                    dto.PriceId
+                    dto.PriceId,
+                    dto.CouponId
                 );
 
                 return Ok(ResponseHelper.Success(new CheckoutSessionResponseDto

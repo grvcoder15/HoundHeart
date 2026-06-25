@@ -21,6 +21,8 @@ import WearableMarketplaceAdminPage from './pages/StoreAdminPage';
 import BooksAdminPage from './pages/BooksAdminPage';
 import StoreManagementPage from './pages/StoreManagementPage';
 import CharityPartnershipPage from './pages/CharityPartnershipPage';
+import CoursesAdminPage from './pages/CoursesAdminPage';
+import CourseContentAdminPage from './pages/CourseContentAdminPage';
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
           <Route path="/pre-registrations" element={<PreRegistrationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/faq" element={<FAQManagementPage />} />
+          <Route path="/courses" element={<CoursesAdminPage />} />
+          <Route path="/courses/:courseId" element={<CourseContentAdminPage />} />
           
           {/* Phase 2 Coming Soon Features */}
           <Route path="/travel-club" element={<TravelClubAdminPage />} />

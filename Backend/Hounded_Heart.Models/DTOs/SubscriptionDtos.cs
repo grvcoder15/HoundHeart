@@ -6,6 +6,7 @@ namespace Hounded_Heart.Models.DTOs
     public class CreateCheckoutSessionDto
     {
         public string PriceId { get; set; }  // Stripe Price ID (e.g., "price_1234") - can also accept database GUID for backward compatibility
+        public string? CouponId { get; set; }  // Optional Stripe Coupon ID (e.g., "SUMMER20") — pre-applies discount at checkout
     }
 
     // Response with subscription details
@@ -56,6 +57,7 @@ namespace Hounded_Heart.Models.DTOs
         public decimal MonthlyRecurringRevenue { get; set; }
         public decimal YearlyRecurringRevenue { get; set; }
         public decimal TotalRevenue { get; set; }
+        public decimal DonationAmount { get; set; }
     }
 
     // Checkout session response

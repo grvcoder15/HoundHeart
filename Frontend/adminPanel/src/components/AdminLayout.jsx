@@ -62,6 +62,7 @@ const AdminLayout = ({ children }) => {
         { divider: true },
         { text: 'Expert Queries', icon: <MessageSquare size={18} />, path: '/queries' },
         { text: 'Sacred Guide', icon: <BookOpen size={18} />, path: '/sacred-guide' },
+        { text: 'Courses', icon: <BookOpen size={18} />, path: '/courses' },
         { text: 'FAQ Management', icon: <HelpCircle size={18} />, path: '/faq' },
         { text: 'Subscriptions', icon: <CreditCard size={18} />, path: '/subscriptions' },
         { text: 'Membership Plans', icon: <Watch size={18} />, path: '/membership-plans' },
@@ -87,7 +88,8 @@ const AdminLayout = ({ children }) => {
                         return <Divider key={`divider-${index}`} sx={{ my: 1.5, mx: 1.5, opacity: 0.5 }} />;
                     }
                     const active = location.pathname === item.path ||
-                        (item.path === '/sacred-guide' && location.pathname.startsWith('/sacred-guide'));
+                        (item.path === '/sacred-guide' && location.pathname.startsWith('/sacred-guide')) ||
+                        (item.path === '/courses' && location.pathname.startsWith('/courses'));
                     return (
                         <ListItem key={item.text} disablePadding sx={{ mb: 0.3 }} title={item.comingSoon ? 'Coming Soon - Phase 2 Feature' : ''}>
                             <ListItemButton

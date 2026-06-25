@@ -590,6 +590,60 @@ class ApiService {
             method: 'DELETE'
         });
     }
+
+    // ─── Course Content Admin APIs ─────────────────────
+
+    async getAdminCourses() {
+        return this.makeRequest('/admin/courses');
+    }
+
+    async getAdminCourse(courseId) {
+        return this.makeRequest(`/admin/courses/${courseId}`);
+    }
+
+    async getCourseContent(courseId, contentType) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}`);
+    }
+
+    async createCourseContent(courseId, contentType, data) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateCourseContent(courseId, contentType, itemId, data) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}/${itemId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteCourseContent(courseId, contentType, itemId) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}/${itemId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async uploadCourseFile(courseId, file, folder = 'general') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', folder);
+
+        const response = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Upload failed');
+        }
+        return response.json();
+    }
 }
 
 export default new ApiService();

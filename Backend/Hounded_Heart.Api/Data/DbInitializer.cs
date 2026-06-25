@@ -84,7 +84,7 @@ namespace Hounded_Heart.Api.Data
                         BillingPeriod = "yearly",
                         TierLevel = "premium",
                         StripePriceId = "price_1TgHps1CAX7d2eZrYmgLh6m6",
-                        Features = "[\"Includes all HoundHeart Plus features\",\"Paperback HoundHeart book\",\"Official HoundHeart T-shirt\",\"$10 donation to animal welfare charities\",\"Travel Club access and premium discounts\",\"Premium Member badge in profile\"]",
+                        Features = "[\"Includes all HoundHeart Plus features\",\"Paperback HoundHeart book\",\"Official HoundHeart T-shirt\",\"Travel Club access and premium discounts\",\"Premium Member badge in profile\"]",
                         Badge = "Best Value",
                         SavingsText = "Yearly Only",
                         DisplayOrder = 4,

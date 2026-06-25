@@ -56,6 +56,7 @@ namespace Hounded_Heart.Models.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<SubscriptionLog> SubscriptionLogs { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+        public DbSet<StoreProduct> StoreProducts { get; set; }
 
         // Community module
         public DbSet<CommunityPost> CommunityPosts { get; set; }
@@ -97,6 +98,14 @@ namespace Hounded_Heart.Models.Data
         public DbSet<FitBarkActivityLog> FitBarkActivityLogs { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseWaitlist> CourseWaitlists { get; set; }
+        public DbSet<CourseBookContent> CourseBookContents { get; set; }
+        public DbSet<CourseVideo> CourseVideos { get; set; }
+        public DbSet<CourseVisual> CourseVisuals { get; set; }
+        public DbSet<CourseAudio> CourseAudios { get; set; }
+        public DbSet<CourseResource> CourseResources { get; set; }
+        public DbSet<CourseAssessment> CourseAssessments { get; set; }
+        public DbSet<CourseAssessmentQuestion> CourseAssessmentQuestions { get; set; }
+        public DbSet<CourseAssessmentOption> CourseAssessmentOptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -105,6 +114,54 @@ namespace Hounded_Heart.Models.Data
             modelBuilder.Entity<CourseWaitlist>()
                 .HasIndex(x => new { x.UserId, x.CourseId })
                 .IsUnique();
+
+            modelBuilder.Entity<CourseBookContent>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseVideo>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseVisual>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseAudio>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseResource>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseAssessment>()
+                .HasOne(x => x.Course)
+                .WithMany()
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseAssessmentQuestion>()
+                .HasOne(x => x.Assessment)
+                .WithMany(x => x.Questions)
+                .HasForeignKey(x => x.AssessmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseAssessmentOption>()
+                .HasOne(x => x.Question)
+                .WithMany(x => x.Options)
+                .HasForeignKey(x => x.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

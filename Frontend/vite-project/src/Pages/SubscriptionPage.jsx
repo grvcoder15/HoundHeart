@@ -333,7 +333,6 @@ const SubscriptionPage = () => {
             'Includes all HoundHeart Plus features',
             'Paperback HoundHeart book',
             'Official HoundHeart T-shirt',
-            '$10 donation to animal welfare charities',
             'Partner Discounts on travel, hotels & vacations',
             'Premium Member badge in profile'
         ];
@@ -421,7 +420,7 @@ const SubscriptionPage = () => {
         ];
     }, [apiPlans, billingPeriod, normalizedApiPlans]);
 
-    const handleSubscribe = async (priceId, selectedBillingPeriod) => {
+    const handleSubscribe = async (priceId, selectedBillingPeriod, couponId = null) => {
         try {
             if (!priceId) {
                 toast.error('Selected plan is currently unavailable. Please try again in a moment.');
@@ -431,14 +430,20 @@ const SubscriptionPage = () => {
             setSubscribingPlanId(priceId);
             console.log('🛒 Creating checkout session for:', priceId);
 
+            const checkoutBody = {
+                priceId,
+                billingPeriod: selectedBillingPeriod,
+                BillingPeriod: selectedBillingPeriod
+            };
+            // Optional: pass a Stripe Coupon ID to pre-apply a promotional discount (e.g. "SUMMER20")
+            if (couponId) {
+                checkoutBody.couponId = couponId;
+            }
+
             // Call backend to create Stripe checkout session
             const response = await apiService.makeRequest('/Subscription/create-checkout-session', {
                 method: 'POST',
-                body: JSON.stringify({
-                    priceId,
-                    billingPeriod: selectedBillingPeriod,
-                    BillingPeriod: selectedBillingPeriod
-                })
+                body: JSON.stringify(checkoutBody)
             });
 
             console.log('✅ Checkout session created:', response);

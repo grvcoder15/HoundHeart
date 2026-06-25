@@ -78,7 +78,24 @@ namespace Hounded_Heart.Services.Services
         }
 
         // Create Stripe Checkout Session
-        public async Task<Session> CreateCheckoutSessionAsync(Guid userId, string userEmail, string userName, string priceId)
+        //
+        // Stripe Coupon setup (Dashboard):
+        // 1. Stripe Dashboard → Products → Coupons → Create coupon
+        // 2. Discount type: "Percentage off" (e.g. 20 or 30) OR "Fixed amount off"
+        // 3. Duration: "Once" (first invoice only), "Forever" (every renewal), or "Repeating" (N months)
+        // 4. For subscriptions, "Forever" or "Repeating" keeps the discount on renewals; "Once" applies to the first payment only
+        // 5. After saving, copy the Coupon ID (e.g. "SUMMER20") and pass it as couponId below
+        // 6. Optional: create a Promotion Code under the coupon for customer-facing codes (e.g. "LAUNCH30")
+        //    — pass the Promotion Code ID (promo_xxx) as promotionCode, or let customers enter codes via AllowPromotionCodes
+        //
+        // Note: Discounts (pre-applied coupon) and AllowPromotionCodes (customer enters code at checkout) cannot be used together.
+        public async Task<Session> CreateCheckoutSessionAsync(
+            Guid userId,
+            string userEmail,
+            string userName,
+            string priceId,
+            string? couponId = null,
+            string? promotionCode = null)
         {
             // Get or create Stripe customer
             var customerId = await CreateOrGetCustomerAsync(userId, userEmail, userName);
@@ -120,6 +137,26 @@ namespace Hounded_Heart.Services.Services
                     { "plan_name", planName }
                 }
             };
+
+            // Pre-applied coupon/promo code OR allow customer to enter a code — mutually exclusive in Stripe
+            if (!string.IsNullOrWhiteSpace(couponId))
+            {
+                options.Discounts = new List<SessionDiscountOptions>
+                {
+                    new SessionDiscountOptions { Coupon = couponId.Trim() }
+                };
+            }
+            else if (!string.IsNullOrWhiteSpace(promotionCode))
+            {
+                options.Discounts = new List<SessionDiscountOptions>
+                {
+                    new SessionDiscountOptions { PromotionCode = promotionCode.Trim() }
+                };
+            }
+            else
+            {
+                options.AllowPromotionCodes = true;
+            }
 
             try
             {

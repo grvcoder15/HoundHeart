@@ -4,17 +4,17 @@ import ComingSoonPage from '../components/ComingSoonPage';
 const TravelClubPage = () => {
   return (
     <ComingSoonPage
-      title="Travel Club"
-      description="Explore dog-friendly destinations, hotels, restaurants, and activities around the world"
+      title="Partner Discounts"
+      description="Exclusive discounted travel partnerships for HoundHeart members — save on dog-friendly hotels, vacations, and more through our curated travel partners."
       tierRequired="premium"
       expectedPhase="Phase 2 - Q3 2024"
       features={[
-        'Dog-friendly hotel listings',
-        'Restaurant recommendations',
-        'Parks & beaches guide',
-        'Local attractions',
-        'Partner discounts',
-        'Travel planning tools'
+        'Discounted dog-friendly hotel stays',
+        'Exclusive vacation package deals',
+        'Partner resort & retreat discounts',
+        'Pet-friendly airline perks',
+        'Travel insurance partner offers',
+        'Members-only promo codes'
       ]}
     />
   );
