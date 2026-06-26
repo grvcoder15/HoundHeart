@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import toastService from '../services/toastService';
 
@@ -56,15 +55,6 @@ const AskExpertPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name === 'priority' && value === 'High Priority') {
-       const user = JSON.parse(localStorage.getItem('user') || '{}');
-       const rolePremium = user.roleId === 2 || user.RoleId === 2;
-       if (!(hasPremiumAccess || rolePremium)) {
-          navigate('/subscription');
-          return;
-       }
-    }
 
     setFormData(prev => ({
       ...prev,
@@ -126,14 +116,7 @@ const AskExpertPage = () => {
       return;
     }
 
-    // Check free trial limit: allow 1-2 free questions, then show upgrade popup
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const tierLevel = (user.tierLevel || 'free').toLowerCase().trim();
-    
-    if (tierLevel === 'free' && askExpertTrialUsed >= 2) {
-      setShowCompactUpgradeModal(true);
-      return;
-    }
+    // All users can submit questions freely — no subscription required
 
     setIsSubmitting(true);
 
@@ -157,12 +140,7 @@ const AskExpertPage = () => {
       if (response && !response.error) {
         toastService.success(response.message || response.Message || 'Your question has been submitted successfully! Our experts will respond within the specified timeframe.');
 
-        // Increment trial counter for free users
-        if (tierLevel === 'free') {
-          const newCount = askExpertTrialUsed + 1;
-          setAskExpertTrialUsed(newCount);
-          localStorage.setItem('askExpertTrialUsed', newCount.toString());
-        }
+        // No trial limits — all users have unlimited access
 
         // Refresh history
         fetchQuestionHistory();
@@ -339,7 +317,6 @@ const AskExpertPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <Navbar currentPage="ask-expert" onUpgrade={handleUpgrade} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
-import SacredGuideReaderPage from './SacredGuideReaderPage';
+import WellnessGuideReaderPage from './WellnessGuideReaderPage';
 
-const SacredGuidePage = () => {
+const WellnessGuidePage = () => {
     const [showPricingModal, setShowPricingModal] = useState(false);
     const [showWaitlistModal, setShowWaitlistModal] = useState(false);
     const [waitlistName, setWaitlistName] = useState('');
@@ -11,7 +10,7 @@ const SacredGuidePage = () => {
     const [isJoining, setIsJoining] = useState(false);
     const [hasDigitalBookAccess, setHasDigitalBookAccess] = useState(false);
     const [hasJoined, setHasJoined] = useState(false);
-    const [sacredGuideId, setSacredGuideId] = useState(null);
+    const [wellnessGuideId, setWellnessGuideId] = useState(null);
     const [guidePrice, setGuidePrice] = useState(0);
     const [toastMsg, setToastMsg] = useState('');
     const [guideData, setGuideData] = useState(null);
@@ -23,37 +22,22 @@ const SacredGuidePage = () => {
 
     // Load user tier + active guide + waitlist status + check if sales enabled
     useEffect(() => {
-        // 1. Determine user tier from localStorage
-        try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                const tierLevel = String(user.tierLevel || '').toLowerCase().trim();
-                const roleId = user.roleId || user.RoleId;
-
-                // Keep role fallback for older sessions while preferring tierLevel.
-                if (tierLevel === 'plus' || tierLevel === 'premium' || Number(roleId) === 2) {
-                    setHasDigitalBookAccess(true);
-                }
-            }
-        } catch (_) { }
-
-        // 2. Fetch active Sacred Guide + check platform settings
+        // 2. Fetch active Wellness Guide + check platform settings
         const loadGuide = async () => {
             // Step A: Load the guide — isolated so nothing below can block it
             try {
-                const res = await apiService.getActiveSacredGuide();
+                const res = await apiService.getActiveWellnessGuide();
                 const guide = res?.data;
                 // Support both camelCase (sacredGuideId) and PascalCase (SacredGuideId) from API
-                const guideId = guide?.sacredGuideId || guide?.SacredGuideId;
+                const guideId = guide?.sacredGuideId || guide?.SacredGuideId || guide?.wellnessGuideId || guide?.WellnessGuideId;
                 if (guideId) {
-                    setSacredGuideId(guideId);
+                    setWellnessGuideId(guideId);
                     setGuideData(guide);
                     if (guide.price != null) setGuidePrice(guide.price);
 
                     // Step B: Waitlist check is SEPARATE — failure here never blocks the book
                     try {
-                        const statusRes = await apiService.getSacredGuideWaitlistStatus(guideId);
+                        const statusRes = await apiService.getWellnessGuideWaitlistStatus(guideId);
                         if (statusRes?.data?.joined) setHasJoined(true);
                     } catch (_) {
                         // New users won't have a waitlist entry — that's perfectly fine
@@ -89,7 +73,6 @@ const SacredGuidePage = () => {
     if (pageLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
-                <Navbar currentPage="sacred-guide" />
                 <div className="flex-grow flex items-center justify-center">
                     <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
                 </div>
@@ -98,16 +81,16 @@ const SacredGuidePage = () => {
     }
 
     // If guide is Live and has a file → show the reader page (allow free users with page limit)
-    const isLive = guideData?.status?.toLowerCase() === 'live';
-    const hasPdf = !!guideData?.pdfUrl;
+    const isLive = guideData?.status?.toLowerCase() === 'live' || guideData?.Status?.toLowerCase() === 'live';
+    const hasPdf = !!(guideData?.pdfUrl || guideData?.PdfUrl);
 
     // Show reader to all users (free users limited to previewPages in the reader itself)
     if (isLive && hasPdf) {
-        return <SacredGuideReaderPage guide={guideData} hasFullAccess={hasDigitalBookAccess} />;
+        return <WellnessGuideReaderPage guide={guideData} hasFullAccess={hasDigitalBookAccess} />;
     }
 
     // ─── Derive dynamic values from API (ZERO hardcoding) ───
-    const guideTitle = guideData?.title || guideData?.Title || 'Sacred Guide';
+    const guideTitle = guideData?.title || guideData?.Title || 'Wellness Guide';
     const guideDesc = guideData?.description || guideData?.Description || '';
     const guideStatus = guideData?.status || guideData?.Status || 'Draft';
     const guideTotalPages = guideData?.totalPages || guideData?.TotalPages || null;
@@ -126,7 +109,6 @@ const SacredGuidePage = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
-            <Navbar currentPage="sacred-guide" onUpgrade={handleUpgrade} />
 
             {/* Main Content */}
             <main className="max-w-5xl mx-auto px-4 py-6">
@@ -229,7 +211,7 @@ const SacredGuidePage = () => {
                                     <button
                                         disabled={!guideSalesEnabled}
                                         onClick={() => setShowPreview(true)}
-                                        title={!guideSalesEnabled ? "Sacred Guide sales are currently disabled" : ""}
+                                        title={!guideSalesEnabled ? "Wellness Guide sales are currently disabled" : ""}
                                         className="px-4 py-3 rounded-full font-bold text-sm transition-all duration-200 hover:scale-105 border-2 border-white text-white shadow-xl hover:bg-white hover:bg-opacity-10 ml-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     >
                                         Read Free Preview
@@ -418,7 +400,7 @@ const SacredGuidePage = () => {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-lg font-bold text-gray-900 text-center mb-1">Join the Sacred Guide Waitlist</h2>
+                        <h2 className="text-lg font-bold text-gray-900 text-center mb-1">Join the Wellness Guide Waitlist</h2>
                         <p className="text-sm text-gray-500 text-center mb-4">Be the first to know when our spiritual wellness e-book launches</p>
 
                         {/* Form */}
@@ -476,8 +458,8 @@ const SacredGuidePage = () => {
                                 if (!waitlistName.trim() || !waitlistEmail.trim()) return;
                                 setIsJoining(true);
                                 try {
-                                    const guideIdForWaitlist = sacredGuideId || '00000000-0000-0000-0000-000000000000';
-                                    await apiService.joinSacredGuideWaitlist(guideIdForWaitlist, waitlistName.trim(), waitlistEmail.trim());
+                                    const guideIdForWaitlist = wellnessGuideId || '00000000-0000-0000-0000-000000000000';
+                                    await apiService.joinWellnessGuideWaitlist(guideIdForWaitlist, waitlistName.trim(), waitlistEmail.trim());
                                     setHasJoined(true);
                                     setShowWaitlistModal(false);
                                     setWaitlistName('');
@@ -521,4 +503,4 @@ const SacredGuidePage = () => {
     );
 };
 
-export default SacredGuidePage;
+export default WellnessGuidePage;

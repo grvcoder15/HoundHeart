@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 
 const BondAnalyticsPage = () => {
@@ -32,7 +31,6 @@ const BondAnalyticsPage = () => {
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[120px] animate-pulse"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-300/30 rounded-full blur-[150px] animate-spin-slow"></div>
             
-            <Navbar currentPage="dashboard" />
             
             <main className="max-w-7xl mx-auto px-6 py-10">
                 {/* Header Section */}

@@ -10,7 +10,7 @@ import ChakraRitualsPage from './Pages/ChakraRitualsPage';
 import JournalPage from './Pages/JournalPage';
 import CommunityPage from './Pages/CommunityPage';
 import AskExpertPage from './Pages/AskExpertPage';
-import SacredGuidePage from './Pages/SacredGuidePage';
+import WellnessGuidePage from './Pages/WellnessGuidePage';
 import SubscriptionPage from './Pages/SubscriptionPage';
 import SubscriptionSuccessPage from './Pages/SubscriptionSuccessPage';
 import SubscriptionCancelPage from './Pages/SubscriptionCancelPage';
@@ -41,7 +41,7 @@ const App = () => {
           <Route path="/journal" element={<ProtectedRoute><JournalPage /></ProtectedRoute>} />
           <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
           <Route path="/ask-expert" element={<ProtectedRoute><AskExpertPage /></ProtectedRoute>} />
-          <Route path="/sacred-guide" element={<ProtectedRoute><SacredGuidePage /></ProtectedRoute>} />
+          <Route path="/wellness-guide" element={<ProtectedRoute><WellnessGuidePage /></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
           <Route path="/subscription/success" element={<ProtectedRoute><SubscriptionSuccessPage /></ProtectedRoute>} />
           <Route path="/subscription/cancel" element={<ProtectedRoute><SubscriptionCancelPage /></ProtectedRoute>} />

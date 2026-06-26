@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -793,7 +792,6 @@ const CommunityPage = () => {
         <div className="fixed inset-0 z-[1] opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }}></div>
 
         {/* Top Navigation Bar */}
-        <Navbar currentPage="community" onUpgrade={handleUpgrade} />
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 py-6 relative z-10">

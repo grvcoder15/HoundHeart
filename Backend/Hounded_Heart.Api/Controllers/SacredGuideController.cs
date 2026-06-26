@@ -39,18 +39,22 @@ namespace Hounded_Heart.Api.Controllers
 
         // ───────────────────────────────────────────────
         // Helper: check if user has access to this guide
-        // Premium (RoleId=2) → always allowed
-        // Free user with valid purchase → allowed
-        // Otherwise → denied
+        // Active Premium subscription → always allowed
+        // Free user with valid purchase of this guide → allowed
+        // Otherwise → denied (RoleId alone is NOT trusted — can be stale)
         // ───────────────────────────────────────────────
         private async Task<bool> UserHasAccess(Guid userId, Guid sacredGuideId)
         {
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null) return false;
-            // Premium users always have access
-            if (user.RoleId == 2) return true;
+            // Check for an active Premium subscription (source of truth: Subscriptions table)
+            var hasPremiumSub = await _context.Subscriptions
+                .AnyAsync(s => s.UserId == userId
+                            && s.Status == "active"
+                            && s.PlanName != null
+                            && s.PlanName.ToLower().Contains("premium"));
 
-            // Free users — check for a completed purchase
+            if (hasPremiumSub) return true;
+
+            // Free users — check for a completed one-time purchase of this specific guide
             var purchased = await _context.SacredGuidePurchases
                 .AnyAsync(p => p.UserId == userId
                             && p.SacredGuideId == sacredGuideId

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import PreRegisterModal from '../components/PreRegisterModal';
 import apiService from '../services/apiService';
 
@@ -175,7 +174,6 @@ const CoursesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      <Navbar currentPage="courses" onUpgrade={handleUpgrade} />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
 

@@ -100,6 +100,93 @@ namespace Hounded_Heart.Api.Services
                             CREATE INDEX IF NOT EXISTS ""IX_RitualLogs_RitualId"" ON ""RitualLogs""(""RitualId"");
                         ", stoppingToken);
 
+                        // Ensure TreeDedications table exists
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""TreeDedications"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""UserId"" uuid NOT NULL,
+                                ""DogName"" character varying(100) NOT NULL,
+                                ""TributeMessage"" character varying(300) NOT NULL,
+                                ""PhotoUrl"" text NOT NULL,
+                                ""DedicationType"" character varying(20) NOT NULL DEFAULT 'Honor',
+                                ""Status"" character varying(30) NOT NULL DEFAULT 'PendingReview',
+                                ""GrowthStage"" character varying(50) NOT NULL DEFAULT '🌱 Sapling',
+                                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_TreeDedications"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_TreeDedications_UserId"" ON ""TreeDedications""(""UserId"");
+                        ", stoppingToken);
+
+                        // Alter existing PhotoUrl columns to TEXT if they are still varchar(1000)
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""TreeDedications"" ALTER COLUMN ""PhotoUrl"" TYPE text;
+                        ", stoppingToken);
+
+                        // Ensure SeniorDogSubmissions and ResearchSubmissions tables exist
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""SeniorDogSubmissions"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""UserId"" uuid NOT NULL,
+                                ""DogName"" character varying(100) NOT NULL,
+                                ""Story"" character varying(500) NOT NULL,
+                                ""PhotoUrl"" text NOT NULL,
+                                ""Status"" character varying(30) NOT NULL DEFAULT 'PendingReview',
+                                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_SeniorDogSubmissions"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_SeniorDogSubmissions_UserId"" ON ""SeniorDogSubmissions""(""UserId"");
+
+                            CREATE TABLE IF NOT EXISTS ""ResearchSubmissions"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""UserId"" uuid NOT NULL,
+                                ""Title"" character varying(100) NOT NULL,
+                                ""Description"" character varying(500) NOT NULL,
+                                ""PhotoUrl"" text NOT NULL,
+                                ""Status"" character varying(30) NOT NULL DEFAULT 'PendingReview',
+                                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_ResearchSubmissions"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_ResearchSubmissions_UserId"" ON ""ResearchSubmissions""(""UserId"");
+                        ", stoppingToken);
+
+                        // Alter existing PhotoUrl columns to TEXT if they are still varchar(1000)
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""SeniorDogSubmissions"" ALTER COLUMN ""PhotoUrl"" TYPE text;
+                            ALTER TABLE ""ResearchSubmissions"" ALTER COLUMN ""PhotoUrl"" TYPE text;
+                        ", stoppingToken);
+
+                        // Ensure Legacy Project Admin tables exist
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""LegacyProjectContents"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""SectionKey"" character varying(50) NOT NULL,
+                                ""Description"" text NOT NULL,
+                                ""ImpactStatsJson"" text NOT NULL,
+                                ""UpdatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_LegacyProjectContents"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_LegacyProjectContents_SectionKey"" ON ""LegacyProjectContents""(""SectionKey"");
+
+                            CREATE TABLE IF NOT EXISTS ""LegacyProjectUpdates"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""SectionKey"" character varying(50) NOT NULL,
+                                ""Content"" text NOT NULL,
+                                ""Date"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_LegacyProjectUpdates"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_LegacyProjectUpdates_SectionKey"" ON ""LegacyProjectUpdates""(""SectionKey"");
+
+                            CREATE TABLE IF NOT EXISTS ""LegacyProjectAdminPhotos"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""SectionKey"" character varying(50) NOT NULL,
+                                ""PhotoUrl"" text NOT NULL,
+                                ""DisplayOrder"" integer NOT NULL DEFAULT 0,
+                                ""UploadedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                CONSTRAINT ""PK_LegacyProjectAdminPhotos"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_LegacyProjectAdminPhotos_SectionKey"" ON ""LegacyProjectAdminPhotos""(""SectionKey"");
+                        ", stoppingToken);
+
                         // Ensure course content tables exist (books, videos, visuals, audio, resources, assessments)
                         await dbContext.Database.ExecuteSqlRawAsync(@"
                             CREATE TABLE IF NOT EXISTS ""CourseBookContents"" (

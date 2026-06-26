@@ -3,16 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
+const WellnessGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     const navigate = useNavigate();
     const pdfContainerRef = useRef(null);
     const [showPricingModal, setShowPricingModal] = useState(false);
+    const [downloadToast, setDownloadToast] = useState(false);
+
+    const showDownloadAccessDenied = () => {
+        setDownloadToast(true);
+        setTimeout(() => setDownloadToast(false), 4000);
+    };
 
     // Helper to construct full PDF URL if path is relative
     const getFullPdfUrl = (path) => {
@@ -38,14 +43,67 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
+    // ─── Page Audio (Web Speech API) ───
+    const [audioState, setAudioState] = useState('idle'); // 'idle' | 'loading' | 'playing' | 'paused'
+    const pdfDocRef = useRef(null); // holds the raw pdfjs document object
+
+    const stopAudio = () => {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        setAudioState('idle');
+    };
+
+    // Stop audio whenever the page changes
+    useEffect(() => {
+        stopAudio();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage]);
+
+    const handleListenPage = async () => {
+        if (!pdfDocRef.current) return;
+        if (audioState === 'paused') {
+            window.speechSynthesis.resume();
+            setAudioState('playing');
+            return;
+        }
+        if (audioState === 'playing') {
+            window.speechSynthesis.pause();
+            setAudioState('paused');
+            return;
+        }
+        // Extract text from current PDF page
+        setAudioState('loading');
+        try {
+            const page = await pdfDocRef.current.getPage(currentPage);
+            const content = await page.getTextContent();
+            const text = content.items.map(item => item.str).join(' ').trim();
+            if (!text) { setAudioState('idle'); return; }
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(`Page ${currentPage}. ${text}`);
+            utter.rate = 0.85;
+            utter.pitch = 1.0;
+            utter.volume = 1;
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = voices.find(v => v.lang.startsWith('en') && /female|woman|zira|samantha|karen|moira/i.test(v.name));
+            if (preferred) utter.voice = preferred;
+            utter.onstart = () => setAudioState('playing');
+            utter.onend = () => setAudioState('idle');
+            utter.onpause = () => setAudioState('paused');
+            utter.onresume = () => setAudioState('playing');
+            window.speechSynthesis.speak(utter);
+        } catch (e) {
+            console.error('Audio error:', e);
+            setAudioState('idle');
+        }
+    };
+
     // ─── Fetch full guide details with access guard ───
     useEffect(() => {
         const fetchDetails = async () => {
-            const guideId = initialGuide?.sacredGuideId || initialGuide?.SacredGuideId;
+            const guideId = initialGuide?.sacredGuideId || initialGuide?.SacredGuideId || initialGuide?.wellnessGuideId || initialGuide?.WellnessGuideId;
             if (!guideId) { setLoading(false); return; }
 
             try {
-                const res = await apiService.getSacredGuideDetails(guideId);
+                const res = await apiService.getWellnessGuideDetails(guideId);
                 const data = res?.data;
                 if (data) {
                     setGuideData(data);
@@ -70,10 +128,10 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
         fetchDetails();
     }, [initialGuide]);
 
-    // If access denied → redirect to sacred-guide (Coming Soon page)
+    // If access denied → redirect to wellness-guide (Coming Soon page)
     useEffect(() => {
         if (accessDenied) {
-            navigate('/sacred-guide', { replace: true });
+            navigate('/wellness-guide', { replace: true });
         }
     }, [accessDenied, navigate]);
 
@@ -82,7 +140,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     const guideDescription = guideData?.description || guideData?.Description || '';
     const guidePdfUrl = guideData?.pdfUrl || guideData?.PdfUrl || '';
     const dbTotalPages = guideData?.totalPages || guideData?.TotalPages || 0;
-    const guideId = guideData?.sacredGuideId || guideData?.SacredGuideId || '';
+    const guideId = guideData?.sacredGuideId || guideData?.SacredGuideId || guideData?.wellnessGuideId || guideData?.WellnessGuideId || '';
 
     // Use DB totalPages for calculations, fallback to PDF-detected pages
     const totalPages = dbTotalPages > 0 ? dbTotalPages : numPages;
@@ -90,16 +148,37 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     const completionPercent = totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
 
     // ─── Free User Restriction Logic ───
+    // STRICT: Only trust the backend HasFullAccess response. Never fallback to localStorage prop.
+    // While loading (guideData === null) treat as no access so PDF navigation is blocked.
+    const backendHasAccess = guideData !== null
+        ? (guideData?.hasFullAccess ?? guideData?.HasFullAccess ?? false)
+        : null; // null means "still loading — deny navigation"
+
+    const finalHasFullAccess = backendHasAccess === true; // only true if backend explicitly confirms
+
     // Use previewPages from API if available, otherwise default to 2 pages
     const apiPreviewPages = guideData?.previewPages || guideData?.PreviewPages || null;
-    const maxFreePages = hasFullAccess ? Infinity : (apiPreviewPages ?? 2);
-    const isLocked = !hasFullAccess && currentPage > maxFreePages;
+    const maxFreePages = finalHasFullAccess ? Infinity : (apiPreviewPages ?? 2);
+    const isLocked = !finalHasFullAccess && currentPage > maxFreePages;
 
     // ─── PDF handlers ───
-    const onDocumentLoadSuccess = ({ numPages: pages }) => {
+    const onDocumentLoadSuccess = ({ numPages: pages }, pdfDocument) => {
         setNumPages(pages);
         setPdfLoading(false);
+        // Store raw pdfjs doc for text extraction
+        if (pdfDocument && pdfDocument.__pdfInfo) {
+            pdfDocRef.current = pdfDocument;
+        }
     };
+
+    // Also capture via pdfjs direct load
+    const onDocumentLoad = useCallback(async (url) => {
+        if (!url) return;
+        try {
+            const loadingTask = pdfjs.getDocument(url);
+            pdfDocRef.current = await loadingTask.promise;
+        } catch (e) { /* silent */ }
+    }, []);
 
     const onDocumentLoadError = (error) => {
         setPdfError('Failed to load PDF. Please try again later.');
@@ -109,16 +188,17 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
 
     const goToPage = useCallback((page) => {
         const maxPage = totalPages > 0 ? totalPages : numPages;
-        
+        // Block navigation completely while backend access check is still loading
+        if (backendHasAccess === null) return;
+
         if (page >= 1 && page <= maxPage) {
-            if (!hasFullAccess && page > maxFreePages) {
-                // Allow them to click next on the 10% limit to trigger the locked screen
+            if (!finalHasFullAccess && page > maxFreePages) {
                 setCurrentPage(maxFreePages + 1);
             } else {
                 setCurrentPage(page);
             }
         }
-    }, [totalPages, numPages, hasFullAccess, maxFreePages]);
+    }, [totalPages, numPages, finalHasFullAccess, maxFreePages, backendHasAccess]);
 
     const zoomIn = () => setScale((s) => Math.min(s + 0.15, 2.5));
     const zoomOut = () => setScale((s) => Math.max(s - 0.15, 0.5));
@@ -143,10 +223,15 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     // ─── Secure download ───
     const handleDownload = async () => {
         if (!guideId || isDownloading) return;
+        // Block download for free users — require active subscription
+        if (!finalHasFullAccess) {
+            showDownloadAccessDenied();
+            return;
+        }
         setIsDownloading(true);
         try {
-            const fileName = `${guideTitle?.replace(/\s+/g, '_') || 'Sacred_Guide'}.pdf`;
-            await apiService.downloadSacredGuide(guideId, fileName);
+            const fileName = `${guideTitle?.replace(/\s+/g, '_') || 'Wellness_Guide'}.pdf`;
+            await apiService.downloadWellnessGuide(guideId, fileName);
         } catch (err) {
             console.error('Download failed:', err);
         } finally {
@@ -168,7 +253,6 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
-                <Navbar currentPage="sacred-guide" />
                 <div className="flex-grow flex items-center justify-center">
                     <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
                 </div>
@@ -178,8 +262,6 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <Navbar currentPage="sacred-guide" onUpgrade={() => navigate('/subscription')} />
 
             {/* Sub-header bar */}
             <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -199,20 +281,70 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                     <h1 className="text-lg font-bold text-gray-900">{guideTitle}</h1>
                 </div>
 
-                <button
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                    className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
-                >
-                    {isDownloading ? (
-                        <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
-                    ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
+                <div className="relative">
+                    <button
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
+                    >
+                        {isDownloading ? (
+                            <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
+                        ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        )}
+                        {isDownloading ? 'Downloading...' : 'Download PDF'}
+                        {!finalHasFullAccess && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        )}
+                    </button>
+
+                    {/* Access Denied Toast */}
+                    {downloadToast && (
+                        <div
+                            style={{
+                                position: 'fixed',
+                                top: '80px',
+                                right: '24px',
+                                zIndex: 9999,
+                                background: '#1e1e2e',
+                                color: '#fff',
+                                borderRadius: '12px',
+                                padding: '16px 20px',
+                                minWidth: '300px',
+                                maxWidth: '380px',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                                display: 'flex',
+                                gap: '14px',
+                                alignItems: 'flex-start',
+                                animation: 'slideInRight 0.3s ease',
+                                borderLeft: '4px solid #8b5cf6'
+                            }}
+                        >
+                            <div style={{ width: '36px', height: '36px', background: 'rgba(139,92,246,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#8b5cf6" strokeWidth={2}>
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <p style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '4px' }}>Access Denied</p>
+                                <p style={{ fontSize: '0.82rem', color: '#c4c4d4', lineHeight: 1.5 }}>Download is available for Premium members only. Upgrade your subscription to download this guide.</p>
+                                <button
+                                    onClick={() => { setDownloadToast(false); navigate('/subscription'); }}
+                                    style={{ marginTop: '10px', background: 'linear-gradient(135deg, #8b5cf6, #d946ef)', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 16px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
+                                >
+                                    Upgrade Now
+                                </button>
+                            </div>
+                            <button onClick={() => setDownloadToast(false)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}>✕</button>
+                        </div>
                     )}
-                    {isDownloading ? 'Downloading...' : 'Download PDF'}
-                </button>
+                </div>
             </div>
 
             {/* Main content area */}
@@ -251,6 +383,57 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
 
                             {/* Zoom controls */}
                             <div className="flex items-center gap-1.5">
+                                {/* Audio control */}
+                                <button
+                                    onClick={handleListenPage}
+                                    disabled={audioState === 'loading' || isLocked}
+                                    title={audioState === 'playing' ? 'Pause audio' : audioState === 'paused' ? 'Resume audio' : 'Listen to this page'}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors mr-1 ${
+                                        audioState === 'playing'
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : audioState === 'paused'
+                                            ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                                            : 'hover:bg-gray-100 text-gray-600'
+                                    } disabled:opacity-40`}
+                                >
+                                    {audioState === 'loading' && (
+                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                                        </svg>
+                                    )}
+                                    {audioState === 'playing' && (
+                                        <span className="flex items-end gap-[2px] h-3">
+                                            {[1,2,3].map(i => (
+                                                <span key={i} className="w-[2px] bg-purple-500 rounded-full animate-bounce"
+                                                    style={{ height: `${6 + (i%2)*4}px`, animationDelay: `${i*0.15}s`, animationDuration: '0.7s' }} />
+                                            ))}
+                                        </span>
+                                    )}
+                                    {audioState === 'paused' && (
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    )}
+                                    {audioState === 'idle' && (
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                                        </svg>
+                                    )}
+                                    <span className="hidden sm:inline">
+                                        {audioState === 'playing' ? 'Pause' : audioState === 'paused' ? 'Resume' : audioState === 'loading' ? '...' : 'Listen'}
+                                    </span>
+                                </button>
+                                {audioState !== 'idle' && (
+                                    <button
+                                        onClick={stopAudio}
+                                        title="Stop audio"
+                                        className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-400 hover:text-rose-600 transition-colors mr-1"
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                    </button>
+                                )}
+                                <div className="w-px h-5 bg-gray-200 mx-0.5" />
                                 <button onClick={zoomOut} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Zoom Out">
                                     <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg>
                                 </button>
@@ -288,6 +471,16 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                                         file={getFullPdfUrl(guidePdfUrl)}
                                         onLoadSuccess={onDocumentLoadSuccess}
                                         onLoadError={onDocumentLoadError}
+                                        onSourceSuccess={async () => {
+                                            // Load pdfjs doc separately for text extraction
+                                            const url = getFullPdfUrl(guidePdfUrl);
+                                            if (url) {
+                                                try {
+                                                    const task = pdfjs.getDocument(url);
+                                                    pdfDocRef.current = await task.promise;
+                                                } catch (e) { /* silent */ }
+                                            }
+                                        }}
                                         loading={
                                             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                                                 <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4" />
@@ -315,7 +508,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                                                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Keep Reading</h3>
                                                     <p className="text-gray-600 mb-6 font-medium">
                                                         You've reached the end of the free preview. ({maxFreePages} pages). 
-                                                        Upgrade to Premium to unlock the full {totalPages}-page Sacred Guide and continue your journey!
+                                                        Upgrade to Premium to unlock the full {totalPages}-page Wellness Guide and continue your journey!
                                                     </p>
                                                     <button
                                                         onClick={() => navigate('/subscription')}
@@ -444,7 +637,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                             </div>
                         )}
 
-                        {/* About Sacred Guide Card */}
+                        {/* About Wellness Guide Card */}
                         <div
                             className="rounded-2xl p-5 border"
                             style={{
@@ -491,7 +684,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                             {/* Message */}
                             <div>
                                 <p className="text-gray-700 text-center font-medium">
-                                    You've reached the end of the free preview. Continue reading the complete Sacred Guide with a Premium subscription!
+                                    You've reached the end of the free preview. Continue reading the complete Wellness Guide with a Premium subscription!
                                 </p>
                             </div>
 
@@ -501,7 +694,7 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
                                     <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span className="text-sm text-gray-700">Read all Sacred Guides unlimited</span>
+                                    <span className="text-sm text-gray-700">Read all Wellness Guides unlimited</span>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -549,4 +742,4 @@ const SacredGuideReaderPage = ({ guide: initialGuide, hasFullAccess }) => {
     );
 };
 
-export default SacredGuideReaderPage;
+export default WellnessGuideReaderPage;

@@ -28,7 +28,8 @@ import {
     CreditCard,
     Menu as MenuIcon,
     HelpCircle,
-    Watch
+    Watch,
+    Heart
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiService from '../services/apiService';
@@ -60,6 +61,7 @@ const AdminLayout = ({ children }) => {
         { text: 'Healing Circles', icon: <PawPrint size={18} />, path: '/healing-circles' },
         { text: 'Reports', icon: <BarChart3 size={18} />, path: '/reports' },
         { divider: true },
+        { text: 'Legacy Project', icon: <Heart size={18} />, path: '/legacy-project' },
         { text: 'Expert Queries', icon: <MessageSquare size={18} />, path: '/queries' },
         { text: 'Sacred Guide', icon: <BookOpen size={18} />, path: '/sacred-guide' },
         { text: 'Courses', icon: <BookOpen size={18} />, path: '/courses' },
