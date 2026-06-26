@@ -107,7 +107,14 @@ const SignupPage = () => {
       setResendTimer(60);
       toastService.success('OTP sent to your email!');
     } catch (error) {
-      setOtpError(error.message || 'Failed to send OTP. Please try again.');
+      const msg = error.message || 'Failed to send OTP. Please try again.';
+      setOtpError(msg);
+      // Show a prominent toast for duplicate email so user clearly sees the message
+      if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('registered') || msg.toLowerCase().includes('exist')) {
+        toastService.error('This email is already registered. Please sign in instead.');
+      } else {
+        toastService.error(msg);
+      }
     } finally {
       setOtpLoading(false);
     }

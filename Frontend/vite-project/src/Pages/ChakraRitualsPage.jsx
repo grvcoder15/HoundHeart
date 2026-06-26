@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import Navbar from '../components/Navbar';
 import GreenLeaves from '../assets/images/green_leaves.png';
 import apiService from '../services/apiService';
 import { useChakraProgress } from '../hooks/useChakraProgress';
@@ -982,7 +981,6 @@ const ChakraRitualsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100" style={{overflow: 'visible'}}>
       {/* Top Navigation Bar */}
-      <Navbar currentPage="rituals" onUpgrade={handleUpgrade} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8" style={{overflow: 'visible'}}>

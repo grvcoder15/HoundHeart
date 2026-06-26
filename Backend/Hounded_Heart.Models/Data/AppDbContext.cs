@@ -48,6 +48,15 @@ namespace Hounded_Heart.Models.Data
         public DbSet<RitualLog> RitualLogs { get; set; }
         public DbSet<ChakraLog> ChakraLogs { get; set; }
         public DbSet<BreathingPattern> BreathingPatterns { get; set; }
+        public DbSet<TreeDedication> TreeDedications { get; set; }
+        public DbSet<SeniorDogSubmission> SeniorDogSubmissions { get; set; }
+        public DbSet<ResearchSubmission> ResearchSubmissions { get; set; }
+        
+        // Legacy Project Admin Settings
+        public DbSet<LegacyProjectContent> LegacyProjectContents { get; set; }
+        public DbSet<LegacyProjectUpdate> LegacyProjectUpdates { get; set; }
+        public DbSet<LegacyProjectAdminPhoto> LegacyProjectAdminPhotos { get; set; }
+
         public DbSet<TargetCycle> TargetCycles { get; set; }
         public DbSet<UserBreathingPreference> UserBreathingPreferences { get; set; }
         public DbSet<SacredGuide> SacredGuides { get; set; }
@@ -57,7 +66,6 @@ namespace Hounded_Heart.Models.Data
         public DbSet<SubscriptionLog> SubscriptionLogs { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<StoreProduct> StoreProducts { get; set; }
-
         // Community module
         public DbSet<CommunityPost> CommunityPosts { get; set; }
         public DbSet<CommunityLike> CommunityLikes { get; set; }

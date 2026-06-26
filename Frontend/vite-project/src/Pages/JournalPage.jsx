@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import toastService from '../services/toastService';
 import { jsPDF } from 'jspdf';
@@ -906,7 +905,6 @@ const JournalPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50" style={{ overflow: 'visible' }}>
       {/* Top Navigation Bar */}
-      <Navbar currentPage="journal" onUpgrade={handleUpgrade} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6" style={{ overflow: 'visible' }}>

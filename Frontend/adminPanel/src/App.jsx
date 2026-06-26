@@ -23,7 +23,7 @@ import StoreManagementPage from './pages/StoreManagementPage';
 import CharityPartnershipPage from './pages/CharityPartnershipPage';
 import CoursesAdminPage from './pages/CoursesAdminPage';
 import CourseContentAdminPage from './pages/CourseContentAdminPage';
-
+import LegacyProjectAdminPage from './pages/LegacyProjectAdminPage';
 function App() {
   return (
     <>
@@ -55,6 +55,7 @@ function App() {
           <Route path="/books" element={<BooksAdminPage />} />
           <Route path="/store" element={<StoreManagementPage />} />
           <Route path="/charity" element={<CharityPartnershipPage />} />
+          <Route path="/legacy-project" element={<LegacyProjectAdminPage />} />
         </Routes>
       </Router>
     </>

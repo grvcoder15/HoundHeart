@@ -1605,10 +1605,10 @@ class ApiService {
     }
   }
 
-  // ===== Sacred Guide APIs =====
+  // ===== Wellness Guide APIs =====
 
-  // Get the active Sacred Guide (id, title, price, status)
-  async getActiveSacredGuide() {
+  // Get the active Wellness Guide (id, title, price, status)
+  async getActiveWellnessGuide() {
     try {
       const response = await this.makeRequest('/SacredGuide/active', {
         method: 'GET',
@@ -1620,8 +1620,8 @@ class ApiService {
     }
   }
 
-  // Join the waitlist for a Sacred Guide
-  async joinSacredGuideWaitlist(guideId, name, email) {
+  // Join the waitlist for a Wellness Guide
+  async joinWellnessGuideWaitlist(guideId, name, email) {
     try {
       const response = await this.makeRequest(`/SacredGuide/${guideId}/waitlist/join`, {
         method: 'POST',
@@ -1635,7 +1635,7 @@ class ApiService {
   }
 
   // Check if user already joined the waitlist
-  async getSacredGuideWaitlistStatus(guideId) {
+  async getWellnessGuideWaitlistStatus(guideId) {
     try {
       const response = await this.makeRequest(`/SacredGuide/${guideId}/waitlist/status`, {
         method: 'GET',
@@ -1648,7 +1648,7 @@ class ApiService {
   }
 
   // Get full guide details (with access guard)
-  async getSacredGuideDetails(guideId) {
+  async getWellnessGuideDetails(guideId) {
     try {
       const response = await this.makeRequest(`/SacredGuide/${guideId}`, {
         method: 'GET',
@@ -1661,7 +1661,7 @@ class ApiService {
   }
 
   // Secure PDF download (blob)
-  async downloadSacredGuide(guideId, fileName) {
+  async downloadWellnessGuide(guideId, fileName) {
     try {
       const authHeaders = await this.getAuthHeaders(`/SacredGuide/${guideId}/download`);
       const res = await fetch(`${API_BASE_URL}/SacredGuide/${guideId}/download`, {
@@ -1685,7 +1685,7 @@ class ApiService {
   }
 
   // Create a checkout session for a one-time guide purchase
-  async createSacredGuideCheckoutSession(guideId) {
+  async createWellnessGuideCheckoutSession(guideId) {
     try {
       const response = await this.makeRequest(`/SacredGuide/${guideId}/create-checkout-session`, {
         method: 'POST',
@@ -1698,7 +1698,7 @@ class ApiService {
   }
 
   // Check if user has access (premium or purchased)
-  async checkSacredGuideAccess(guideId) {
+  async checkWellnessGuideAccess(guideId) {
     try {
       const response = await this.makeRequest(`/SacredGuide/${guideId}/check-access`, {
         method: 'GET',
@@ -2228,6 +2228,389 @@ class ApiService {
       throw error;
     }
   }
+
+
+  // Get FAQ categories
+  async getFAQCategories() {
+    try {
+      const response = await this.makeRequest('/faq/categories', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Get FAQ categories error:', error);
+      return [];
+    }
+  }
+
+  // Get FAQ by ID
+  async getFAQById(id) {
+    try {
+      const response = await this.makeRequest(`/faq/${id}`, {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Get FAQ by ID error:', error);
+      return null;
+    }
+  }
+  // Submit an Ask Our Expert query
+  async submitExpertQuestion(questionData) {
+    try {
+      const response = await this.makeRequest('/ExpertQuery/submit', {
+        method: 'POST',
+        body: JSON.stringify(questionData),
+      });
+      return response;
+    } catch (error) {
+      console.error('Submit expert question error:', error);
+      throw error;
+    }
+  }
+
+  // Get user expert queries history
+  async getUserExpertQuestions(userId) {
+    try {
+      const response = await this.makeRequest('/ExpertQuery/history', {
+        method: 'GET',
+      });
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      if (response && Array.isArray(response.result)) return response.result;
+      return [];
+    } catch (error) {
+      console.error('Get user expert questions error:', error);
+      return [];
+    }
+  }
+
+  // Get expert query categories
+  async getExpertQueryCategories() {
+    try {
+      const response = await this.makeRequest('/ExpertQuery/categories', {
+        method: 'GET',
+      });
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      if (response && Array.isArray(response.result)) return response.result;
+      return [];
+    } catch (error) {
+      console.error('Get expert query categories error:', error);
+      return [];
+    }
+  }
+
+  // Get subscription plans
+  async getSubscriptionPlans() {
+    try {
+      const response = await this.makeRequest('/Subscription/plans', {
+        method: 'GET',
+      });
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      if (response && Array.isArray(response.result)) return response.result;
+      return [];
+    } catch (error) {
+      console.error('Get subscription plans error:', error);
+      return [];
+    }
+  }
+
+  // Get ask expert site settings
+  async getAskExpertSettings() {
+    try {
+      const response = await this.makeRequest('/Settings/ask-expert', {
+        method: 'GET',
+      });
+      return response || {};
+    } catch (error) {
+      console.error('Get ask expert settings error:', error);
+      return {};
+    }
+  }
+
+  async getPublicLaunchFlags() {
+    try {
+      const response = await this.makeRequest('/Settings/public/launch-flags', {
+        method: 'GET',
+      });
+      return response?.data || response || {};
+    } catch (error) {
+      console.error('Get public launch flags error:', error);
+      return {
+        enablePreRegistration: true,
+        enableTshirtSales: false,
+        ctaLabel: 'Pre-Register'
+      };
+    }
+  }
+
+  async submitPreRegistration(payload) {
+    return await this.makeRequest('/PreRegister', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Email Verification Methods
+  async sendSignupOtp(email) {
+    try {
+      return await this.makeRequest('/Account/send-signup-otp', {
+        method: 'POST',
+        body: JSON.stringify({ Email: email }),
+      });
+    } catch (error) {
+      console.error('Send signup OTP error:', error);
+      throw error;
+    }
+  }
+
+  async verifySignupOtp(email, otpCode) {
+    try {
+      return await this.makeRequest('/Account/verify-signup-otp', {
+        method: 'POST',
+        body: JSON.stringify({ Email: email, OtpCode: otpCode }),
+      });
+    } catch (error) {
+      console.error('Verify signup OTP error:', error);
+      throw error;
+    }
+  }
+
+  async verifyEmailOtp(data) {
+    try {
+      const response = await this.makeRequest('/Account/verify-email-otp', {
+        method: 'POST',
+        body: JSON.stringify({
+          UserId: data.userId,
+          OtpCode: data.otpCode
+        }),
+      });
+
+      // Store token if verification successful
+      if (response?.data?.Token) {
+        localStorage.setItem('token', response.data.Token);
+      }
+      if (response?.data?.RefreshToken) {
+        localStorage.setItem('refreshToken', response.data.RefreshToken);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Verify email OTP error:', error);
+      throw error;
+    }
+  }
+
+  async resendVerificationEmail(data) {
+    try {
+      const response = await this.makeRequest('/Account/resend-verification-email', {
+        method: 'POST',
+        body: JSON.stringify({
+          UserId: data.userId
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Resend verification email error:', error);
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // Tree Dedications
+  // ==========================================
+
+  async submitTreeDedication(dedicationData) {
+    try {
+      const response = await this.makeRequest('/TreeDedication', {
+        method: 'POST',
+        body: JSON.stringify(dedicationData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Submit Tree Dedication error:', error);
+      throw error;
+    }
+  }
+
+  async getLiveTreeDedications() {
+    try {
+      const response = await this.makeRequest('/TreeDedication/live', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Get Live Tree Dedications error:', error);
+      throw error;
+    }
+  }
+
+  async getUserTreeDedications() {
+    try {
+      const response = await this.makeRequest('/TreeDedication/user', {
+        method: 'GET'
+      });
+      return response;
+    } catch (error) {
+      console.error('Get User Tree Dedications error:', error);
+      throw error;
+    }
+  }
+
+  async deleteTreeDedication(id) {
+    try {
+      const response = await this.makeRequest(`/TreeDedication/${id}`, {
+        method: 'DELETE'
+      });
+      return response;
+    } catch (error) {
+      console.error('Delete Tree Dedication error:', error);
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // Senior Dog Submissions
+  // ==========================================
+
+  async submitSeniorDogSubmission(data) {
+    try {
+      const response = await this.makeRequest('/SeniorDogSubmission', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return response;
+    } catch (error) {
+      console.error('Submit Senior Dog Submission error:', error);
+      throw error;
+    }
+  }
+
+  async getLiveSeniorDogSubmissions() {
+    try {
+      const response = await this.makeRequest('/SeniorDogSubmission/live', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get Live Senior Dog Submissions error:', error);
+      throw error;
+    }
+  }
+
+  async getUserSeniorDogSubmissions() {
+    try {
+      const response = await this.makeRequest('/SeniorDogSubmission/user', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get User Senior Dog Submissions error:', error);
+      throw error;
+    }
+  }
+
+  async deleteSeniorDogSubmission(id) {
+    try {
+      const response = await this.makeRequest(`/SeniorDogSubmission/${id}`, { method: 'DELETE' });
+      return response;
+    } catch (error) {
+      console.error('Delete Senior Dog Submission error:', error);
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // Research Submissions
+  // ==========================================
+
+  async submitResearchSubmission(data) {
+    try {
+      const response = await this.makeRequest('/ResearchSubmission', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return response;
+    } catch (error) {
+      console.error('Submit Research Submission error:', error);
+      throw error;
+    }
+  }
+
+  async getLiveResearchSubmissions() {
+    try {
+      const response = await this.makeRequest('/ResearchSubmission/live', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get Live Research Submissions error:', error);
+      throw error;
+    }
+  }
+
+  async getUserResearchSubmissions() {
+    try {
+      const response = await this.makeRequest('/ResearchSubmission/user', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get User Research Submissions error:', error);
+      throw error;
+    }
+  }
+
+  async deleteResearchSubmission(id) {
+    try {
+      const response = await this.makeRequest(`/ResearchSubmission/${id}`, { method: 'DELETE' });
+      return response;
+    } catch (error) {
+      console.error('Delete Research Submission error:', error);
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // Legacy Project Admin Settings
+  // ==========================================
+
+  async getLegacyContent(sectionKey) {
+    return await this.makeRequest(`/LegacyProjectAdmin/content?sectionKey=${sectionKey}`, { method: 'GET' });
+  }
+
+  async updateLegacyContent(data) {
+    return await this.makeRequest('/LegacyProjectAdmin/content', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getLegacyUpdates(sectionKey) {
+    return await this.makeRequest(`/LegacyProjectAdmin/updates?sectionKey=${sectionKey}`, { method: 'GET' });
+  }
+
+  async createLegacyUpdate(data) {
+    return await this.makeRequest('/LegacyProjectAdmin/updates', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteLegacyUpdate(id) {
+    return await this.makeRequest(`/LegacyProjectAdmin/updates/${id}`, { method: 'DELETE' });
+  }
+
+  async getLegacyPhotos(sectionKey) {
+    return await this.makeRequest(`/LegacyProjectAdmin/photos?sectionKey=${sectionKey}`, { method: 'GET' });
+  }
+
+  async addLegacyPhoto(data) {
+    return await this.makeRequest('/LegacyProjectAdmin/photos', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteLegacyPhoto(id) {
+    return await this.makeRequest(`/LegacyProjectAdmin/photos/${id}`, { method: 'DELETE' });
+  }
 }
 
-export default new ApiService();
+const apiService = new ApiService();
+export default apiService;

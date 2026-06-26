@@ -25,10 +25,7 @@ namespace Hounded_Heart.Services.Services
                 throw new Exception("User not found.");
             }
 
-            if (!user.IsPremium && dto.Priority.Equals("High Priority", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Upgrade to Premium to select High Priority.");
-            }
+            // All users can submit with any priority — no subscription required
 
             var expertQuery = new ExpertQuery
             {

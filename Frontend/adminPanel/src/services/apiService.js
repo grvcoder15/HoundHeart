@@ -644,6 +644,115 @@ class ApiService {
         }
         return response.json();
     }
+    // ==========================================
+    // Tree Dedications Admin
+    // ==========================================
+
+    async getPendingTreeDedications() {
+        return await this.makeRequest('/TreeDedication/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveTreeDedications() {
+        return await this.makeRequest('/TreeDedication/admin/live', { method: 'GET' });
+    }
+
+    async updateTreeDedicationStatus(id, status) {
+        return await this.makeRequest(`/TreeDedication/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    async updateTreeDedicationStage(id, stage) {
+        return await this.makeRequest(`/TreeDedication/admin/${id}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify({ GrowthStage: stage })
+        });
+    }
+
+    // ==========================================
+    // Senior Dog Admin Submissions
+    // ==========================================
+
+    async getPendingSeniorDogSubmissions() {
+        return await this.makeRequest('/SeniorDogSubmission/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveSeniorDogSubmissions() {
+        return await this.makeRequest('/SeniorDogSubmission/live', { method: 'GET' });
+    }
+
+    async updateSeniorDogStatus(id, status) {
+        return await this.makeRequest(`/SeniorDogSubmission/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    // ==========================================
+    // Research Initiative Admin Submissions
+    // ==========================================
+
+    async getPendingResearchSubmissions() {
+        return await this.makeRequest('/ResearchSubmission/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveResearchSubmissions() {
+        return await this.makeRequest('/ResearchSubmission/live', { method: 'GET' });
+    }
+
+    async updateResearchStatus(id, status) {
+        return await this.makeRequest(`/ResearchSubmission/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    // ==========================================
+    // Legacy Project Admin Settings
+    // ==========================================
+
+    async getLegacyContent(sectionKey) {
+        return await this.makeRequest(`/LegacyProjectAdmin/content?sectionKey=${sectionKey}`, { method: 'GET' });
+    }
+
+    async updateLegacyContent(data) {
+        return await this.makeRequest('/LegacyProjectAdmin/content', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getLegacyUpdates(sectionKey) {
+        return await this.makeRequest(`/LegacyProjectAdmin/updates?sectionKey=${sectionKey}`, { method: 'GET' });
+    }
+
+    async createLegacyUpdate(data) {
+        return await this.makeRequest('/LegacyProjectAdmin/updates', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteLegacyUpdate(id) {
+        return await this.makeRequest(`/LegacyProjectAdmin/updates/${id}`, { method: 'DELETE' });
+    }
+
+    async getLegacyPhotos(sectionKey) {
+        return await this.makeRequest(`/LegacyProjectAdmin/photos?sectionKey=${sectionKey}`, { method: 'GET' });
+    }
+
+    async addLegacyPhoto(data) {
+        return await this.makeRequest('/LegacyProjectAdmin/photos', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteLegacyPhoto(id) {
+        return await this.makeRequest(`/LegacyProjectAdmin/photos/${id}`, { method: 'DELETE' });
+    }
+
 }
 
 export default new ApiService();

@@ -446,7 +446,7 @@ const SacredGuidePage = () => {
 
                         {/* Status-Based Action Buttons */}
                         {/* PDF Requirement Notice */}
-                        {(currentStatus === 'Draft' || currentStatus === 'Ready' || currentStatus === 'Live') && (
+                        {!bookStatus?.pdfUrl && (
                             <Box sx={{
                                 mb: 2.5, p: 2.5, borderRadius: 2.5,
                                 bgcolor: '#fef3c7', border: '1px solid #fcd34d',

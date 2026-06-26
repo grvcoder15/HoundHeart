@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import Navbar from '../components/Navbar';
 import apiService from '../services/apiService';
 import toast from '../services/toastService';
 import { useNotificationPopup } from '../hooks/useNotificationPopup';
@@ -2515,7 +2514,6 @@ const handleNextChakra = () => {
 
     <div className="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100">
       {/* Top Navigation Bar */}
-      <Navbar currentPage="dashboard" onUpgrade={handleUpgrade} onChangePassword={handleOpenChangePassword} />
       {showChangePasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-4 md:p-4 relative animate-fadeIn space-y-4">
@@ -2961,6 +2959,41 @@ const handleNextChakra = () => {
                   </div>
                 </button>
               </div>
+            </div>
+
+            {/* Grief Support Soft Prompt Card */}
+            <div
+              id="grief-prompt"
+              data-animate
+              className={`mb-4 transition-all duration-1000 delay-[900ms] ${isVisible['quick-actions'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            >
+              <button
+                onClick={() => navigate('/grief-support')}
+                className="w-full bg-[#fdf8f9] border border-[#f4e6e8] p-5 rounded-2xl hover:shadow-md transition-all duration-300 shadow-sm flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-full bg-[#fae8eb] flex items-center justify-center flex-shrink-0">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d48a96" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#a56872] font-medium text-[15px] sm:text-base leading-snug">
+                      Did you recently lose your dog? Is your dog dying? Are you grieving?
+                    </h3>
+                    <p className="text-[#bba4a7] text-sm mt-1 font-light italic">
+                      A gentle space, whenever you need it.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-[#d48a96] font-medium text-sm pl-4 whitespace-nowrap group-hover:text-[#b26976] transition-colors">
+                  <span>Open this space</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform group-hover:translate-x-1 transition-transform">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </div>
+              </button>
             </div>
 
             {/* Bottom Section */}

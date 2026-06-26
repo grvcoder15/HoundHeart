@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import toastService from '../services/toastService';
 import apiService from '../services/apiService';
 import { useNotificationPopup } from '../hooks/useNotificationPopup';
@@ -226,7 +225,6 @@ const WearableIntegrationPage = () => {
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px] animate-pulse"></div>
             <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-400/20 rounded-full blur-[150px] animate-spin-slow"></div>
             
-            <Navbar currentPage="dashboard" />
             
             <main className="max-w-5xl mx-auto px-6 py-10">
                 <div className="mb-12 text-center relative z-10">

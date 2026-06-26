@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
 import apiService from '../services/apiService';
 
-const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
+const Navbar = ({ onUpgrade, onChangePassword }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Auto-detect current page from the URL path
+  const currentPage = location.pathname.replace('/', '') || 'dashboard';
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showUpcomingDropdown, setShowUpcomingDropdown] = useState(false);
   const profileDropdownRef = React.useRef(null);
@@ -198,8 +201,9 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
     { name: 'Journal', path: '/journal', key: 'journal' },
     // { name: 'Rituals', path: '/rituals', key: 'rituals' },
     { name: 'Community', path: '/community', key: 'community' },
-    { name: 'Sacred Guide', path: '/sacred-guide', key: 'sacred-guide' },
-    { name: 'Ask Our Expert', path: '/ask-expert', key: 'ask-expert' }
+    { name: 'Wellness Guide', path: '/wellness-guide', key: 'wellness-guide' },
+    { name: 'Ask Our Expert', path: '/ask-expert', key: 'ask-expert' },
+    { name: 'Legacy Project', path: '/legacy-project', key: 'legacy-project' }
   ];
 
   const comingSoonItems = [
@@ -212,8 +216,9 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-100 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-100 px-6 py-4">
+      <div className="w-full flex items-center justify-between relative">
         {/* Logo */}
         <div className="flex items-center space-x-3">
           <img src={HoundHeartLogo} alt="HoundHeart" className="h-8 w-8" />
@@ -222,19 +227,35 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
 
         {/* Navigation Links */}
         <div className="hidden md:flex items-center space-x-6">
-          {navigationItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => navigate(item.path)}
-              className={`transition-colors ${currentPage === item.key
-                ? 'text-purple-600 font-semibold border-b-2 border-purple-600 pb-1'
-                : 'text-gray-600 hover:text-purple-600'
-                }`}
-            >
-              {item.name}
-            </button>
-          ))}
-
+          {navigationItems.map((item) => {
+            const isLocked = item.key === 'legacy-project' && membershipTier !== 'premium';
+            return (
+              <button
+                key={item.key}
+                onClick={() => {
+                  if (isLocked) {
+                    navigate('/subscription');
+                  } else {
+                    navigate(item.path);
+                  }
+                }}
+                className={`transition-colors flex items-center gap-1.5 ${currentPage === item.key
+                  ? 'text-purple-600 font-semibold border-b-2 border-purple-600 pb-1'
+                  : 'text-gray-600 hover:text-purple-600'
+                  }`}
+              >
+                {item.name}
+                {isLocked && (
+                  <span className="text-gray-400" title="Premium Access Required">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* User Actions */}
@@ -365,7 +386,10 @@ const Navbar = ({ currentPage = 'dashboard', onUpgrade, onChangePassword }) => {
           </div>
         </div>
       </div>
-    </nav>
+      </nav>
+      {/* Spacer to prevent content from hiding under the fixed navbar */}
+      <div className="h-[73px]"></div>
+    </>
   );
 };
 
