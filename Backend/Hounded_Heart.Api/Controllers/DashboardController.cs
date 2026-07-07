@@ -155,20 +155,9 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     syncScore = await _bondSyncService.CalculateSyncScore(userId, resolvedDogId);
 
-                    // syncScore calculation normalises the dog id internally via ResolveWellnessDogIdAsync.
-                    // Mirror that resolution here so dogVitals uses the same FitBark-based id.
-                    var wellnessDogId = await _context.DogVitals
-                        .AsNoTracking()
-                        .Where(d => d.Source == "fitbark")
-                        .OrderByDescending(d => d.TimestampUtc)
-                        .Select(d => d.DogId)
-                        .FirstOrDefaultAsync();
-
-                    var vitalsQueryDogId = wellnessDogId != Guid.Empty ? wellnessDogId : resolvedDogId;
-
                     dogVitals = await _context.DogVitals
                         .AsNoTracking()
-                        .Where(d => d.DogId == vitalsQueryDogId)
+                        .Where(d => d.DogId == resolvedDogId)
                         .OrderByDescending(d => d.TimestampUtc)
                         .Select(d => new
                         {
@@ -199,6 +188,19 @@ namespace Hounded_Heart.Api.Controllers
                 var checkInDone = await HasCheckInForDateAsync(userId, baseDate);
                 var bondedScore = (int)Math.Round(stats.BondedScore);
 
+                // Calculate Time Together (daytime vitals overlap + rituals).
+                // Returns 0 when no device data exists – never fabricates.
+                var timeTogetherMinutes = await _bondSyncService.CalculateTimeTogetherAsync(
+                    userId,
+                    resolvedDogId,
+                    baseDate.ToUniversalTime());
+
+                var ttHours   = timeTogetherMinutes / 60;
+                var ttMinutes = timeTogetherMinutes % 60;
+                var timeTogetherDisplay = ttHours > 0
+                    ? $"{ttHours}h {ttMinutes}m"
+                    : $"{ttMinutes}m";
+
                 return Ok(ResponseHelper.Success(new
                 {
                     device = new
@@ -223,7 +225,9 @@ namespace Hounded_Heart.Api.Controllers
                         weeklyProgress = stats.WeeklyProgress,
                         ritualConsistency = new { count = stats.RitualConsistencyCount, total = 7 },
                         journalEntries = new { count = stats.JournalEntriesCount, label = $"{stats.JournalEntriesCount} this month" },
-                        bondedScore
+                        bondedScore,
+                        timeTogetherMinutes,
+                        timeTogetherDisplay
                     },
                     bond = new
                     {

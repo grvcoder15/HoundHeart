@@ -208,6 +208,12 @@ const DashboardPage = () => {
       setRitualDays(nextRitualDays);
       setIsCheckInDoneToday(!!summary?.checkInStatus?.done);
 
+      // Time Together: use pre-formatted display string from backend algorithm.
+      // Returns '0m' when no device data exists - never fabricates a value.
+      if (stats.timeTogetherDisplay !== undefined) {
+        setHoursTogether(stats.timeTogetherDisplay);
+      }
+
       if (summary.weather) {
         setWlWeather(summary.weather);
       }
@@ -560,7 +566,7 @@ const DashboardPage = () => {
   const [userEnergy, setUserEnergy] = useState(7);
   const [dogEnergy, setDogEnergy] = useState(8);
   const [energyAlignment, setEnergyAlignment] = useState(6);
-  const [hoursTogether, setHoursTogether] = useState(4);
+  const [hoursTogether, setHoursTogether] = useState('0m'); // Backend-computed string e.g. "2h 15m"
   const [isSavingCheckin, setIsSavingCheckin] = useState(false);
   const [checkInItems, setCheckInItems] = useState([]);
   const [ratingsById, setRatingsById] = useState({});
@@ -4238,7 +4244,7 @@ const handleNextChakra = () => {
                         <div className="text-sm text-gray-900">Activities Today</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-purple-600 mb-1">{hoursTogether}h</div>
+                        <div className="text-lg font-bold text-purple-600 mb-1">{hoursTogether}</div>
                         <div className="text-sm text-gray-900">Time Together</div>
                       </div>
                       <div className="text-center">

@@ -14,6 +14,14 @@ namespace Hounded_Heart.Services.Services
         Task<BondSyncResult> GetCurrentSyncScoreAsync(Guid userId, Guid dogId);
         Task<List<BondSyncTrend>> GetSyncTrendAsync(Guid userId, Guid dogId, int days = 7);
         Task<SyncScoreResult> CalculateSyncScore(Guid userId, Guid dogId);
+
+        /// <summary>
+        /// Calculates today's Time Together in minutes by overlapping Human and Dog
+        /// vitals data (Fitbit / FitBark). Overnight sleep (11 PM – 6 AM) is excluded.
+        /// If no device data exists at all, falls back to manually-logged ritual minutes.
+        /// Never returns a fabricated / stale value; returns 0 when no signal is found.
+        /// </summary>
+        Task<int> CalculateTimeTogetherAsync(Guid userId, Guid dogId, DateTime dateUtc);
     }
 
     public class BondSyncResult
@@ -94,42 +102,116 @@ namespace Hounded_Heart.Services.Services
             _logger = logger;
         }
 
-        private async Task<Guid> ResolveWellnessDogIdAsync(Guid userId, Guid requestedDogId)
+        private Task<Guid> ResolveWellnessDogIdAsync(Guid userId, Guid requestedDogId)
         {
-            // DogVitals and DogBaselines use FitBarkDogs.Id as their DogId.
-            // FitBarkDogs has no UserId column, so we cannot filter by user there.
-            // Strategy: if the requested id already has wellness records, use it directly.
-            // Otherwise fall back to the most recently synced FitBark dog id from DogVitals.
+            // The dog ID should strictly belong to the requested dog.
+            // Never fallback to a random other user's dog if this dog has no vitals.
+            return Task.FromResult(requestedDogId);
+        }
 
-            if (requestedDogId != Guid.Empty)
+        // ── TIME TOGETHER CALCULATION ──────────────────────────────────────────────
+        // Algorithm:
+        //   1. Get all today's HumanVitals (6 AM – 11 PM window) for the user.
+        //   2. Get all today's DogVitals   (6 AM – 11 PM window) for the dog.
+        //      DogId used is ALWAYS the canonical Dogs.DogId – never FitBarkDogs.Id.
+        //   3. Bucket both into 15-minute intervals.
+        //   4. A bucket counts as "time together" when:
+        //        - ACTIVE overlap: Human is active (Steps > 0 OR HR elevated) AND
+        //                          Dog is active (ActivityScore > 30 OR State is play/active).
+        //        - REST   overlap: Human is resting (HR in normal range, Steps ~0) AND
+        //                          Dog is resting (RestScore > 50 OR State is rest/nap).
+        //   5. Add minutes from any manually-logged rituals for today.
+        //   6. If ZERO vitals exist for either side → return ritual minutes only (never fabricate).
+        // ─────────────────────────────────────────────────────────────────────────
+        public async Task<int> CalculateTimeTogetherAsync(Guid userId, Guid dogId, DateTime dateUtc)
+        {
+            var dayStart   = dateUtc.Date.AddHours(6);  // 6 AM
+            var dayEnd     = dateUtc.Date.AddHours(23); // 11 PM
+
+            // ── 1. Fetch today's Human vitals (exclude overnight) ─────────────────
+            var humanVitals = await _context.HumanVitals
+                .AsNoTracking()
+                .Where(h => h.UserId == userId &&
+                            h.TimestampUtc >= dayStart &&
+                            h.TimestampUtc <= dayEnd)
+                .Select(h => new { h.TimestampUtc, h.HeartRate, h.Steps })
+                .ToListAsync();
+
+            // ── 2. Fetch today's Dog vitals using CORRECT DogId ───────────────────
+            //    dogId here is Dogs.DogId (resolved correctly by caller) – never FitBarkDogs.Id
+            var dogVitals = await _context.DogVitals
+                .AsNoTracking()
+                .Where(d => d.DogId == dogId &&
+                            d.TimestampUtc >= dayStart &&
+                            d.TimestampUtc <= dayEnd)
+                .Select(d => new { d.TimestampUtc, d.HeartRate, d.ActivityScore, d.RestScore, d.State })
+                .ToListAsync();
+
+            int overlapMinutes = 0;
+
+            // ── 3 & 4. 15-minute bucket overlap ──────────────────────────────────
+            if (humanVitals.Any() && dogVitals.Any())
             {
-                var hasWellnessRecords = await _context.DogVitals
-                    .AsNoTracking()
-                    .AnyAsync(d => d.DogId == requestedDogId);
+                // Build lookup: bucket-start -> human record closest to that bucket
+                var humanByBucket = humanVitals
+                    .GroupBy(h => FloorTo15Min(h.TimestampUtc))
+                    .ToDictionary(g => g.Key, g => g.OrderBy(h => Math.Abs((h.TimestampUtc - g.Key).TotalMinutes)).First());
 
-                if (hasWellnessRecords)
-                    return requestedDogId;
+                var dogByBucket = dogVitals
+                    .GroupBy(d => FloorTo15Min(d.TimestampUtc))
+                    .ToDictionary(g => g.Key, g => g.OrderBy(d => Math.Abs((d.TimestampUtc - g.Key).TotalMinutes)).First());
+
+                // Walk every 15-min bucket in the daytime window
+                for (var bucket = dayStart; bucket < dayEnd; bucket = bucket.AddMinutes(15))
+                {
+                    if (!humanByBucket.TryGetValue(bucket, out var human)) continue;
+                    if (!dogByBucket.TryGetValue(bucket, out var dog))     continue;
+
+                    bool humanActive  = (human.Steps.HasValue && human.Steps > 0) ||
+                                        (human.HeartRate.HasValue && human.HeartRate > 90);
+                    bool humanResting = !humanActive &&
+                                        human.HeartRate.HasValue && human.HeartRate >= 50 && human.HeartRate <= 90;
+
+                    string dogState   = (dog.State ?? "").ToLowerInvariant();
+                    bool dogActive    = dog.ActivityScore > 30 ||
+                                       dogState.Contains("play") || dogState.Contains("active") || dogState.Contains("walk");
+                    bool dogResting   = !dogActive &&
+                                       (dog.RestScore > 50 ||
+                                        dogState.Contains("rest") || dogState.Contains("nap") || dogState.Contains("sleep"));
+
+                    // Active together OR resting together (not overnight sleep)
+                    if ((humanActive && dogActive) || (humanResting && dogResting))
+                        overlapMinutes += 15;
+                }
             }
 
-            // Fall back: get the FitBark dog id that has the most recent vitals record.
-            var latestFitBarkDogId = await _context.DogVitals
+            // ── 5. Add ritual bonus minutes ────────────────────────────────────────
+            // Each ritual has a Points value; we treat 1 point ≈ 5 minutes of quality time.
+            // Cap ritual contribution at 120 min (2 h) so it cannot inflate the number wildly.
+            var todayStart = dateUtc.Date;
+            var todayEnd   = dateUtc.Date.AddDays(1);
+
+            var ritualMinutes = await _context.UserBondingActivities
                 .AsNoTracking()
-                .Where(d => d.Source == "fitbark")
-                .OrderByDescending(d => d.TimestampUtc)
-                .Select(d => d.DogId)
-                .FirstOrDefaultAsync();
+                .Where(uba => uba.UserId == userId &&
+                              uba.ActivityDate >= todayStart &&
+                              uba.ActivityDate < todayEnd)
+                .Include(uba => uba.Activity)
+                .SumAsync(uba => uba.Activity != null ? uba.Activity.Points * 5 : 0);
 
-            if (latestFitBarkDogId != Guid.Empty)
-                return latestFitBarkDogId;
+            ritualMinutes = Math.Min(ritualMinutes, 120);
 
-            // Last resort: any dog vitals record regardless of source.
-            var anyDogId = await _context.DogVitals
-                .AsNoTracking()
-                .OrderByDescending(d => d.TimestampUtc)
-                .Select(d => d.DogId)
-                .FirstOrDefaultAsync();
+            // ── 6. Return total ────────────────────────────────────────────────────
+            // overlapMinutes = 0 when no device data → honest zero, not a fake number.
+            // ritualMinutes can still be > 0 if the user manually logged activities.
+            return overlapMinutes + ritualMinutes;
+        }
 
-            return anyDogId != Guid.Empty ? anyDogId : requestedDogId;
+        /// <summary>Floors a timestamp to the nearest 15-minute boundary (UTC).</summary>
+        private static DateTime FloorTo15Min(DateTime dt)
+        {
+            var mins = dt.Minute - (dt.Minute % 15);
+            return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, mins, 0, DateTimeKind.Utc);
         }
 
         private ScoreDetails GetScoreDescription(int score)
