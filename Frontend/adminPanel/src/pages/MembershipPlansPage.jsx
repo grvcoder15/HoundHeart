@@ -12,6 +12,8 @@ import {
     TextField,
     Button,
     CircularProgress,
+    Switch,
+    FormControlLabel,
     Pagination,
     Select,
     MenuItem,
@@ -41,6 +43,10 @@ const MembershipPlansPage = () => {
     const [tierCounts, setTierCounts] = useState({ free: 0, plus: 0, premium: 0, total: 0 });
     const [loadingCounts, setLoadingCounts] = useState(true);
 
+    const [earlyOffer, setEarlyOffer] = useState(null);
+    const [loadingEarlyOffer, setLoadingEarlyOffer] = useState(true);
+    const [savingEarlyOffer, setSavingEarlyOffer] = useState(false);
+
     const [users, setUsers] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [usersPage, setUsersPage] = useState(1);
@@ -53,6 +59,7 @@ const MembershipPlansPage = () => {
     useEffect(() => {
         fetchPlans();
         fetchTierCounts();
+        fetchEarlyOffer();
     }, []);
 
     useEffect(() => {
@@ -130,6 +137,20 @@ const MembershipPlansPage = () => {
         }
     };
 
+    const fetchEarlyOffer = async () => {
+        try {
+            setLoadingEarlyOffer(true);
+            const res = await apiService.getAdminEarlyMemberOffer();
+            const data = res?.data || {};
+            setEarlyOffer(data);
+        } catch (err) {
+            console.error('Error fetching early offer:', err);
+            setEarlyOffer(null);
+        } finally {
+            setLoadingEarlyOffer(false);
+        }
+    };
+
     const planRows = useMemo(() => {
         return planSlots.map((slot) => {
             const matchedPlan = plans.find((plan) => {
@@ -184,6 +205,18 @@ const MembershipPlansPage = () => {
             console.error('Error updating tier level:', error);
         } finally {
             setUpdatingUserId(null);
+        }
+    };
+
+    const handleToggleEarlyOffer = async (value) => {
+        try {
+            setSavingEarlyOffer(true);
+            await apiService.updateAdminEarlyMemberOffer({ IsActive: value });
+            await fetchEarlyOffer();
+        } catch (err) {
+            console.error('Error updating early offer:', err);
+        } finally {
+            setSavingEarlyOffer(false);
         }
     };
 
@@ -243,6 +276,29 @@ const MembershipPlansPage = () => {
                     <Typography variant="h6" fontWeight="800" sx={{ color: '#1a1a1a', mb: 2 }}>
                         Subscription Plans Table
                     </Typography>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={!!earlyOffer?.isActive}
+                                    onChange={(e) => handleToggleEarlyOffer(e.target.checked)}
+                                    color="primary"
+                                    disabled={loadingEarlyOffer || savingEarlyOffer}
+                                />
+                            }
+                            label={
+                                loadingEarlyOffer ? 'Loading Early Offer...' : (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography sx={{ fontWeight: 700 }}>Early Member Offer</Typography>
+                                        <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                                            {earlyOffer?.isActive ? `Active — ends ${earlyOffer?.endDateUtc ? new Date(earlyOffer.endDateUtc).toLocaleString() : ''}` : 'Inactive'}
+                                        </Typography>
+                                    </Box>
+                                )
+                            }
+                        />
+                    </Box>
 
                     {loadingPlans ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>

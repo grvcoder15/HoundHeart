@@ -413,6 +413,18 @@ class ApiService {
         });
     }
 
+    // Early Member Offer admin APIs
+    async getAdminEarlyMemberOffer() {
+        return this.makeRequest('/Settings/admin/early-member-offer');
+    }
+
+    async updateAdminEarlyMemberOffer(payload) {
+        return this.makeRequest('/Settings/admin/early-member-offer', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        });
+    }
+
     // ─── FAQ APIs ──────────────────────────────────────────
 
     // Get FAQ stats (admin only)
