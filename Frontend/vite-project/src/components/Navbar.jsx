@@ -135,6 +135,25 @@ const Navbar = ({ onUpgrade, onChangePassword }) => {
     };
 
     fetchSubscription();
+
+    // Listen for subscription-updated event (fired from SubscriptionSuccessPage after payment)
+    const handleSubscriptionUpdated = (event) => {
+      const { tier, isPremium } = event.detail || {};
+      // Use the tier passed in the event if available (most accurate)
+      if (tier && (tier === 'premium' || tier === 'plus')) {
+        setMembershipTier(tier);
+      } else {
+        // Fallback: re-read from localStorage
+        const updatedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const newTier = normalizeTier(updatedUser.tierLevel);
+        setMembershipTier(newTier !== 'free' ? newTier : isPremium ? 'premium' : 'free');
+      }
+      // Background refresh to sync subscription object
+      fetchSubscription();
+    };
+
+    window.addEventListener('subscription-updated', handleSubscriptionUpdated);
+    return () => window.removeEventListener('subscription-updated', handleSubscriptionUpdated);
   }, []);
 
   const handleProfileClick = (e) => {
@@ -196,15 +215,24 @@ const Navbar = ({ onUpgrade, onChangePassword }) => {
     navigate('/subscription');
   };
 
-  const navigationItems = [
-    { name: 'Dashboard', path: '/dashboard', key: 'dashboard' },
-    { name: 'Journal', path: '/journal', key: 'journal' },
-    // { name: 'Rituals', path: '/rituals', key: 'rituals' },
-    { name: 'Community', path: '/community', key: 'community' },
-    { name: 'Wellness Guide', path: '/wellness-guide', key: 'wellness-guide' },
-    { name: 'Ask Our Expert', path: '/ask-expert', key: 'ask-expert' },
-    { name: 'Legacy Project', path: '/legacy-project', key: 'legacy-project' }
-  ];
+  const isProfileSettings = location.pathname === '/profile-settings';
+
+  const navigationItems = isProfileSettings
+    ? [
+        { name: 'Dashboard', path: '/dashboard', key: 'dashboard' },
+        { name: 'Journal', path: '/journal', key: 'journal' },
+        { name: 'Rituals', path: '/rituals', key: 'rituals' }
+      ]
+    : [
+        { name: 'Dashboard', path: '/dashboard', key: 'dashboard' },
+        { name: 'Journal', path: '/journal', key: 'journal' },
+        // { name: 'Rituals', path: '/rituals', key: 'rituals' },
+        { name: 'Community', path: '/community', key: 'community' },
+        { name: 'Wellness Guide', path: '/wellness-guide', key: 'wellness-guide' },
+        { name: 'Wellness Check', path: '/wellness-check', key: 'wellness-check' },
+        { name: 'Ask Our Expert', path: '/ask-expert', key: 'ask-expert' },
+        { name: 'Legacy Project', path: '/legacy-project', key: 'legacy-project' }
+      ];
 
   const comingSoonItems = [
     { name: '🎓 Courses', path: '/courses', key: 'courses' },
@@ -214,13 +242,12 @@ const Navbar = ({ onUpgrade, onChangePassword }) => {
     // { name: '📚 Books', path: '/books', key: 'books' },
     // { name: '⭐ Purchase memberships', path: '/subscription', key: 'memberships' }
   ];
-
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-100 px-6 py-4">
       <div className="w-full flex items-center justify-between relative">
         {/* Logo */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
           <img src={HoundHeartLogo} alt="HoundHeart" className="h-8 w-8" />
           <span className="text-xl font-bold text-gray-900">HoundHeart™</span>
         </div>

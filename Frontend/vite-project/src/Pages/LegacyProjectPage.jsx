@@ -1186,28 +1186,45 @@ const LegacyProjectPage = () => {
   useEffect(() => {
     const verifyAccess = async () => {
       try {
-        const subRes = await apiService.getSubscriptionDetails();
-        const subData = subRes?.data;
-        
-        let isPremium = false;
-        if (subData && (subData.planName || subData.PlanName)) {
-          const planName = (subData.planName || subData.PlanName).toLowerCase();
-          if (planName.includes('premium')) {
-            isPremium = true;
+        // Use the same endpoint and logic as WellnessCheckPage
+        const response = await apiService.makeRequest('/Subscription/current', { method: 'GET' });
+        const subData = response?.data ?? response;
+        const status = (subData?.status || subData?.Status || '').toLowerCase();
+        const planName = (subData?.planName || subData?.PlanName || '').toLowerCase();
+
+        const hasAccess =
+          (status === 'active' || status === 'trialing') &&
+          planName.includes('premium');
+
+        if (hasAccess) {
+          setHasPremiumAccess(true);
+          return;
+        }
+
+        // Fallback: check localStorage roleId (roleId 2 = Premium)
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (Number(user.roleId || user.RoleId) === 2) {
+            setHasPremiumAccess(true);
+            return;
           }
-        } else {
-          // Fallback to local storage role if API fails but they have a hardcoded role
+        }
+
+        setHasPremiumAccess(false);
+      } catch (err) {
+        console.error("Failed to verify subscription:", err);
+        // If API fails, still try localStorage fallback instead of immediately blocking
+        try {
           const userStr = localStorage.getItem('user');
           if (userStr) {
             const user = JSON.parse(userStr);
             if (Number(user.roleId || user.RoleId) === 2) {
-              isPremium = true;
+              setHasPremiumAccess(true);
+              return;
             }
           }
-        }
-        setHasPremiumAccess(isPremium);
-      } catch (err) {
-        console.error("Failed to verify subscription:", err);
+        } catch (_) {}
         setHasPremiumAccess(false);
       }
     };

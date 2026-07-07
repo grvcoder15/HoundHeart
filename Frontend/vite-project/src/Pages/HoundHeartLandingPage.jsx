@@ -194,13 +194,13 @@ const HoundHeartLandingPage = () => {
           setOfferConfig(prev => ({
             ...prev,
             ...data,
-            isActive: data.monthlyPrice > 0 ? data.isActive : prev.isActive,
+            isActive: typeof data.isActive === 'boolean' ? data.isActive : prev.isActive,
             monthlyPrice: data.monthlyPrice > 0 ? data.monthlyPrice : prev.monthlyPrice,
             yearlyPrice: data.yearlyPrice > 0 ? data.yearlyPrice : prev.yearlyPrice,
             regularMonthlyPrice: data.regularMonthlyPrice > 0 ? data.regularMonthlyPrice : prev.regularMonthlyPrice,
             regularYearlyPrice: data.regularYearlyPrice > 0 ? data.regularYearlyPrice : prev.regularYearlyPrice,
             slotsTotal: data.slotsTotal > 0 ? data.slotsTotal : prev.slotsTotal,
-            slotsRemaining: data.slotsTotal > 0 ? data.slotsRemaining : prev.slotsRemaining
+            slotsRemaining: data.slotsRemaining >= 0 ? data.slotsRemaining : prev.slotsRemaining
           }));
         }
       } catch (err) {
@@ -240,8 +240,8 @@ const HoundHeartLandingPage = () => {
       planName: 'HoundHeart Plus',
       description: 'Advanced wellness and connection tools for dedicated members',
       badge: 'Most Popular',
-      monthlyPrice: 9.99,
-      yearlyPrice: 79.99,
+      monthlyPrice: offerConfig?.monthlyPrice || 9.99,
+      yearlyPrice: offerConfig?.yearlyPrice || 79.99,
       yearlyOnly: false,
       features: [
         'Includes all Free Member features',
@@ -270,7 +270,7 @@ const HoundHeartLandingPage = () => {
         'Premium Member badge in profile'
       ]
     }
-  ]), []);
+  ]), [offerConfig]);
 
   // Function to get icon and title based on active tab
   const getTabContent = (tab) => {
@@ -484,23 +484,32 @@ const HoundHeartLandingPage = () => {
       }
 
       if (plan.tierLevel === 'plus') {
+        // Landing page should always advertise the offer to attract users!
+        const isOfferActive = Boolean(offerConfig?.isActive) && (!offerConfig?.endDateUtc || new Date(offerConfig.endDateUtc) > new Date());
+        const regMonthly = offerConfig?.regularMonthlyPrice || 14.99;
+        const regYearly = offerConfig?.regularYearlyPrice || 124.99;
+
         if (billingPeriod === 'yearly') {
-          const fullYearAtMonthly = (plan.monthlyPrice || 0) * 12;
+          const effectivePrice = isOfferActive ? plan.yearlyPrice : regYearly;
+          const original = isOfferActive ? regYearly : regMonthly * 12;
           return {
             ...plan,
-            price: plan.yearlyPrice,
+            price: effectivePrice,
             billingLabel: 'Per Year',
-            originalPrice: fullYearAtMonthly.toFixed(2),
-            savingsText: `Save $${(fullYearAtMonthly - (plan.yearlyPrice || 0)).toFixed(2)} per year`
+            originalPrice: original.toFixed(2),
+            savingsText: `Save $${(original - effectivePrice).toFixed(2)} per year`,
+            isOfferActive
           };
         }
 
+        const effectivePrice = isOfferActive ? plan.monthlyPrice : regMonthly;
         return {
           ...plan,
-          price: plan.monthlyPrice,
+          price: effectivePrice,
           billingLabel: 'Per Month',
-          originalPrice: undefined,
-          savingsText: undefined
+          originalPrice: isOfferActive ? regMonthly.toFixed(2) : undefined,
+          savingsText: undefined,
+          isOfferActive
         };
       }
 
@@ -512,7 +521,7 @@ const HoundHeartLandingPage = () => {
         savingsText: undefined
       };
     });
-  }, [billingPeriod, fixedPlans]);
+  }, [billingPeriod, fixedPlans, offerConfig]);
 
 
 
@@ -1894,51 +1903,28 @@ const HoundHeartLandingPage = () => {
                     <p className="text-xs text-center text-gray-600 mb-3">{plan.description}</p>
 
                     {/* Price */}
-                    <div className="text-center mb-3">
-                      {/* For Plus plan, show strikethrough regular price from offerConfig */}
-                      {plan.tierLevel === 'plus' && offerConfig?.isActive && (() => {
-                        const regPrice = billingPeriod === 'yearly'
-                            ? offerConfig.regularYearlyPrice
-                            : offerConfig.regularMonthlyPrice;
-                        return regPrice ? (
-                            <div className="text-xs text-gray-400 line-through mb-0.5">
-                                Regular: ${Number(regPrice).toFixed(2)}/{billingPeriod === 'yearly' ? 'yr' : 'mo'}
-                            </div>
-                        ) : null;
-                      })()}
-                      {/* For Yearly toggle — show monthly*12 as original if not Plus Early Member */}
-                      {(plan.tierLevel !== 'plus' || !offerConfig?.isActive) && plan.originalPrice && (
-                        <div className="text-xs text-gray-500 line-through mb-1">
-                          ${plan.originalPrice}
+                    <div className="mb-4 text-center">
+                      {plan.originalPrice && (
+                        <div className="text-gray-400 line-through text-xs mb-1">
+                          {plan.isOfferActive ? 'Regular: ' : ''}${plan.originalPrice}{plan.isOfferActive ? (billingPeriod === 'yearly' ? '/yr' : '/mo') : ''}
                         </div>
                       )}
                       <div className="flex items-baseline justify-center gap-1">
-                        {plan.tierLevel === 'plus' && offerConfig?.isActive && (
-                            <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1">
-                                Early Member
-                            </span>
+                        {plan.isOfferActive && (
+                          <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1 relative -top-1">
+                            Early Member
+                          </span>
                         )}
                         <span className="text-3xl font-bold text-gray-900">
-                          ${plan.tierLevel === 'plus' && offerConfig?.isActive ? (billingPeriod === 'yearly' ? offerConfig.yearlyPrice : offerConfig.monthlyPrice) : plan.price}
+                          ${plan.price}
                         </span>
                         <span className="text-gray-600 text-xs">
                           {plan.billingLabel}
                         </span>
                       </div>
-                      {/* Dynamic savings % for Plus from offer config */}
-                      {plan.tierLevel === 'plus' && offerConfig?.isActive && (() => {
-                          const ep = billingPeriod === 'yearly' ? offerConfig.yearlyPrice : offerConfig.monthlyPrice;
-                          const rp = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
-                          const pct = rp > 0 ? Math.round((1 - ep / rp) * 100) : 0;
-                          return pct > 0 ? (
-                              <div className="text-xs text-emerald-600 font-bold mt-1">
-                                  🏷️ {pct}% off regular price — locked in forever
-                              </div>
-                          ) : null;
-                      })()}
-                      {/* Yearly savings for non-Plus */}
-                      {(plan.tierLevel !== 'plus' || !offerConfig?.isActive) && plan.savingsText && (
-                        <div className="text-xs text-green-600 font-semibold mt-1">
+                      {/* Savings text */}
+                      {plan.savingsText && (
+                        <div className="text-sm font-semibold text-green-600 mt-1">
                           {plan.savingsText}
                         </div>
                       )}

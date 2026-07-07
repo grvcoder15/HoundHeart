@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -214,6 +214,59 @@ namespace Hounded_Heart.Services.Services
             catch (FormatException ex)
             {
                 throw new FormatException("Base64 audio format is invalid. Please check input.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Upload a wellness check photo (Environment, Dog, or Progress) to Azure Blob Storage
+        /// under path: wellness-uploads/{userId}/{type}/{fileName}
+        /// </summary>
+        public async Task<string> UploadWellnessPhotoAsync(byte[] imageBytes, string userId, string type, string fileName)
+        {
+            if (!_isEnabled)
+            {
+                try
+                {
+                    var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    var uploadDir = Path.Combine(webRootPath, "uploads", "wellness", userId, type);
+
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    await File.WriteAllBytesAsync(filePath, imageBytes);
+
+                    return $"/uploads/wellness/{userId}/{type}/{fileName}";
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Failed to save wellness photo locally: {ex.Message}");
+                    throw new Exception($"Wellness photo upload failed (Local Fallback): {ex.Message}", ex);
+                }
+            }
+
+            try
+            {
+                var blobServiceClient = new BlobServiceClient(_connectionString);
+                var containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
+
+                await containerClient.CreateIfNotExistsAsync();
+                await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
+
+                var blobPath = $"wellness-uploads/{userId}/{type}/{fileName}";
+                var blobClient = containerClient.GetBlobClient(blobPath);
+
+                using var stream = new MemoryStream(imageBytes);
+                await blobClient.UploadAsync(stream, overwrite: true);
+
+                return blobClient.Uri.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Failed to upload wellness photo to Azure Blob Storage: {ex.Message}");
+                throw new Exception($"Wellness photo upload failed: {ex.Message}", ex);
             }
         }
     }

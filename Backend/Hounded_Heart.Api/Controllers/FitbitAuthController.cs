@@ -154,6 +154,9 @@ namespace Hounded_Heart.Api.Controllers
                 // Create or update DeviceConnection for Fitbit device
                 if (Guid.TryParse(userId, out var userIdGuid))
                 {
+                    // Auto-resolve the user's active dog so DogId is never NULL
+                    var dogId = await ResolveUserDogIdAsync(userIdGuid);
+
                     var existingConnection = await _context.DeviceConnections
                         .FirstOrDefaultAsync(dc => dc.UserId == userIdGuid && dc.DeviceType == "Fitbit");
 
@@ -162,7 +165,9 @@ namespace Hounded_Heart.Api.Controllers
                         existingConnection.IsConnected = true;
                         existingConnection.ConnectedAt = DateTime.UtcNow;
                         existingConnection.DisconnectedAt = null;
-                        _logger.LogInformation("✅ Updated Fitbit DeviceConnection for user {UserId}", userId);
+                        if (dogId.HasValue)
+                            existingConnection.DogId = dogId;
+                        _logger.LogInformation("✅ Updated Fitbit DeviceConnection for user {UserId} with DogId={DogId}", userId, dogId);
                     }
                     else
                     {
@@ -170,6 +175,7 @@ namespace Hounded_Heart.Api.Controllers
                         {
                             Id = Guid.NewGuid(),
                             UserId = userIdGuid,
+                            DogId = dogId,
                             DeviceType = "Fitbit",
                             DeviceNumber = tokenResponse.UserId ?? "unknown",
                             IsConnected = true,
@@ -177,7 +183,7 @@ namespace Hounded_Heart.Api.Controllers
                             CreatedAt = DateTime.UtcNow
                         };
                         _context.DeviceConnections.Add(deviceConnection);
-                        _logger.LogInformation("✅ Created Fitbit DeviceConnection for user {UserId}", userId);
+                        _logger.LogInformation("✅ Created Fitbit DeviceConnection for user {UserId} with DogId={DogId}", userId, dogId);
                     }
                     await _context.SaveChangesAsync();
                 }
@@ -617,6 +623,37 @@ namespace Hounded_Heart.Api.Controllers
                 _logger.LogError(ex, "❌ Error disconnecting Fitbit for user {UserId}", userId);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Resolves the user's active dog ID from the Dogs table.
+        /// Each user has one active dog. Logs a warning if none is found so
+        /// DeviceConnection.DogId is never silently NULL in future connections.
+        /// </summary>
+        private async Task<Guid?> ResolveUserDogIdAsync(Guid userId)
+        {
+            var dogId = await _context.Dogs
+                .Where(d => d.UserId == userId)
+                .OrderByDescending(d => d.CreatedOn)
+                .Select(d => (Guid?)d.DogId)
+                .FirstOrDefaultAsync();
+
+            if (!dogId.HasValue)
+            {
+                _logger.LogWarning(
+                    "⚠️ [DeviceConnection] Could not resolve DogId for user {UserId}. " +
+                    "DogId will be NULL on the DeviceConnection. " +
+                    "Ensure the user has created a dog profile before connecting a device.",
+                    userId);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "🐾 [DeviceConnection] Resolved DogId={DogId} for user {UserId}.",
+                    dogId.Value, userId);
+            }
+
+            return dogId;
         }
     }
 }

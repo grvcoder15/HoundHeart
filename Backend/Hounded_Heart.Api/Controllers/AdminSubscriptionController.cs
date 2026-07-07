@@ -89,8 +89,8 @@ namespace Hounded_Heart.Api.Controllers
                 decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
                 bool lockInPermanent = section.GetValue<bool>("LockInPermanent");
 
-                // Auto-expire the offer if end date has passed
-                if (endDate != default && DateTime.UtcNow > endDate)
+                // Auto-expire the offer when the end date has been reached or passed
+                if (endDate != default && DateTime.UtcNow >= endDate)
                     isActive = false;
 
                 // Validate against Pre-Registration if offer is currently active
@@ -107,11 +107,14 @@ namespace Hounded_Heart.Api.Controllers
                         }
                     }
 
-                    // Only show early member prices to users who exist in the pre-registration table
+                    // Temporarily removed pre-registration restriction so pricing is consistent
+                    // for all users while the Early Member Offer is active in appsettings.
+                    /*
                     if (!isPreRegistered)
                     {
                         isActive = false;
                     }
+                    */
                 }
 
                 return Ok(ResponseHelper.Success(new
@@ -164,10 +167,13 @@ namespace Hounded_Heart.Api.Controllers
                                 .AnyAsync(pr => pr.Email.ToLower() == emailClaim.ToLower() && !pr.IsDeleted);
                         }
                     }
+                    // Temporarily removed pre-registration restriction so pricing is consistent
+                    /*
                     if (!isPreRegistered)
                     {
                         isActive = false;
                     }
+                    */
                 }
 
                 // Use the correct Stripe Price IDs based on eligibility

@@ -95,7 +95,7 @@ namespace Hounded_Heart.Services.Services
                         var summaryService = scope.ServiceProvider.GetRequiredService<IDailyVitalsSummaryService>();
                         
                         // Pass test mode info to the helper
-                        int processedCount = await summaryService.GenerateDailySummaryAsync(
+                        var result = await summaryService.GenerateDailySummaryAsync(
                             targetDate, 
                             testModeEnabled, 
                             testIntervalMinutes
@@ -103,12 +103,13 @@ namespace Hounded_Heart.Services.Services
                         
                         if (testModeEnabled)
                         {
-                            _logger.LogInformation($"✅ [DailySummary] TEST MODE CYCLE COMPLETE - Processed {processedCount} users");
+                            _logger.LogInformation($"✅ [DailySummary] TEST MODE CYCLE COMPLETE - Processed {result.ProcessedCount} users");
                             _logger.LogInformation($"✅ [DailySummary] Stored averages in HumanDailySummaries for {targetDate:yyyy-MM-dd} (TODAY)");
                         }
                         else
                         {
-                            _logger.LogInformation($"✅ [DailySummary] Completed - Processed {processedCount} users for {targetDate:yyyy-MM-dd}");
+                            _logger.LogInformation($"✅ [DailySummary] Daily summary generation completed for {targetDate:yyyy-MM-dd}");
+                            _logger.LogInformation($"✅ [DailySummary] Processed {result.ProcessedCount} users");
                         }
                     }
                 }

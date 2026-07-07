@@ -174,6 +174,318 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.ToTable("Courses");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AssessmentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PassingScorePercent")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseAssessments");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessmentOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OptionText")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("CourseAssessmentOptions");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessmentQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssessmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId");
+
+                    b.ToTable("CourseAssessmentQuestions");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAudio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AudioUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseAudios");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseBookContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FileUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseBookContents");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ExternalUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("FileUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseResources");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseVideo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VideoUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseVideos");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseVisual", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseVisuals");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.CourseWaitlist", b =>
                 {
                     b.Property<Guid>("Id")
@@ -197,6 +509,52 @@ namespace Hounded_Heart.Models.PostgresMigrations
                         .IsUnique();
 
                     b.ToTable("CourseWaitlists");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.DetailedAnalysisReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BaselineSnapshotJson")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LatestDogCheckinId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LatestEnvironmentCheckinId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LatestVitalsSnapshotJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotoUrlsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReportJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DetailedAnalysisReports");
                 });
 
             modelBuilder.Entity("Hounded_Heart.Models.Data.DeviceConnection", b =>
@@ -874,6 +1232,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("EntryType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -908,6 +1269,79 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.HasKey("EntryId");
 
                     b.ToTable("JournalEntries");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.LegacyProjectAdminPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SectionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LegacyProjectAdminPhotos");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.LegacyProjectContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImpactStatsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SectionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LegacyProjectContents");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.LegacyProjectUpdate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SectionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LegacyProjectUpdates");
                 });
 
             modelBuilder.Entity("Hounded_Heart.Models.Data.MessageLog", b =>
@@ -1084,6 +1518,41 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.ToTable("PreRegistrations");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.ResearchSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ResearchSubmissions");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.Ritual", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1131,6 +1600,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
 
                     b.Property<DateTime>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RitualId")
                         .HasColumnType("uuid");
@@ -1330,6 +1802,41 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.ToTable("ScoringRules");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.SeniorDogSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DogName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Story")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SeniorDogSubmissions");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.SiteSetting", b =>
                 {
                     b.Property<string>("SettingKey")
@@ -1508,6 +2015,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("DonationAmount")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<string>("Features")
                         .HasColumnType("text");
 
@@ -1600,6 +2110,54 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.ToTable("Tags");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.TreeDedication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DedicationType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("DogName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("GrowthStage")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("TributeMessage")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TreeDedications");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.UserActivitiesScore", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1618,6 +2176,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("Score")
                         .HasColumnType("integer");
@@ -1720,6 +2281,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -1893,6 +2457,63 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.HasKey("Id");
 
                     b.ToTable("WellnessAlerts");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.WellnessCheck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AiResponseJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AnswersJson")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DetailedOverviewJson")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("EnvironmentCheckReferenceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FitBarkDataSnapshotJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PhotoUrlsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProgressInsightJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WellnessChecks");
                 });
 
             modelBuilder.Entity("Hounded_Heart.Models.Dtos.BreathingPattern", b =>
@@ -2169,6 +2790,14 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<double>("CurrentScore")
                         .HasColumnType("double precision");
 
+                    b.Property<DateTime?>("DateLost")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("datelost");
+
+                    b.Property<DateTime?>("DateOfDeath")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dateofdeath");
+
                     b.Property<string>("DogName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2180,9 +2809,18 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("MemoryNote")
+                        .HasColumnType("text")
+                        .HasColumnName("memorynote");
+
                     b.Property<string>("ProfilePhoto")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("timestamp with time zone");
@@ -2195,8 +2833,7 @@ namespace Hounded_Heart.Models.PostgresMigrations
 
                     b.HasKey("DogId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Dogs");
                 });
@@ -2490,6 +3127,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -2512,6 +3152,13 @@ namespace Hounded_Heart.Models.PostgresMigrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PreviousRefreshToken")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("PreviousRefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ProfileName")
                         .HasColumnType("text");
@@ -2637,6 +3284,9 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Property<int?>("DailyPointsChange")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("DogId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsMissed")
                         .HasColumnType("boolean");
 
@@ -2717,6 +3367,128 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.ToTable("UserSpiritualTraits");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.StoreProduct", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsComingSoon")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StoreProducts");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessment", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessmentOption", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.CourseAssessmentQuestion", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessmentQuestion", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.CourseAssessment", "Assessment")
+                        .WithMany("Questions")
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAudio", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseBookContent", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseResource", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseVideo", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseVisual", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.CourseWaitlist", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Data.Course", "Course")
@@ -2777,6 +3549,17 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Navigation("HumanProfile");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.ResearchSubmission", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.RitualLog", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Data.Ritual", "Ritual")
@@ -2807,6 +3590,17 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.SeniorDogSubmission", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.Subscription", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
@@ -2833,6 +3627,17 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.TreeDedication", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.UserBondingActivity", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Data.BondingActivity", "Activity")
@@ -2853,6 +3658,17 @@ namespace Hounded_Heart.Models.PostgresMigrations
                 });
 
             modelBuilder.Entity("Hounded_Heart.Models.Data.UserCredit", b =>
+                {
+                    b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.WellnessCheck", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
                         .WithMany()
@@ -2921,8 +3737,8 @@ namespace Hounded_Heart.Models.PostgresMigrations
             modelBuilder.Entity("Hounded_Heart.Models.Dtos.Dog", b =>
                 {
                     b.HasOne("Hounded_Heart.Models.Dtos.User", "User")
-                        .WithOne("Dog")
-                        .HasForeignKey("Hounded_Heart.Models.Dtos.Dog", "UserId")
+                        .WithMany("Dogs")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -3068,6 +3884,16 @@ namespace Hounded_Heart.Models.PostgresMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessment", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Hounded_Heart.Models.Data.CourseAssessmentQuestion", b =>
+                {
+                    b.Navigation("Options");
+                });
+
             modelBuilder.Entity("Hounded_Heart.Models.Data.Role", b =>
                 {
                     b.Navigation("User");
@@ -3097,8 +3923,7 @@ namespace Hounded_Heart.Models.PostgresMigrations
                 {
                     b.Navigation("ChakraProgresses");
 
-                    b.Navigation("Dog")
-                        .IsRequired();
+                    b.Navigation("Dogs");
 
                     b.Navigation("SelectedTraits");
 

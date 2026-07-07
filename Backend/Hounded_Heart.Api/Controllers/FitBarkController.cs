@@ -122,9 +122,10 @@ namespace Hounded_Heart.Api.Controllers
                 return Content("<html><body><h3>FitBark authorization failed.</h3></body></html>", "text/html");
             }
 
+            Guid? currentUserId = null;
             try
             {
-                Guid? currentUserId = ResolveCurrentUserId();
+                currentUserId = ResolveCurrentUserId();
                 if (!currentUserId.HasValue && !string.IsNullOrWhiteSpace(state) && _memoryCache.TryGetValue($"fitbark_oauth_user_{state}", out Guid cachedUserId))
                 {
                     currentUserId = cachedUserId;
@@ -147,6 +148,12 @@ namespace Hounded_Heart.Api.Controllers
             // Auto-fetch and save dog details after successful token exchange
             try
             {
+                Guid? appDogId = null;
+                if (currentUserId.HasValue)
+                {
+                    appDogId = await ResolveUserDogIdAsync(currentUserId.Value);
+                }
+
                 var dogs = await _fitBarkService.GetDogProfilesAsync();
                 if (dogs != null && dogs.Count > 0)
                 {
@@ -158,6 +165,7 @@ namespace Hounded_Heart.Api.Controllers
                             var newDog = new FitBarkDog
                             {
                                 Id = Guid.NewGuid(),
+                                DogId = appDogId,
                                 Name = dog.Name,
                                 DogSlug = dog.Slug,
                                 Breed = dog.Breed,
@@ -174,6 +182,7 @@ namespace Hounded_Heart.Api.Controllers
                         }
                         else
                         {
+                            existingDog.DogId = appDogId ?? existingDog.DogId;
                             existingDog.Name = dog.Name;
                             existingDog.Weight = dog.Weight;
                             existingDog.ActivityGoal = dog.ActivityGoal;
@@ -182,6 +191,50 @@ namespace Hounded_Heart.Api.Controllers
                     }
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("✅ Auto-synced {DogCount} dog(s) from FitBark after OAuth.", dogs.Count);
+
+                    // Create/update DeviceConnection for FitBark — THIS WAS MISSING
+                    // Resolve the user so DogId can be set correctly
+                    if (currentUserId.HasValue)
+                    {
+                        var dogId = await ResolveUserDogIdAsync(currentUserId.Value);
+
+                        // Use the first synced dog's slug as the DeviceNumber for resolution in AutoAnalysis
+                        var primaryDogSlug = dogs.First().Slug;
+
+                        var existingConn = await _context.DeviceConnections
+                            .FirstOrDefaultAsync(dc => dc.UserId == currentUserId.Value && dc.DeviceType == "fitbark");
+
+                        if (existingConn != null)
+                        {
+                            existingConn.IsConnected = true;
+                            existingConn.DeviceNumber = primaryDogSlug;
+                            existingConn.ConnectedAt = DateTime.UtcNow;
+                            existingConn.DisconnectedAt = null;
+                            if (dogId.HasValue) existingConn.DogId = dogId;
+                            _logger.LogInformation("✅ Updated FitBark DeviceConnection for user {UserId} DogId={DogId}", currentUserId.Value, dogId);
+                        }
+                        else
+                        {
+                            var newConn = new Hounded_Heart.Models.Data.DeviceConnection
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = currentUserId.Value,
+                                DogId = dogId,
+                                DeviceType = "fitbark",
+                                DeviceNumber = primaryDogSlug,
+                                IsConnected = true,
+                                ConnectedAt = DateTime.UtcNow,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.DeviceConnections.Add(newConn);
+                            _logger.LogInformation("✅ Created FitBark DeviceConnection for user {UserId} DogId={DogId}", currentUserId.Value, dogId);
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ [DeviceConnection] Could not create FitBark DeviceConnection: userId unknown after OAuth callback.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -207,9 +260,10 @@ namespace Hounded_Heart.Api.Controllers
                 return BadRequest(new { success = false, message = "Failed to exchange FitBark authorization code." });
             }
 
+            Guid effectiveUserId = Guid.Empty;
             try
             {
-                var effectiveUserId = request.UserId ?? Guid.Empty;
+                effectiveUserId = request.UserId ?? Guid.Empty;
                 if (effectiveUserId == Guid.Empty)
                 {
                     effectiveUserId = ResolveCurrentUserId() ?? Guid.Empty;
@@ -232,6 +286,13 @@ namespace Hounded_Heart.Api.Controllers
             // Auto-fetch and save dog details after successful token exchange
             try
             {
+                Guid? appDogId = null;
+                var resolvedUserId = effectiveUserId != Guid.Empty ? effectiveUserId : (Guid?)null;
+                if (resolvedUserId.HasValue)
+                {
+                    appDogId = await ResolveUserDogIdAsync(resolvedUserId.Value);
+                }
+
                 var dogs = await _fitBarkService.GetDogProfilesAsync();
                 if (dogs != null && dogs.Count > 0)
                 {
@@ -243,6 +304,7 @@ namespace Hounded_Heart.Api.Controllers
                             var newDog = new FitBarkDog
                             {
                                 Id = Guid.NewGuid(),
+                                DogId = appDogId,
                                 Name = dog.Name,
                                 DogSlug = dog.Slug,
                                 Breed = dog.Breed,
@@ -259,6 +321,7 @@ namespace Hounded_Heart.Api.Controllers
                         }
                         else
                         {
+                            existingDog.DogId = appDogId ?? existingDog.DogId;
                             existingDog.Name = dog.Name;
                             existingDog.Weight = dog.Weight;
                             existingDog.ActivityGoal = dog.ActivityGoal;
@@ -267,6 +330,47 @@ namespace Hounded_Heart.Api.Controllers
                     }
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("✅ Auto-synced {DogCount} dog(s) from FitBark after OAuth.", dogs.Count);
+
+                    // Create/update DeviceConnection for FitBark — THIS WAS MISSING
+                    if (resolvedUserId.HasValue)
+                    {
+                        var dogId = await ResolveUserDogIdAsync(resolvedUserId.Value);
+                        var primaryDogSlug = dogs.First().Slug;
+
+                        var existingConn = await _context.DeviceConnections
+                            .FirstOrDefaultAsync(dc => dc.UserId == resolvedUserId.Value && dc.DeviceType == "fitbark");
+
+                        if (existingConn != null)
+                        {
+                            existingConn.IsConnected = true;
+                            existingConn.DeviceNumber = primaryDogSlug;
+                            existingConn.ConnectedAt = DateTime.UtcNow;
+                            existingConn.DisconnectedAt = null;
+                            if (dogId.HasValue) existingConn.DogId = dogId;
+                            _logger.LogInformation("✅ Updated FitBark DeviceConnection for user {UserId} DogId={DogId}", resolvedUserId.Value, dogId);
+                        }
+                        else
+                        {
+                            var newConn = new Hounded_Heart.Models.Data.DeviceConnection
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = resolvedUserId.Value,
+                                DogId = dogId,
+                                DeviceType = "fitbark",
+                                DeviceNumber = primaryDogSlug,
+                                IsConnected = true,
+                                ConnectedAt = DateTime.UtcNow,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.DeviceConnections.Add(newConn);
+                            _logger.LogInformation("✅ Created FitBark DeviceConnection for user {UserId} DogId={DogId}", resolvedUserId.Value, dogId);
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ [DeviceConnection] Could not create FitBark DeviceConnection: userId unknown after code exchange.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -536,7 +640,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                // Find the matching DogId from FitBarkDogs table
+                // Find the matching dog from FitBarkDogs table
                 var fitBarkDog = await _context.FitBarkDogs.FirstOrDefaultAsync(d => d.DogSlug == dogSlug);
                 if (fitBarkDog == null)
                 {
@@ -544,19 +648,36 @@ namespace Hounded_Heart.Api.Controllers
                     return;
                 }
 
+                // Resolve the ACTUAL DogId (either from FitBarkDogs.DogId or by matching DogName)
+                Guid? actualDogId = fitBarkDog.DogId;
+                if (actualDogId == null)
+                {
+                    var matchedDog = await _context.Dogs.FirstOrDefaultAsync(d => d.DogName.ToLower() == fitBarkDog.Name.ToLower());
+                    if (matchedDog != null)
+                    {
+                        actualDogId = matchedDog.DogId;
+                    }
+                }
+
+                if (actualDogId == null)
+                {
+                    _logger.LogWarning("⚠️ Could not resolve real DogId for FitBark Dog {Name}. Skipping SaveToDogVitals.", fitBarkDog.Name);
+                    return; // Skip if we still don't know the real DogId
+                }
+
                 foreach (var activity in activities)
                 {
                     if (DateTime.TryParse(activity.Date, out DateTime actDate))
                     {
                         var existingVital = await _context.DogVitals
-                            .FirstOrDefaultAsync(v => v.DogId == fitBarkDog.Id && v.TimestampUtc.Date == actDate.Date && v.Source == "fitbark");
+                            .FirstOrDefaultAsync(v => v.DogId == actualDogId.Value && v.TimestampUtc.Date == actDate.Date && v.Source == "fitbark");
 
                         if (existingVital == null)
                         {
                             var newVital = new DogVitalsRecord
                             {
                                 Id = Guid.NewGuid(),
-                                DogId = fitBarkDog.Id,
+                                DogId = actualDogId.Value,
                                 ActivityValue = activity.ActivityValue,
                                 MinPlay = activity.MinPlay,
                                 MinActive = activity.MinActive,
@@ -704,6 +825,35 @@ namespace Hounded_Heart.Api.Controllers
             public string? Code { get; set; }
             public string? State { get; set; }
             public Guid? UserId { get; set; }
+        }
+
+        /// <summary>
+        /// Resolves the user's active dog ID from the Dogs table.
+        /// Logs a warning if not found so DogId is never silently NULL on DeviceConnections.
+        /// </summary>
+        private async Task<Guid?> ResolveUserDogIdAsync(Guid userId)
+        {
+            var dogId = await _context.Dogs
+                .Where(d => d.UserId == userId)
+                .OrderByDescending(d => d.CreatedOn)
+                .Select(d => (Guid?)d.DogId)
+                .FirstOrDefaultAsync();
+
+            if (!dogId.HasValue)
+            {
+                _logger.LogWarning(
+                    "⚠️ [DeviceConnection] No dog found for user {UserId}. " +
+                    "DogId will be NULL. Ensure the user creates a dog profile before connecting FitBark.",
+                    userId);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "🐾 [DeviceConnection] Resolved DogId={DogId} for user {UserId}.",
+                    dogId.Value, userId);
+            }
+
+            return dogId;
         }
     }
 }

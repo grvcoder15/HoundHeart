@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -30,8 +31,9 @@ namespace Hounded_Heart.Api.Controllers
         private readonly ChangePasswordService _changePassword;
         private readonly IEmailService _emailService;
         private readonly IMemoryCache _memoryCache;
+        private readonly ILogger<AccountController> _logger;
         public AccountController(AppDbContext context, IConfiguration configuration, BlobStorageService blobService,
-            AuthService authService, ChangePasswordService changePassword, IEmailService emailService, IMemoryCache memoryCache)
+            AuthService authService, ChangePasswordService changePassword, IEmailService emailService, IMemoryCache memoryCache, ILogger<AccountController> logger)
         {
             _context = context;
             _configuration = configuration;
@@ -40,6 +42,7 @@ namespace Hounded_Heart.Api.Controllers
             _changePassword = changePassword;
             _emailService = emailService;
             _memoryCache = memoryCache;
+            _logger = logger;
         }
         #region Add User
         [HttpPost("register")]
@@ -180,7 +183,7 @@ namespace Hounded_Heart.Api.Controllers
                     var token = GenerateJwtToken(user.UserId, user.Email);
                     var refreshToken = GenerateRefreshToken();
                     user.RefreshToken = refreshToken;
-                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddYears(1);
                     await _context.SaveChangesAsync();
 
                     return Ok(ResponseHelper.Success(new
@@ -324,7 +327,7 @@ namespace Hounded_Heart.Api.Controllers
                 var token = GenerateJwtToken(user.UserId, user.Email);
                 var refreshToken = GenerateRefreshToken();
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddYears(1);
                 await _context.SaveChangesAsync();
 
                 return Ok(ResponseHelper.Success(new
@@ -687,7 +690,7 @@ namespace Hounded_Heart.Api.Controllers
                 var token2 = GenerateJwtToken(user.UserId, user.Email);
                 var refreshToken2 = GenerateRefreshToken();
                 user.RefreshToken = refreshToken2;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddYears(1);
                 await _context.SaveChangesAsync();
 
                 var response2 = new
@@ -755,7 +758,7 @@ namespace Hounded_Heart.Api.Controllers
                 var token = GenerateJwtToken(user.UserId, user.Email);
                 var refreshToken = GenerateRefreshToken();
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddYears(1);
                 await _context.SaveChangesAsync();
 
                 var response = new
@@ -1275,6 +1278,14 @@ namespace Hounded_Heart.Api.Controllers
             if (string.IsNullOrWhiteSpace(request?.Token) || string.IsNullOrWhiteSpace(request?.RefreshToken))
                 return BadRequest(ResponseHelper.Fail<string>("Access Token and Refresh Token are required.", 400));
 
+            var userIdClaim = string.Empty;
+            var userId = Guid.Empty;
+            var emailClaim = string.Empty;
+            string? failureReason = null;
+            bool refreshTokenMatches = false;
+            bool refreshTokenExpired = false;
+            bool refreshTokenAvailable = false;
+
             try
             {
                 var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
@@ -1291,31 +1302,83 @@ namespace Hounded_Heart.Api.Controllers
                 };
 
                 var principal = tokenHandler.ValidateToken(request.Token, validationParams, out _);
+                userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 
-                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
-
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-                    return Unauthorized(ResponseHelper.Fail<string>("Invalid token claims.", 401));
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out userId))
+                {
+                    failureReason = "Invalid token claims.";
+                    _logger.LogWarning("Refresh token attempt failed. Reason={Reason}, userIdClaim={UserIdClaim}", failureReason, userIdClaim);
+                    return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
+                }
 
                 var user = await _context.Users.FindAsync(userId);
-                if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                if (user == null || string.IsNullOrWhiteSpace(user.RefreshToken))
                 {
-                    return Unauthorized(ResponseHelper.Fail<string>("Invalid or expired refresh token.", 401));
+                    failureReason = "No refresh token available.";
+                    _logger.LogWarning("Refresh token attempt failed. Reason={Reason}, userId={UserId}", failureReason, userId);
+                    return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
                 }
+
+                refreshTokenAvailable = true;
+                refreshTokenMatches = user.RefreshToken == request.RefreshToken;
+                refreshTokenExpired = user.RefreshTokenExpiryTime <= DateTime.UtcNow;
+
+                // Grace window: if the current token doesn't match, check if this is
+                // the PREVIOUS refresh token still within its 30-second grace period.
+                // This handles the race condition where multiple parallel API calls
+                // (on page load/refresh) all try to refresh at the same time.
+                bool isGracePeriodToken = false;
+                if (!refreshTokenMatches && !string.IsNullOrWhiteSpace(user.PreviousRefreshToken))
+                {
+                    isGracePeriodToken = user.PreviousRefreshToken == request.RefreshToken
+                        && user.PreviousRefreshTokenExpiryTime.HasValue
+                        && user.PreviousRefreshTokenExpiryTime.Value > DateTime.UtcNow;
+                }
+
+                if (refreshTokenExpired && !isGracePeriodToken)
+                {
+                    failureReason = "Refresh token expired.";
+                    _logger.LogWarning("Refresh token attempt failed. Reason={Reason}, userId={UserId}, refreshTokenMatches={Matches}, refreshTokenExpired={Expired}",
+                        failureReason, userId, refreshTokenMatches, refreshTokenExpired);
+                    return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
+                }
+
+                if (!refreshTokenMatches && !isGracePeriodToken)
+                {
+                    failureReason = "Refresh token mismatch.";
+                    _logger.LogWarning("Refresh token attempt failed. Reason={Reason}, userId={UserId}, refreshTokenMatches={Matches}, refreshTokenExpired={Expired}",
+                        failureReason, userId, refreshTokenMatches, refreshTokenExpired);
+                    return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
+                }
+
+                _logger.LogInformation("Refresh token attempt succeeded. userId={UserId}, refreshTokenMatches={Matches}, isGracePeriodToken={Grace}",
+                    userId, refreshTokenMatches, isGracePeriodToken);
 
                 var newToken = GenerateJwtToken(userId, emailClaim ?? string.Empty);
                 var newRefreshToken = GenerateRefreshToken();
 
+                // Store current token as previous (grace window = 30 seconds)
+                user.PreviousRefreshToken = user.RefreshToken;
+                user.PreviousRefreshTokenExpiryTime = DateTime.UtcNow.AddSeconds(30);
+
                 user.RefreshToken = newRefreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddYears(1);
                 await _context.SaveChangesAsync();
 
                 return Ok(ResponseHelper.Success(new { token = newToken, refreshToken = newRefreshToken }, "Token refreshed successfully.", 200));
             }
-            catch (Exception)
+            catch (SecurityTokenException ex)
             {
-                return Unauthorized(ResponseHelper.Fail<string>("Invalid or tampered token.", 401));
+                failureReason = failureReason ?? "Invalid token claims.";
+                _logger.LogWarning(ex, "Refresh token attempt failed. Reason={Reason}, userIdClaim={UserIdClaim}", failureReason, userIdClaim);
+                return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
+            }
+            catch (Exception ex)
+            {
+                failureReason ??= "Invalid or tampered token.";
+                _logger.LogWarning(ex, "Refresh token attempt failed. Reason={Reason}, userId={UserId}", failureReason, userId);
+                return Unauthorized(ResponseHelper.Fail<string>(failureReason, 401));
             }
         }
 
@@ -1334,6 +1397,8 @@ namespace Hounded_Heart.Api.Controllers
             {
                 user.RefreshToken = null;
                 user.RefreshTokenExpiryTime = null;
+                user.PreviousRefreshToken = null;
+                user.PreviousRefreshTokenExpiryTime = null;
                 await _context.SaveChangesAsync();
             }
 

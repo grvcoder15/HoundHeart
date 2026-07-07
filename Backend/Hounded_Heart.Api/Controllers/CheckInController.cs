@@ -2,6 +2,7 @@ using Hounded_Heart.Api.Response;
 using Hounded_Heart.Models.Data;
 using Hounded_Heart.Models.Dtos;
 using Hounded_Heart.Models.DTOs;
+using Hounded_Heart.Services.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace Hounded_Heart.Api.Controllers
     public class CheckInController : ControllerBase
     {
         private readonly AppDbContext _context;
+
         public CheckInController(AppDbContext context)
         {
             _context = context;
         }
+
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllCheckIns()
         {

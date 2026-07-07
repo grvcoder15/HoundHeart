@@ -75,51 +75,53 @@ namespace Hounded_Heart.Api.Controllers
                     DataType = "Historical"
                 }).ToList();
 
-                // For today and recent dates, get from real-time data and calculate on-demand
+                // Identify existing dates from historical summaries
+                var existingDates = new HashSet<DateTime>(historicalData.Select(d => d.Date));
+
+                // For today, recent dates, and missing historical dates, get from real-time data and calculate on-demand
                 var realtimeData = new List<CalendarDataResponse>();
-                if (queryEndDate >= today)
-                {
-                    var realtimeStartDate = Math.Max(queryStartDate.Ticks, today.Ticks);
-                    var realtimeStart = DateTime.SpecifyKind(new DateTime(realtimeStartDate), DateTimeKind.Utc);
-
-                    var dailyRealtimeData = await _context.HumanVitals
-                        .Where(h => h.UserId == userId && h.TimestampUtc >= realtimeStart && h.TimestampUtc <= queryEndDate.AddDays(1))
-                        .GroupBy(h => h.TimestampUtc.Date)
-                        .Select(g => new
-                        {
-                            Date = g.Key,
-                            AvgHeartRate = g.Where(h => h.HeartRate > 0).Average(h => (double?)h.HeartRate),
-                            AvgHRV = g.Where(h => h.HRV > 0).Average(h => h.HRV),
-                            TotalSteps = g.Max(h => (int?)h.Steps) ?? 0,
-                            AvgSleepScore = g.Where(h => h.SleepMinutes > 0).Average(h => (double?)h.SleepMinutes),
-                            AvgStressScore = g.Where(h => h.StressScore > 0).Average(h => (double?)h.StressScore),
-                            DataPointsCount = g.Count()
-                        })
-                        .ToListAsync();
-
-                    foreach (var dayData in dailyRealtimeData)
+                
+                var dailyRealtimeData = await _context.HumanVitals
+                    .Where(h => h.UserId == userId && h.TimestampUtc >= queryStartDate && h.TimestampUtc <= queryEndDate.AddDays(1))
+                    .GroupBy(h => h.TimestampUtc.Date)
+                    .Select(g => new
                     {
-                        // Calculate real-time sync score (simplified version)
-                        int realtimeScore = CalculateRealtimeScore(dayData.AvgStressScore ?? 0, dayData.AvgHRV ?? 0, dayData.AvgSleepScore ?? 0);
+                        Date = g.Key,
+                        AvgHeartRate = g.Where(h => h.HeartRate > 0).Average(h => (double?)h.HeartRate),
+                        AvgHRV = g.Where(h => h.HRV > 0).Average(h => h.HRV),
+                        TotalSteps = g.Max(h => (int?)h.Steps) ?? 0,
+                        AvgSleepScore = g.Where(h => h.SleepMinutes > 0).Average(h => (double?)h.SleepMinutes),
+                        AvgStressScore = g.Where(h => h.StressScore > 0).Average(h => (double?)h.StressScore),
+                        DataPointsCount = g.Count()
+                    })
+                    .ToListAsync();
 
-                        realtimeData.Add(new CalendarDataResponse
-                        {
-                            Date = dayData.Date,
-                            Score = realtimeScore,
-                            Trend = "realtime",
-                            ScoreTitle = GetScoreTitleFromSync(realtimeScore),
-                            ScoreDescription = GetScoreDescriptionFromSync(realtimeScore),
-                            ScoreAction = GetScoreActionFromSync(realtimeScore),
-                            Disclaimer = "This assessment is based on biometric data and AI analysis of your sync with your dog.",
-                            AvgHeartRate = dayData.AvgHeartRate ?? 0,
-                            AvgHRV = dayData.AvgHRV ?? 0,
-                            TotalSteps = dayData.TotalSteps,
-                            AvgSleepScore = dayData.AvgSleepScore ?? 0,
-                            AvgStressScore = dayData.AvgStressScore ?? 0,
-                            DataPointsCount = dayData.DataPointsCount,
-                            DataType = "Realtime"
-                        });
-                    }
+                foreach (var dayData in dailyRealtimeData)
+                {
+                    // Skip if we already have historical summary for this date (and it's a past date)
+                    if (existingDates.Contains(dayData.Date) && dayData.Date < today)
+                        continue;
+
+                    // Calculate real-time sync score (simplified version)
+                    int realtimeScore = CalculateRealtimeScore(dayData.AvgStressScore ?? 0, dayData.AvgHRV ?? 0, dayData.AvgSleepScore ?? 0);
+
+                    realtimeData.Add(new CalendarDataResponse
+                    {
+                        Date = dayData.Date,
+                        Score = realtimeScore,
+                        Trend = dayData.Date >= today ? "realtime" : "computed",
+                        ScoreTitle = GetScoreTitleFromSync(realtimeScore),
+                        ScoreDescription = GetScoreDescriptionFromSync(realtimeScore),
+                        ScoreAction = GetScoreActionFromSync(realtimeScore),
+                        Disclaimer = "This assessment is based on biometric data and AI analysis of your sync with your dog.",
+                        AvgHeartRate = dayData.AvgHeartRate ?? 0,
+                        AvgHRV = dayData.AvgHRV ?? 0,
+                        TotalSteps = dayData.TotalSteps,
+                        AvgSleepScore = dayData.AvgSleepScore ?? 0,
+                        AvgStressScore = dayData.AvgStressScore ?? 0,
+                        DataPointsCount = dayData.DataPointsCount,
+                        DataType = dayData.Date >= today ? "Realtime" : "ComputedFallback"
+                    });
                 }
 
                 var combinedData = historicalData.Concat(realtimeData).OrderBy(d => d.Date);
@@ -157,9 +159,13 @@ namespace Hounded_Heart.Api.Controllers
 
                     if (summary == null)
                     {
-                        // Fallback: compute score from vitals if daily summary for that date is not present yet.
+                        // Fallback: compute score from vitals using IST-aligned UTC window
+                        var istOffset = TimeSpan.FromHours(5.5);
+                        var utcStart = DateTime.SpecifyKind(dayStart - istOffset, DateTimeKind.Utc);
+                        var utcEnd = utcStart.AddDays(1);
+
                         var vitalsData = await _context.HumanVitals
-                            .Where(h => h.UserId == userId && h.TimestampUtc >= dayStart && h.TimestampUtc < dayEnd)
+                            .Where(h => h.UserId == userId && h.TimestampUtc >= utcStart && h.TimestampUtc < utcEnd)
                             .ToListAsync();
 
                         if (!vitalsData.Any())
@@ -228,12 +234,14 @@ namespace Hounded_Heart.Api.Controllers
                 }
                 else
                 {
-                    // For current day, calculate from real-time data
+                    // For current day, calculate from real-time data using IST-aligned UTC window
                     var startDate = date.Date;
-                    var endDate = startDate.AddDays(1);
+                    var istOffset = TimeSpan.FromHours(5.5);
+                    var utcStart = DateTime.SpecifyKind(startDate - istOffset, DateTimeKind.Utc);
+                    var utcEnd = utcStart.AddDays(1);
 
                     var vitalsData = await _context.HumanVitals
-                        .Where(h => h.UserId == userId && h.TimestampUtc >= startDate && h.TimestampUtc < endDate)
+                        .Where(h => h.UserId == userId && h.TimestampUtc >= utcStart && h.TimestampUtc < utcEnd)
                         .ToListAsync();
 
                     if (!vitalsData.Any())
@@ -296,12 +304,32 @@ namespace Hounded_Heart.Api.Controllers
 
                 _logger.LogInformation($"📊 [ManualTrigger] Generating daily summary for {parsedDate:yyyy-MM-dd}");
 
-                // Call the daily summary generation method
-                int processedCount = await _dailySummaryService.GenerateDailySummaryAsync(parsedDate.Date);
+                // Convert the calendar date (IST, UTC+5:30) to its UTC boundaries
+                // e.g. "2026-07-03" IST = 2026-07-02T18:30:00Z → 2026-07-03T18:30:00Z
+                var istOffset = TimeSpan.FromHours(5.5);
+                var utcStart = DateTime.SpecifyKind(parsedDate.Date - istOffset, DateTimeKind.Utc);
+                var utcEnd   = utcStart.AddDays(1);
 
-                _logger.LogInformation($"✅ [ManualTrigger] Daily summary generation completed for {parsedDate:yyyy-MM-dd}");
+                var result = await _dailySummaryService.GenerateDailySummaryAsync(
+                    parsedDate.Date, utcStart, utcEnd);
 
-                return Ok(ResponseHelper.Success(new { date = parsedDate.Date, processedCount, message = "Daily summary generated successfully" }, 
+                _logger.LogInformation($"✅ [ManualTrigger] Daily summary generation completed for {parsedDate:yyyy-MM-dd}. Processed: {result.ProcessedCount}, Skipped: {result.SkippedCount}, Errors: {result.Errors.Count}");
+
+                var responseData = new 
+                { 
+                    date = parsedDate.ToString("yyyy-MM-dd"), 
+                    processedCount = result.ProcessedCount,
+                    skippedCount = result.SkippedCount,
+                    failedCount = result.Errors.Count,
+                    errors = result.Errors
+                };
+
+                if (result.HasErrors)
+                {
+                    return StatusCode(207, ResponseHelper.Fail(responseData, "Daily summary generation completed with errors.", 207));
+                }
+
+                return Ok(ResponseHelper.Success(responseData, 
                     "Daily summary generation completed.", 200));
             }
             catch (Exception ex)
