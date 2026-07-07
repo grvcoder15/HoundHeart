@@ -30,17 +30,26 @@ const SubscriptionSuccessPage = () => {
                 });
 
                 if (response?.data?.verified) {
-                    const { isPremium, roleId } = response.data;
+                    const { isPremium, roleId, planName } = response.data;
 
-                    if (isPremium) {
-                        const userStr = localStorage.getItem('user');
-                        if (userStr) {
-                            const user = JSON.parse(userStr);
-                            user.isPremium = true;
-                            user.roleId = roleId;
-                            localStorage.setItem('user', JSON.stringify(user));
-                        }
+                    // Determine the correct tier from planName or isPremium flag
+                    const normalizedPlan = String(planName || '').toLowerCase();
+                    const tier = normalizedPlan.includes('premium') ? 'premium'
+                        : (normalizedPlan.includes('plus') || isPremium === false) && normalizedPlan.includes('plus') ? 'plus'
+                        : isPremium ? 'premium' : 'plus'; // fallback: any paid plan = at least plus
+
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        user.isPremium = isPremium;
+                        user.roleId = roleId;
+                        user.tierLevel = tier;
+                        localStorage.setItem('user', JSON.stringify(user));
                     }
+
+                    window.dispatchEvent(new CustomEvent('subscription-updated', {
+                        detail: { isPremium, roleId, planName, tier }
+                    }));
 
                     setStatus('success');
                     toast.success('🎉 Subscription verified and active!');

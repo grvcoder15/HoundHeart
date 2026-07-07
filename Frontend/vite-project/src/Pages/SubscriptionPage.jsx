@@ -6,7 +6,8 @@ import HoundHeartLogo from '../assets/images/Houndheart_logo.svg';
 
 // ─── Early Member Offer Banner ────────────────────────────────────────────────
 function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
-    if (!offerConfig?.isActive) return null;
+    const isOfferActive = Boolean(offerConfig?.isActive) && (!offerConfig?.endDateUtc || new Date(offerConfig.endDateUtc) > new Date());
+    if (!isOfferActive) return null;
 
     const earlyPrice  = billingPeriod === 'yearly' ? offerConfig.yearlyPrice  : offerConfig.monthlyPrice;
     const regularPrice = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
@@ -120,14 +121,14 @@ const SubscriptionPage = () => {
     // Fallback values matching appsettings.json — overwritten when API responds
     const [offerConfig, setOfferConfig] = useState({
         isActive: true,
-        endDateUtc: '2026-07-31T00:00:00Z',
+        endDateUtc: '2026-07-30T00:00:00Z',
         slotsTotal: 500,
         slotsUsed: 0,
         slotsRemaining: 500,
         monthlyPrice: 9.99,
         yearlyPrice: 79.99,
         regularMonthlyPrice: 14.99,
-        regularYearlyPrice: 119.99,
+        regularYearlyPrice: 124.99,
         lockInPermanent: true
     });
 
@@ -173,6 +174,16 @@ const SubscriptionPage = () => {
         }
     }, [activeTab, plansFetched]);
 
+    useEffect(() => {
+        const handleSubscriptionUpdated = () => {
+            fetchCurrentSubscription();
+            fetchBillingHistory();
+        };
+
+        window.addEventListener('subscription-updated', handleSubscriptionUpdated);
+        return () => window.removeEventListener('subscription-updated', handleSubscriptionUpdated);
+    }, []);
+
     const fetchOfferConfig = useCallback(async () => {
         try {
             const res = await apiService.makeRequest('/AdminSubscription/offer-config', { method: 'GET' });
@@ -181,14 +192,13 @@ const SubscriptionPage = () => {
                 setOfferConfig(prev => ({
                     ...prev,
                     ...data,
-                    // Fallback to local defaults if backend returns 0 (meaning section is missing in live appsettings)
-                    isActive: data.monthlyPrice > 0 ? data.isActive : prev.isActive,
+                    isActive: typeof data.isActive === 'boolean' ? data.isActive : prev.isActive,
                     monthlyPrice: data.monthlyPrice > 0 ? data.monthlyPrice : prev.monthlyPrice,
                     yearlyPrice: data.yearlyPrice > 0 ? data.yearlyPrice : prev.yearlyPrice,
                     regularMonthlyPrice: data.regularMonthlyPrice > 0 ? data.regularMonthlyPrice : prev.regularMonthlyPrice,
                     regularYearlyPrice: data.regularYearlyPrice > 0 ? data.regularYearlyPrice : prev.regularYearlyPrice,
                     slotsTotal: data.slotsTotal > 0 ? data.slotsTotal : prev.slotsTotal,
-                    slotsRemaining: data.slotsTotal > 0 ? data.slotsRemaining : prev.slotsRemaining
+                    slotsRemaining: data.slotsRemaining >= 0 ? data.slotsRemaining : prev.slotsRemaining
                 }));
             }
         } catch (err) {
@@ -310,33 +320,72 @@ const SubscriptionPage = () => {
             .filter((p) => p.priceId || p.amount === 0);
     }, [apiPlans]);
 
+    const fixedPlans = useMemo(() => {
+        const isOfferActive = Boolean(offerConfig?.isActive) && (!offerConfig?.endDateUtc || new Date(offerConfig.endDateUtc) > new Date());
+        const regularMonthly = offerConfig?.regularMonthlyPrice || 14.99;
+        const regularYearly = offerConfig?.regularYearlyPrice || 124.99;
+
+        return [
+            {
+                planId: 'free-member',
+                tierLevel: 'free',
+                planName: 'Free Member',
+                description: 'Essential access to begin your HoundHeart journey',
+                badge: undefined,
+                monthlyPrice: 0,
+                yearlyPrice: 0,
+                yearlyOnly: false,
+                currency: 'USD',
+                features: [
+                    'Create and manage account',
+                    'Create and manage dog profile(s)',
+                    'Basic app access',
+                    'Access to newsletter and announcements',
+                    'Purchase books and merchandise'
+                ]
+            },
+            {
+                planId: 'houndheart-plus',
+                tierLevel: 'plus',
+                planName: 'HoundHeart Plus',
+                description: 'Advanced wellness and connection tools for dedicated members',
+                badge: 'Most Popular',
+                monthlyPrice: isOfferActive ? offerConfig?.monthlyPrice || 9.99 : regularMonthly,
+                yearlyPrice: isOfferActive ? offerConfig?.yearlyPrice || 79.99 : regularYearly,
+                yearlyOnly: false,
+                currency: 'USD',
+                features: [
+                    'Includes all Free Member features',
+                    'Full app access',
+                    'Full Bonded Score access',
+                    'Wellness tracking tools',
+                    'Free digital and audio book',
+                    'Travel directory access',
+                    'Partner discounts and wearable connection'
+                ]
+            },
+            {
+                planId: 'houndheart-premium',
+                tierLevel: 'premium',
+                planName: 'HoundHeart Premium',
+                description: 'The complete premium lifestyle package for top-tier members',
+                badge: 'Best Value',
+                monthlyPrice: null,
+                yearlyPrice: 149.99,
+                yearlyOnly: true,
+                currency: 'USD',
+                features: [
+                    'Includes all HoundHeart Plus features',
+                    'Paperback HoundHeart book',
+                    'Official HoundHeart T-shirt',
+                    'Partner Discounts on travel, hotels & vacations',
+                    'Premium Member badge in profile'
+                ]
+            }
+        ];
+    }, [offerConfig]);
+
     const plans = useMemo(() => {
-        const freeFeatures = [
-            'Create and manage account',
-            'Create and manage dog profile(s)',
-            'Basic app access',
-            'Access to newsletter and announcements',
-            'Purchase books and merchandise'
-        ];
-
-        const plusFeatures = [
-            'Includes all Free Member features',
-            'Full app access',
-            'Full Bonded Score access',
-            'Wellness tracking tools',
-            'Free digital and audio book',
-            'Travel directory access',
-            'Partner discounts and wearable connection'
-        ];
-
-        const premiumFeatures = [
-            'Includes all HoundHeart Plus features',
-            'Paperback HoundHeart book',
-            'Official HoundHeart T-shirt',
-            'Partner Discounts on travel, hotels & vacations',
-            'Premium Member badge in profile'
-        ];
-
         const hasKeyword = (name, keywords) => {
             const normalized = (name || '').toLowerCase();
             return keywords.some((k) => normalized.includes(k));
@@ -350,8 +399,6 @@ const SubscriptionPage = () => {
             .filter((p) => p.interval === 'year' && p.amount > 0)
             .sort((a, b) => a.amount - b.amount);
 
-        const freePlan = normalizedApiPlans.find((p) => p.amount === 0);
-
         const plusMonthlyPlan = normalizedApiPlans.find((p) => p.interval === 'month' && hasKeyword(p.productName, ['plus']))
             || monthlyPaid[0];
 
@@ -362,63 +409,69 @@ const SubscriptionPage = () => {
             || yearlyPaid.find((p) => p.priceId !== plusYearlyPlan?.priceId)
             || yearlyPaid[yearlyPaid.length - 1];
 
-        const plusSelectedPlan = billingPeriod === 'yearly' ? plusYearlyPlan : plusMonthlyPlan;
-        const plusDisplayPrice = plusSelectedPlan?.amount ?? (billingPeriod === 'yearly' ? 79.99 : 9.99);
-        const plusOriginalPrice = plusMonthlyPlan?.amount && plusYearlyPlan?.amount
-            ? (plusMonthlyPlan.amount * 12).toFixed(2)
-            : undefined;
-        const plusSavingsText = plusMonthlyPlan?.amount && plusYearlyPlan?.amount
-            ? `Save $${(plusMonthlyPlan.amount * 12 - plusYearlyPlan.amount).toFixed(2)} per year`
+        const plusPlan = fixedPlans.find((plan) => plan.tierLevel === 'plus');
+        const freePlan = fixedPlans.find((plan) => plan.tierLevel === 'free');
+        const premiumPlan = fixedPlans.find((plan) => plan.tierLevel === 'premium');
+        const regularMonthly = offerConfig?.regularMonthlyPrice || 14.99;
+        const regularYearly = offerConfig?.regularYearlyPrice || 124.99;
+
+        const selectedPlusPlan = billingPeriod === 'yearly' ? plusYearlyPlan : plusMonthlyPlan;
+        const selectedPlusPrice = billingPeriod === 'yearly' ? plusPlan.yearlyPrice : plusPlan.monthlyPrice;
+        const selectedPlusCurrency = selectedPlusPlan?.currency || plusPlan.currency || 'USD';
+        const isOfferActive = Boolean(offerConfig?.isActive) && (!offerConfig?.endDateUtc || new Date(offerConfig.endDateUtc) > new Date());
+        const plusOriginal = isOfferActive && billingPeriod === 'yearly' ? regularYearly : undefined;
+        const plusSavingsText = isOfferActive && billingPeriod === 'yearly'
+            ? `Save $${(regularYearly - plusPlan.yearlyPrice).toFixed(2)} per year`
             : undefined;
 
         return [
             {
-                planId: freePlan?.priceId || null,
-                tierLevel: 'free',
-                planName: 'Free Member',
-                description: 'Essential access to begin your HoundHeart journey',
-                price: 0,
-                currency: freePlan?.currency || 'USD',
+                planId: freePlan.planId,
+                tierLevel: freePlan.tierLevel,
+                planName: freePlan.planName,
+                description: freePlan.description,
+                price: freePlan.monthlyPrice,
+                currency: freePlan.currency,
                 checkoutBillingPeriod: 'free',
                 billingLabel: 'Forever',
-                badge: undefined,
-                yearlyOnly: false,
+                badge: freePlan.badge,
+                yearlyOnly: freePlan.yearlyOnly,
                 originalPrice: undefined,
                 savingsText: undefined,
-                features: freeFeatures
+                features: freePlan.features
             },
             {
-                planId: plusSelectedPlan?.priceId || null,
-                tierLevel: 'plus',
-                planName: 'HoundHeart Plus',
-                description: 'Advanced wellness and connection tools for dedicated members',
-                price: plusDisplayPrice,
-                currency: plusSelectedPlan?.currency || 'USD',
+                planId: selectedPlusPlan?.priceId || null,
+                tierLevel: plusPlan.tierLevel,
+                planName: plusPlan.planName,
+                description: plusPlan.description,
+                price: selectedPlusPrice,
+                currency: selectedPlusCurrency,
                 checkoutBillingPeriod: billingPeriod,
                 billingLabel: billingPeriod === 'yearly' ? 'Per Year' : 'Per Month',
-                badge: 'Most Popular',
+                badge: plusPlan.badge,
                 yearlyOnly: false,
-                originalPrice: billingPeriod === 'yearly' ? plusOriginalPrice : undefined,
-                savingsText: billingPeriod === 'yearly' ? plusSavingsText : undefined,
-                features: plusFeatures
+                originalPrice: billingPeriod === 'yearly' && plusOriginal != null ? plusOriginal.toFixed(2) : undefined,
+                savingsText: plusSavingsText,
+                features: plusPlan.features
             },
             {
                 planId: premiumYearlyPlan?.priceId || null,
-                tierLevel: 'premium',
-                planName: 'HoundHeart Premium',
-                description: 'The complete premium lifestyle package for top-tier members',
-                price: premiumYearlyPlan?.amount ?? 149.99,
-                currency: premiumYearlyPlan?.currency || 'USD',
+                tierLevel: premiumPlan.tierLevel,
+                planName: premiumPlan.planName,
+                description: premiumPlan.description,
+                price: premiumYearlyPlan?.amount ?? premiumPlan.yearlyPrice,
+                currency: premiumYearlyPlan?.currency || premiumPlan.currency || 'USD',
                 checkoutBillingPeriod: 'yearly',
                 billingLabel: 'Per Year (Yearly Only)',
-                badge: 'Best Value',
+                badge: premiumPlan.badge,
                 yearlyOnly: true,
                 originalPrice: undefined,
                 savingsText: undefined,
-                features: premiumFeatures
+                features: premiumPlan.features
             }
         ];
-    }, [apiPlans, billingPeriod, normalizedApiPlans]);
+    }, [billingPeriod, fixedPlans, normalizedApiPlans]);
 
     const handleSubscribe = async (priceId, selectedBillingPeriod, couponId = null) => {
         try {

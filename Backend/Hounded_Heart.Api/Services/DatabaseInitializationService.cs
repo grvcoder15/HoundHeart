@@ -61,6 +61,35 @@ namespace Hounded_Heart.Api.Services
                             ADD COLUMN IF NOT EXISTS ""DonationAmount"" numeric(10,2) NOT NULL DEFAULT 0;
                         ", stoppingToken);
 
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""WellnessChecks""
+                            ADD COLUMN IF NOT EXISTS ""DetailedOverviewJson"" text NULL;
+                        ", stoppingToken);
+
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            ALTER TABLE ""WellnessChecks""
+                            ADD COLUMN IF NOT EXISTS ""EnvironmentCheckReferenceId"" uuid NULL;
+                        ", stoppingToken);
+
+                        await dbContext.Database.ExecuteSqlRawAsync(@"
+                            CREATE TABLE IF NOT EXISTS ""DetailedAnalysisReports"" (
+                                ""Id"" uuid NOT NULL DEFAULT gen_random_uuid(),
+                                ""UserId"" uuid NOT NULL,
+                                ""DogId"" uuid NULL,
+                                ""LatestDogCheckinId"" uuid NULL,
+                                ""LatestEnvironmentCheckinId"" uuid NULL,
+                                ""BaselineSnapshotJson"" text NULL,
+                                ""LatestVitalsSnapshotJson"" text NULL,
+                                ""PhotoUrlsJson"" text NULL,
+                                ""ReportJson"" text NULL,
+                                ""Status"" character varying(20) NOT NULL DEFAULT 'Pending',
+                                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+                                ""UpdatedAt"" timestamp with time zone NULL,
+                                CONSTRAINT ""PK_DetailedAnalysisReports"" PRIMARY KEY (""Id"")
+                            );
+                            CREATE INDEX IF NOT EXISTS ""IX_DetailedAnalysisReports_UserId"" ON ""DetailedAnalysisReports"" (""UserId"");
+                        ", stoppingToken);
+
                         // Remove '$10 donation to animal welfare charities' from plan features (client request)
                         await dbContext.Database.ExecuteSqlRawAsync(@"
                             UPDATE ""SubscriptionPlans""

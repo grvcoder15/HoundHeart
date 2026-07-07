@@ -53,6 +53,12 @@ namespace Hounded_Heart.Models.Dtos
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
+        // Previous refresh token kept for a 30-second grace window to handle
+        // race conditions (multiple parallel requests on page load/refresh)
+        [MaxLength(500)]
+        public string? PreviousRefreshToken { get; set; }
+        public DateTime? PreviousRefreshTokenExpiryTime { get; set; }
+
         // Fitbit Integration
         [MaxLength(500)]
         public string? FitbitAccessToken { get; set; }

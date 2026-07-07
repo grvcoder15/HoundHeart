@@ -73,6 +73,7 @@ builder.Services.AddScoped<IMessageLogsService, MessageLogsService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IFitBarkService, FitBarkService>();
 builder.Services.AddScoped<IExpertQueryService, ExpertQueryService>();
+builder.Services.AddScoped<IAutoAnalysisService, AutoAnalysisService>();
 
 // Fitbit Integration Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -80,6 +81,13 @@ builder.Services.AddScoped<IFitbitTokenService, FitbitTokenService>();
 builder.Services.AddScoped<IFitbitMockService, FitbitMockService>();
 builder.Services.AddScoped<IVitalsService, VitalsService>(); 
 builder.Services.AddScoped<IFitbitService, FitbitService>();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
+builder.Services.AddScoped<IWellnessCheckService, WellnessCheckService>();
+// DetailedAnalysisService registration may already exist elsewhere; keep only one service registration here.
+builder.Services.AddScoped<IDetailedAnalysisService, DetailedAnalysisService>();
+
+builder.Services.AddHttpClient("gemini");
+builder.Services.AddHostedService<WellnessBackgroundWorker>();
 builder.Services.AddHttpClient<FitbitTokenService>();
 builder.Services.AddHttpClient<FitbitService>();
 builder.Services.AddHttpClient<FitbitPollingService>();

@@ -13,6 +13,11 @@ namespace Hounded_Heart.Models.Data
         [Required]
         public Guid DogId { get; set; }
 
+        /// <summary>
+        /// The user who owns this dog (denormalized for easy querying).
+        /// </summary>
+        public Guid? UserId { get; set; }
+
         public int? HeartRate { get; set; }
 
         public int ActivityScore { get; set; }
@@ -34,6 +39,7 @@ namespace Hounded_Heart.Models.Data
         public string Source { get; set; } = "mock";
 
         // FitBark-specific columns
+        public Guid? FitBarkId { get; set; }
         public int? ActivityValue { get; set; }
         public int? MinPlay { get; set; }
         public int? MinActive { get; set; }
@@ -41,5 +47,7 @@ namespace Hounded_Heart.Models.Data
         public int? NapTime { get; set; }
 
         public DateTime TimestampUtc { get; set; }
+
+        public DateTime? FetchedAt { get; set; }
     }
-}
+}

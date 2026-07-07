@@ -329,6 +329,60 @@ namespace Hounded_Heart.Services.Services
                 .OrderByDescending(h => h.TimestampUtc)
                 .FirstOrDefaultAsync();
 
+            var latestDog = await _context.DogVitals
+                .Where(d => d.DogId == dogId)
+                .OrderByDescending(d => d.TimestampUtc)
+                .FirstOrDefaultAsync();
+
+            var deviceConnections = await _context.DeviceConnections
+                .AsNoTracking()
+                .Where(dc => dc.UserId == userId && dc.IsConnected)
+                .ToListAsync();
+
+            bool hasHumanDeviceConnection = latestHuman != null || deviceConnections.Any(dc =>
+                string.Equals(dc.DeviceType, "humanwatch", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(dc.DeviceType, "fitbit", StringComparison.OrdinalIgnoreCase));
+
+            bool hasDogDeviceConnection = latestDog != null || deviceConnections.Any(dc =>
+                string.Equals(dc.DeviceType, "petpace", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(dc.DeviceType, "fitbark", StringComparison.OrdinalIgnoreCase));
+
+            if (!hasHumanDeviceConnection || !hasDogDeviceConnection)
+            {
+                var fallbackDetails = GetScoreDescription(0);
+                return new SyncScoreResult
+                {
+                    Score = 0,
+                    Trend = "Needs attention",
+                    Reason = !hasHumanDeviceConnection && !hasDogDeviceConnection
+                        ? "Both human and dog devices must be connected"
+                        : !hasHumanDeviceConnection
+                            ? "Human device is not connected"
+                            : "Dog device is not connected",
+                    CalculatedAt = DateTime.UtcNow,
+                    ScoreTitle = fallbackDetails.Title,
+                    ScoreDescription = fallbackDetails.Description,
+                    ScoreAction = fallbackDetails.Action,
+                    Disclaimer = fallbackDetails.Disclaimer,
+                    HumanStatus = new WellnessStatusResult
+                    {
+                        Label = "No Device",
+                        Score = 0,
+                        Summary = "A connected human device is required to compute the Bond Sync Score.",
+                        Recommendation = "Connect Fitbit or HumanWatch and try again.",
+                        BaselineAvailable = false
+                    },
+                    DogStatus = new WellnessStatusResult
+                    {
+                        Label = "No Device",
+                        Score = 0,
+                        Summary = "A connected dog device is required to compute the Bond Sync Score.",
+                        Recommendation = "Connect FitBark or PetPace and try again.",
+                        BaselineAvailable = false
+                    }
+                };
+            }
+
             if (latestHuman == null)
             {
                 var fallbackDetails = GetScoreDescription(0);
@@ -344,11 +398,6 @@ namespace Hounded_Heart.Services.Services
                     Disclaimer = fallbackDetails.Disclaimer
                 };
             }
-
-            var latestDog = await _context.DogVitals
-                .Where(d => d.DogId == dogId)
-                .OrderByDescending(d => d.TimestampUtc)
-                .FirstOrDefaultAsync();
 
             if (latestDog == null)
             {

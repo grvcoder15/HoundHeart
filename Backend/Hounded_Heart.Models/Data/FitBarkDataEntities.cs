@@ -18,6 +18,8 @@ namespace Hounded_Heart.Models.Data
         [MaxLength(100)]
         public string DogSlug { get; set; }
 
+        public Guid? DogId { get; set; }
+
         [MaxLength(100)]
         public string? Breed { get; set; }
 

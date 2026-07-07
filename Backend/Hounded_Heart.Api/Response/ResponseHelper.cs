@@ -23,5 +23,16 @@ namespace Hounded_Heart.Api.Response
                 StatusCode = statusCode
             };
         }
+
+        public static ApiResponse<T> Fail<T>(T data, string message, int statusCode = 400)
+        {
+            return new ApiResponse<T>
+            {
+                Success = false,
+                Message = message,
+                Data = data,
+                StatusCode = statusCode
+            };
+        }
     }
 }

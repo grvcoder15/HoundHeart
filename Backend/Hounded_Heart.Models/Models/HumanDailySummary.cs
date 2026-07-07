@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Hounded_Heart.Models.Dtos;
 
 namespace Hounded_Heart.Models.Data
 {
@@ -59,8 +60,8 @@ namespace Hounded_Heart.Models.Data
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         
-        // Navigation
+        // Navigation — FK points to Users.UserId (every vitals user has a Users row)
         [ForeignKey("UserId")]
-        public HumanProfile? HumanProfile { get; set; }
+        public User? User { get; set; }
     }
 }

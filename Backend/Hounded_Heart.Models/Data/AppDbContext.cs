@@ -95,8 +95,10 @@ namespace Hounded_Heart.Models.Data
         public DbSet<DogVitalsRecord> DogVitals { get; set; }
         public DbSet<UserBaselines> UserBaselines { get; set; }
         public DbSet<DogBaseline> DogBaselines { get; set; }
+        public DbSet<DetailedAnalysisReport> DetailedAnalysisReports { get; set; }
         public DbSet<SyncScoreRecord> SyncScoreRecords { get; set; }
         public DbSet<WellnessAlert> WellnessAlerts { get; set; }
+        public DbSet<WellnessCheck> WellnessChecks { get; set; }
 
         // Daily Aggregated Data
         public DbSet<HumanDailySummary> HumanDailySummaries { get; set; }

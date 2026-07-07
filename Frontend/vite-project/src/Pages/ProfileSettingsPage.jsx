@@ -79,7 +79,7 @@ const ProfileSettingsPage = () => {
   const [fitbitUserId, setFitbitUserId] = useState('');
 
   // FitBark Connectivity State
-  const [fitbarkConnected, setFitbarkConnected] = useState(localStorage.getItem('fitbarkConnected') === 'true');
+  const [fitbarkConnected, setFitbarkConnected] = useState(false);
   const [fitbarkConnecting, setFitbarkConnecting] = useState(false);
   const [fitbarkEmail, setFitbarkEmail] = useState(localStorage.getItem('fitbarkEmail') || '');
   const fitbarkAuthWindowRef = useRef(null);
@@ -483,12 +483,21 @@ const ProfileSettingsPage = () => {
   const checkFitbarkStatus = async () => {
     try {
       const response = await apiService.getFitBarkStatus();
-      if (response?.success || response?.data?.connected) {
+      const connected = !!(response?.success && response?.data?.connected);
+
+      if (connected) {
         setFitbarkConnected(true);
         localStorage.setItem('fitbarkConnected', 'true');
+      } else {
+        setFitbarkConnected(false);
+        localStorage.removeItem('fitbarkConnected');
+        localStorage.removeItem('fitbarkEmail');
       }
     } catch (error) {
       console.error('Error checking FitBark status:', error);
+      setFitbarkConnected(false);
+      localStorage.removeItem('fitbarkConnected');
+      localStorage.removeItem('fitbarkEmail');
     }
   };
 
@@ -1307,130 +1316,16 @@ const ProfileSettingsPage = () => {
   })();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100">
-      {/* Top Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b border-gray-100 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <img src={HoundHeartLogo} alt="HoundHeart" className="h-8 w-8" />
-            <span className="text-2xl font-bold text-gray-900">HoundHeart™</span>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => navigate('/journal')}
-              className="text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Journal
-            </button>
-            <button
-              onClick={() => navigate('/rituals')}
-              className="text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Rituals
-            </button>
-            {/* <button 
-              onClick={() => navigate('/community')}
-              className="text-gray-600 hover:text-purple-600 transition-colors"
-            >
-              Community
-            </button> */}
-          </div>
-
-          {/* Right Side */}
-          <div className="flex items-center space-x-4">
-            {membershipTier === 'free' ? (
-              <button
-                onClick={handleUpgrade}
-                className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span>Upgrade</span>
-              </button>
-            ) : (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg">
-                <div className="text-sm font-semibold leading-tight">{membershipTier === 'premium' ? 'Premium Active' : 'Plus Active'}</div>
-              </div>
-            )}
-            <div className="relative profile-dropdown-container">
-              <button
-                onClick={handleProfileClick}
-                className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
-              >
-                <span className="text-white font-bold text-lg">{headerInitials}</span>
-              </button>
-
-              {/* Profile Dropdown */}
-              {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-                  {/* User Info Section */}
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <div className="text-lg font-semibold text-gray-900">{headerName || 'User'}</div>
-                    <div className="text-sm text-gray-500">{headerEmail}</div>
-                  </div>
-
-                  {/* Menu Options */}
-                  <div className="py-2">
-                    <button
-                      onClick={handleProfileOption}
-                      data-profile-button
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span className="text-gray-700">Profile</span>
-                    </button>
-
-                    {membershipTier === 'free' && (
-                      <button
-                        onClick={handleUpgrade}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
-                      >
-                        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span className="text-gray-700">Upgrade Plan</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Logout Section */}
-                  <div className="border-t border-gray-200 py-2">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors text-red-600"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      <span>Log out</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-blue-100 pt-20">
       {/* Main Content */}
-      <div className="py-8 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="pb-12 pt-4 px-4 sm:px-6 md:px-8">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-purple-900 mb-2">Profile Settings</h1>
-            <p className="text-gray-600">Manage your account and spiritual journey preferences</p>
+          <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-purple-900 mb-2">Profile Settings</h1>
+              <p className="text-gray-600">Manage your account and spiritual journey preferences</p>
+            </div>
           </div>
 
           {/* Navigation Tabs */}

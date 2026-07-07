@@ -1,5 +1,6 @@
 import React from 'react';
 import './index.css';
+import apiService from './services/apiService';
 import HoundHeartLandingPage from './Pages/HoundHeartLandingPage';
 import LoginPage from './Pages/LoginPage';
 import SignupPage from './Pages/SignupPage';
@@ -13,6 +14,8 @@ import CommunityPage from './Pages/CommunityPage';
 import AskExpertPage from './Pages/AskExpertPage';
 import CoursesPage from './Pages/CoursesPage';
 import WellnessGuidePage from './Pages/WellnessGuidePage';
+import WellnessCheckPage from './Pages/WellnessCheckPage';
+import DetailedAnalysisPage from './Pages/DetailedAnalysisPage';
 import SubscriptionPage from './Pages/SubscriptionPage';
 import SubscriptionSuccessPage from './Pages/SubscriptionSuccessPage';
 import SubscriptionCancelPage from './Pages/SubscriptionCancelPage';
@@ -41,7 +44,23 @@ const NO_NAVBAR_PATHS = ['/', '/login', '/signup', '/verify-email', '/welcome', 
 
 const AppContent = () => {
   const location = useLocation();
-  const showNavbar = !NO_NAVBAR_PATHS.includes(location.pathname);
+  const isAuthenticated = apiService.isAuthenticated();
+  const isPolicyPage = ['/privacy-policy', '/privacy-policy-full', '/terms-of-use'].includes(location.pathname);
+  
+  // Check if user is in registration flow
+  const inRegistrationFlow = 
+    location.state?.from === 'signup' || 
+    sessionStorage.getItem('registrationInProgress') === 'true';
+
+  // Effective authentication for UI purposes
+  const isEffectivelyAuthenticated = isAuthenticated && !inRegistrationFlow;
+
+  // Pages that inherently don't show the global Navbar
+  const isNoNavbarPath = NO_NAVBAR_PATHS.includes(location.pathname);
+  
+  // Show Navbar if it's not a NO_NAVBAR path.
+  // For policy pages, only show the Navbar if the user is effectively authenticated.
+  const showNavbar = !isNoNavbarPath && !(isPolicyPage && !isEffectivelyAuthenticated);
 
   return (
     <>
@@ -64,6 +83,8 @@ const AppContent = () => {
         <Route path="/ask-expert" element={<ProtectedRoute><AskExpertPage /></ProtectedRoute>} />
         <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
         <Route path="/wellness-guide" element={<ProtectedRoute><WellnessGuidePage /></ProtectedRoute>} />
+        <Route path="/wellness-check" element={<ProtectedRoute><WellnessCheckPage /></ProtectedRoute>} />
+        <Route path="/wellness-check/detailed-analysis" element={<ProtectedRoute><DetailedAnalysisPage /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/subscription/success" element={<ProtectedRoute><SubscriptionSuccessPage /></ProtectedRoute>} />
         <Route path="/subscription/cancel" element={<ProtectedRoute><SubscriptionCancelPage /></ProtectedRoute>} />
@@ -83,9 +104,9 @@ const AppContent = () => {
         {/* Public or informational pages */}
         <Route path="/help-center" element={<HelpCenterPage />} />
         <Route path="/about-us" element={<AboutUsPage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicyPage key="privacy-policy" showHeaderFooter={true} />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage key="privacy-policy" showHeaderFooter={!isEffectivelyAuthenticated} />} />
         <Route path="/privacy-policy-full" element={<PrivacyPolicyPage showHeaderFooter={false} />} />
-        <Route path="/terms-of-use" element={<PrivacyPolicyPage key="terms-of-use" showHeaderFooter={true} initialTab="houndheart" />} />
+        <Route path="/terms-of-use" element={<PrivacyPolicyPage key="terms-of-use" showHeaderFooter={!isEffectivelyAuthenticated} initialTab="houndheart" />} />
       </Routes>
     </>
   );

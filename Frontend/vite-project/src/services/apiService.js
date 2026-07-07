@@ -29,7 +29,8 @@ class ApiService {
     }
   }
 
-  isTokenExpiringSoon(token, bufferSeconds = 60 * 60 * 24 * 30) {
+  // 5 minutes before expiry (NOT 30 days - that caused every request to refresh)
+  isTokenExpiringSoon(token, bufferSeconds = 5 * 60) {
     const payload = this.parseJwtPayload(token);
     if (!payload?.exp) return false;
     const now = Math.floor(Date.now() / 1000);
@@ -47,26 +48,39 @@ class ApiService {
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) throw new Error('No refresh token available');
 
+    console.log('Refreshing JWT token...');
     const response = await fetch(`${API_BASE_URL}/Account/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: currentToken, refreshToken: refreshToken })
     });
 
-    if (!response.ok) {
-      throw new Error(`Token refresh failed (${response.status})`);
+    let json;
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      json = await response.json().catch(() => null);
+    } else {
+      const text = await response.text();
+      json = text ? { message: text } : null;
     }
 
-    const json = await response.json();
+    if (!response.ok) {
+      const message = json?.message || json?.data?.message || `Token refresh failed (${response.status})`;
+      console.error('Token refresh failed:', { status: response.status, message, body: json });
+      throw new Error(message);
+    }
+
     const newToken = json?.data?.token || json?.token || json?.data?.Token;
     const newRefreshToken = json?.data?.refreshToken || json?.refreshToken || json?.data?.RefreshToken;
     
     if (!newToken) {
+      console.error('Token refresh response missing token:', json);
       throw new Error('Refresh response did not return a token.');
     }
 
     localStorage.setItem('token', newToken);
     if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+    console.log('Token refresh succeeded.');
     return newToken;
   }
 
@@ -82,14 +96,27 @@ class ApiService {
       return token;
     }
 
+    // Use a synchronous flag to prevent multiple refresh calls starting
+    // before the first refreshPromise is even assigned (page-load race condition)
+    if (this._isRefreshing) {
+      // Wait for the in-progress refresh
+      while (this._isRefreshing) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      return localStorage.getItem('token');
+    }
+
     if (!this.refreshPromise) {
+      this._isRefreshing = true;
       this.refreshPromise = this.refreshJwtToken(token)
         .catch((err) => {
           // Never auto-logout. Only log out when manually clicked by the user.
-          throw err;
+          console.warn('Token refresh failed silently:', err.message);
+          return localStorage.getItem('token'); // Return existing token on failure
         })
         .finally(() => {
           this.refreshPromise = null;
+          this._isRefreshing = false;
         });
     }
 
@@ -481,6 +508,50 @@ class ApiService {
       console.error('Registration error:', error);
       throw error;
     }
+  }
+
+  // --- Wellness Check V2 ---
+  async submitWellnessCheck(payload) {
+    return await this.makeRequest('/WellnessCheck/analyze', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getWellnessCheckHistory() {
+    return await this.makeRequest('/WellnessCheck/history', {
+      method: 'GET'
+    });
+  }
+
+  async getWellnessCheckById(id) {
+    return await this.makeRequest(`/WellnessCheck/${id}`, {
+      method: 'GET'
+    });
+  }
+
+  async deleteWellnessCheck(id) {
+    return await this.makeRequest(`/WellnessCheck/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async createDetailedAnalysis() {
+    return await this.makeRequest('/DetailedAnalysis/analyze', {
+      method: 'POST'
+    });
+  }
+
+  async getDetailedAnalysisHistory() {
+    return await this.makeRequest('/DetailedAnalysis/history', {
+      method: 'GET'
+    });
+  }
+
+  async getDetailedAnalysisById(id) {
+    return await this.makeRequest(`/DetailedAnalysis/${id}`, {
+      method: 'GET'
+    });
   }
 
   // Check if user is authenticated
@@ -2609,6 +2680,18 @@ class ApiService {
 
   async deleteLegacyPhoto(id) {
     return await this.makeRequest(`/LegacyProjectAdmin/photos/${id}`, { method: 'DELETE' });
+  }
+
+  // ==========================================
+  // Auto-Analysis
+  // ==========================================
+  async getAutoSuggestions(userId, dogId, date) {
+    try {
+      return await this.makeRequest(`/AutoAnalysis/GetSuggestions?userId=${userId}&dogId=${dogId}&date=${date}`, { method: 'GET' });
+    } catch (error) {
+      console.error('Get Auto Suggestions error:', error);
+      throw error;
+    }
   }
 }
 

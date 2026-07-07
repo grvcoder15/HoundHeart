@@ -60,9 +60,20 @@ namespace Hounded_Heart.Api.Services
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var fitBarkService = scope.ServiceProvider.GetRequiredService<IFitBarkService>();
 
-            var connectedDogs = await context.FitBarkDogs
+            // Deduplicate by DogSlug: if the same physical dog has multiple FitBarkDogs rows
+            // (e.g. one old row with DogId=NULL and one new row with DogId set),
+            // pick the one with DogId set first; otherwise fall back to the newest row.
+            var allDogs = await context.FitBarkDogs
                 .Where(d => !string.IsNullOrWhiteSpace(d.DogSlug))
                 .ToListAsync(ct);
+
+            // One representative record per DogSlug
+            var connectedDogs = allDogs
+                .GroupBy(d => d.DogSlug)
+                .Select(g => g.OrderByDescending(d => d.DogId.HasValue)   // prefer rows that have DogId
+                              .ThenByDescending(d => d.UpdatedAt)          // then newest
+                              .First())
+                .ToList();
 
             _logger.LogInformation("🐾 FitBarkSyncService polling cycle started. Found {DogCount} dogs with non-empty DogSlug", connectedDogs.Count);
 
@@ -127,6 +138,41 @@ namespace Hounded_Heart.Api.Services
                 }
 
                 _logger.LogInformation("✓ Found {ActivityCount} activity records for dog {DogSlug}", activities.Count, dog.DogSlug);
+
+                // ── DEFINITIVE ID RESOLUTION ──────────────────────────────────────────────────────────
+                // The ONLY reliable way: match FitBark dog name directly to Dogs table DogName.
+                // We do NOT trust dog.DogId or DeviceConnections.DogId — they can be stale/wrong.
+                var appDog = await context.Dogs
+                    .Where(d => d.DogName.ToLower() == dog.Name.ToLower())
+                    .Select(d => new { d.DogId, d.UserId })
+                    .FirstOrDefaultAsync(ct);
+
+                if (appDog == null)
+                {
+                    _logger.LogWarning("⚠️ No matching dog found in Dogs table for FitBark dog '{Name}'. Skipping.", dog.Name);
+                    return;
+                }
+
+                var finalDogId = appDog.DogId;
+                var ownerUserId = (Guid?)appDog.UserId;
+
+                // Persist correct DogId back to FitBarkDogs table (one-time self-heal)
+                if (dog.DogId != finalDogId)
+                {
+                    var fitBarkRecord = await context.FitBarkDogs.FirstOrDefaultAsync(d => d.Id == dog.Id, ct);
+                    if (fitBarkRecord != null)
+                    {
+                        fitBarkRecord.DogId = finalDogId;
+                        fitBarkRecord.UpdatedAt = DateTime.UtcNow;
+                        await context.SaveChangesAsync(ct);
+                        _logger.LogInformation("🔗 Healed FitBarkDogs.DogId for '{Name}': {OldId} → {NewId}", dog.Name, dog.DogId, finalDogId);
+                    }
+                }
+
+                _logger.LogInformation("✅ Resolved: FitBark '{Name}' → DogId={DogId}, UserId={UserId}", dog.Name, finalDogId, ownerUserId);
+
+
+
                 var insertedCount = 0;
                 var skippedCount = 0;
                 var failedParseCount = 0;
@@ -151,14 +197,17 @@ namespace Hounded_Heart.Api.Services
 
                     var existingVital = await context.DogVitals
                         .FirstOrDefaultAsync(
-                            v => v.DogId == dog.Id &&
+                            v => (v.DogId == finalDogId || (v.FitBarkId != null && v.FitBarkId == dog.Id)) &&
                                  v.TimestampUtc == normalizedTimestamp &&
                                  v.Source == "fitbark",
                             ct);
 
                     if (existingVital != null)
                     {
-                        // Keep existing day-row current with latest values.
+                        // Keep existing day-row current with latest values, and auto-heal the DogId if it was wrong
+                        existingVital.DogId = finalDogId;
+                        existingVital.UserId = ownerUserId;
+                        existingVital.FitBarkId = dog.Id;
                         existingVital.ActivityValue = activity.ActivityValue;
                         existingVital.MinPlay = activity.MinPlay;
                         existingVital.MinActive = activity.MinActive;
@@ -181,7 +230,7 @@ namespace Hounded_Heart.Api.Services
                         existingVital.RespirationRate = updResp;
 
                         _logger.LogDebug("🔁 Updated existing fitbark vital: DogId={DogId}, Date={Date}, VitalId={VitalId}",
-                            dog.Id, normalizedTimestamp, existingVital.Id);
+                            finalDogId, normalizedTimestamp, existingVital.Id);
                         skippedCount++;
                         await UpsertFitBarkActivityLog(context, dog.DogSlug, actDateParsed, activity, ct);
                         continue;
@@ -193,7 +242,9 @@ namespace Hounded_Heart.Api.Services
                     var newVital = new DogVitalsRecord
                     {
                         Id = Guid.NewGuid(),
-                        DogId = dog.Id,
+                        DogId = finalDogId,
+                        UserId = ownerUserId,
+                        FitBarkId = dog.Id,
                         ActivityValue = activity.ActivityValue,
                         MinPlay = activity.MinPlay,
                         MinActive = activity.MinActive,

@@ -9,7 +9,7 @@ import { useNotificationPopup } from '../hooks/useNotificationPopup';
 // Deep comparison utility (used for wellness live-data polling)
 const deepEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-// ── Wellness API Constant ─────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ Wellness API Constant Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const WELLNESS_API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
 
 const formatLocalDate = (d) => {
@@ -69,7 +69,7 @@ const DashboardPage = () => {
     }
   }, []);
 
-  // ─── Live Wellness API State (mirrored from AdminPanel WearablesPage) ──────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Live Wellness API State (mirrored from AdminPanel WearablesPage) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [wlBaseline, setWlBaseline] = useState(null);
   const [wlVitalsCount, setWlVitalsCount] = useState(0);
   const [wlStressStatus, setWlStressStatus] = useState(null);
@@ -92,9 +92,9 @@ const DashboardPage = () => {
   });
 
   const getBondLevelFromScore = (score) => {
-    if (score >= 80) return 'Kindred Spirit 💜';
-    if (score >= 50) return 'Deep Bond ❤️';
-    if (score >= 20) return 'Growing Connection 🌱';
+    if (score >= 80) return 'Kindred Spirit Ã°Å¸â€™Å“';
+    if (score >= 50) return 'Deep Bond Ã¢ÂÂ¤Ã¯Â¸Â';
+    if (score >= 20) return 'Growing Connection Ã°Å¸Å’Â±';
     return 'New Connection ✨';
   };
 
@@ -166,10 +166,7 @@ const DashboardPage = () => {
       const nextVitalsCount = summary.vitalsCount || 0;
 
       setWlIsDeviceConnected(!!deviceSummary.isDeviceConnected);
-      setWlIsDogConnected(
-        !!deviceSummary.isDogConnected ||
-        localStorage.getItem('fitbarkConnected') === 'true'
-      );
+      setWlIsDogConnected(!!deviceSummary.isDogConnected);
 
       if (!deepEqual(wlPrevRef.current.baseline, newBaseline)) {
         setWlBaseline(newBaseline);
@@ -263,12 +260,12 @@ const DashboardPage = () => {
     }
   };
 
-  // Initial load + background polling — EXACT copy of WearablesPage useEffect
+  // Initial load + background polling – EXACT copy of WearablesPage useEffect
   // Background polling runs globally regardless of active tab
   useEffect(() => {
     fetchWellnessData(false);
     // Pre-baseline: poll every 10s to detect when enough vitals are collected.
-    // Post-baseline: poll every 5 minutes — FitBark syncs every 4 min and Fitbit every ~4 min,
+    // Post-baseline: poll every 5 minutes – FitBark syncs every 4 min and Fitbit every ~4 min,
     // so refreshing faster than 5 min returns the same data with no score change.
     const pollInterval = (!wlBaseline || !wlBaseline.humanBaselineEstablished) ? 10000 : 300000;
     const interval = setInterval(() => fetchWellnessData(true), pollInterval);
@@ -386,7 +383,7 @@ const DashboardPage = () => {
   const [isLoadingDateDetail, setIsLoadingDateDetail] = useState(false);
   const [isBackfillingCalendar, setIsBackfillingCalendar] = useState(false);
 
-  // Fetch per-date SyncScore from HumanDailySummaries (last 30 days) — fills calendar dots
+  // Fetch per-date SyncScore from HumanDailySummaries (last 30 days) – fills calendar dots
   const fetchCalendarScores = async () => {
     if (!userId) return;
     setIsLoadingCalendar(true);
@@ -412,7 +409,7 @@ const DashboardPage = () => {
     finally { setIsLoadingCalendar(false); }
   };
 
-  // Fetch full detail for a clicked date — reads from HumanDailySummaries (or HumanVitals for today)
+  // Fetch full detail for a clicked date – reads from HumanDailySummaries (or HumanVitals for today)
   const fetchDateDetail = async (dateStr) => {
     if (!userId || !dateStr) return;
     setIsLoadingDateDetail(true);
@@ -543,10 +540,10 @@ const DashboardPage = () => {
         clearInterval(timer);
         // Generate new random baseline values
         setBaselineData({
-          hr: Math.floor(Math.random() * 15) + 65,           // 65–80 bpm
-          hrv: parseFloat((Math.random() * 20 + 38).toFixed(1)), // 38–58 ms
-          steps: Math.floor(Math.random() * 400) + 450,      // 450–850
-          sleep: Math.floor(Math.random() * 20) + 72,        // 72–92
+          hr: Math.floor(Math.random() * 15) + 65,           // 65Ã¢â‚¬â€œ80 bpm
+          hrv: parseFloat((Math.random() * 20 + 38).toFixed(1)), // 38Ã¢â‚¬â€œ58 ms
+          steps: Math.floor(Math.random() * 400) + 450,      // 450Ã¢â‚¬â€œ850
+          sleep: Math.floor(Math.random() * 20) + 72,        // 72Ã¢â‚¬â€œ92
         });
         setIsRecalibrating(false);
         setRecalibrateProgress(0);
@@ -567,6 +564,10 @@ const DashboardPage = () => {
   const [isSavingCheckin, setIsSavingCheckin] = useState(false);
   const [checkInItems, setCheckInItems] = useState([]);
   const [ratingsById, setRatingsById] = useState({});
+  const [autoCheckIns, setAutoCheckIns] = useState({});
+  const [autoRituals, setAutoRituals] = useState({});
+  const [autoActivities, setAutoActivities] = useState({});
+  const [userOverrides, setUserOverrides] = useState({});
 
   const [bondingActivities, setBondingActivities] = useState([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
@@ -600,6 +601,107 @@ const DashboardPage = () => {
   const [rituals, setRituals] = useState([]);
   const [dailyBonusEarned, setDailyBonusEarned] = useState(false);
   const [isRitualLoading, setIsRitualLoading] = useState(false);
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Auto-Analysis Suggestions Fetching Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  useEffect(() => {
+    if (activeTab === 'bond-building' && userId) {
+      const fetchSuggestions = async () => {
+        try {
+          const dogIdToUse = localStorage.getItem('dogId') || '00000000-0000-0000-0000-000000000000';
+          const todayDate = formatLocalDate(new Date());
+          const res = await apiService.getAutoSuggestions(userId, dogIdToUse, todayDate);
+          console.log("Ã°Å¸â€ºÂ Ã¯Â¸Â RAW SUGGESTIONS DATA:", res?.data);
+          
+          if (res?.data) {
+            const checkInsMap = {};
+            const ritualsMap = {};
+            const activitiesMap = {};
+
+            if (res.data.checkInSuggestions) {
+              res.data.checkInSuggestions.forEach(ci => {
+                // Normalize to lowercase to avoid UUID case-mismatch with slider IDs
+                checkInsMap[normalizeId(ci.checkInId)] = { suggestedRating: ci.suggestedRating, reason: ci.reason };
+              });
+            }
+            if (res.data.ritualSuggestions) {
+              res.data.ritualSuggestions.forEach(r => {
+                if (r.suggested) ritualsMap[r.ritualId] = r.reason;
+              });
+            }
+            if (res.data.activitySuggestions) {
+              res.data.activitySuggestions.forEach(a => {
+                if (a.suggested) activitiesMap[a.activityId] = a.reason;
+              });
+            }
+
+            setAutoCheckIns(checkInsMap);
+            setAutoRituals(ritualsMap);
+            setAutoActivities(activitiesMap);
+            
+            // Auto-fill Check-ins
+            const autoRatings = {};
+            Object.keys(checkInsMap).forEach(id => {
+              const normId = normalizeId(id);
+              console.log(`ðŸ› ï¸ Check-in ID: ${normId} | Suggested: ${checkInsMap[id].suggestedRating} | userOverrides: ${userOverrides[normId]}`);
+              if (!userOverrides[normId]) {
+                autoRatings[normId] = checkInsMap[id].suggestedRating;
+              }
+            });
+
+            if (Object.keys(autoRatings).length > 0) {
+              setRatingsById(prev => ({ ...prev, ...autoRatings }));
+
+              // â”€â”€ Auto-save AI suggestions silently â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              try {
+                const autoSaveUserId = apiService.getCurrentUserId();
+                // Build payload using the auto ratings
+                const checkInsPayload = Object.entries(autoRatings).map(([id, rating]) => ({
+                  CheckInId: id,
+                  Rating: rating
+                }));
+                if (checkInsPayload.length > 0) {
+                  await apiService.updateUserCheckIns(autoSaveUserId, checkInsPayload);
+                  console.log('âœ… AI check-in scores auto-saved silently:', checkInsPayload);
+                }
+              } catch (saveErr) {
+                console.warn('âš ï¸ Auto-save of AI suggestions failed (silent):', saveErr);
+              }
+            }
+            
+            // Auto-fill Rituals
+            setRituals(prevRituals => {
+                return prevRituals.map(r => {
+                    if (ritualsMap[r.id] && !userOverrides[r.id]) {
+                        return { ...r, isCompleted: true };
+                    }
+                    return r;
+                });
+            });
+            
+            // Auto-fill Activities
+            setCompletedActivityIds(prevSet => {
+                const newSet = new Set(prevSet);
+                let changed = false;
+                Object.keys(activitiesMap).forEach(id => {
+                    if (!userOverrides[id]) {
+                        newSet.add(id);
+                        changed = true;
+                    }
+                });
+                return changed ? newSet : prevSet;
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch auto-suggestions:", error);
+        }
+      };
+      fetchSuggestions();
+
+      // Re-poll every 2 minutes so sliders update as new vitals sync in
+      const intervalId = setInterval(fetchSuggestions, 2 * 60 * 1000);
+      return () => clearInterval(intervalId);
+    }
+  }, [activeTab, bondTab, userId]);
+
 
   const fallbackRitualTemplate = [
     { title: 'Morning Intention Setting', description: 'Start your day with a clear intention.', duration: '5 min', category: 'Morning' },
@@ -636,9 +738,9 @@ const DashboardPage = () => {
     });
   };
 
-  // ═══════════════════════════════════════════════════════════════════
-  // Daily Ritual Persistence — localStorage with auto daily reset
-  // ═══════════════════════════════════════════════════════════════════
+  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+  // Daily Ritual Persistence – localStorage with auto daily reset
+  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
   const getTodayDateString = () => new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
   const getStoredRitualCompletions = () => {
@@ -647,7 +749,7 @@ const DashboardPage = () => {
       if (!stored) return new Set();
       const parsed = JSON.parse(stored);
       const today = getTodayDateString();
-      // New day → reset
+      // New day Ã¢â€ â€™ reset
       if (parsed.date !== today) {
         localStorage.setItem('dailyRitualCompletions', JSON.stringify({ date: today, completedIds: [] }));
         return new Set();
@@ -685,7 +787,7 @@ const DashboardPage = () => {
       if (!currentUserId) return;
 
       const data = await apiService.getRitualSuggestions(currentUserId);
-      console.log('📋 Rituals API Response:', data);
+      console.log('Ã°Å¸â€œâ€¹ Rituals API Response:', data);
 
       const payload = data?.data || data || {};
       const apiRituals = payload?.rituals || payload?.Rituals || [];
@@ -698,13 +800,13 @@ const DashboardPage = () => {
           isCompleted: storedIds.has(String(r.id || r.Id)) || !!r.isCompleted,
           originallyCompleted: !!r.isCompleted
         }));
-        console.log('✅ API Rituals loaded:', mappedRituals);
+        console.log('Ã¢Å“â€¦ API Rituals loaded:', mappedRituals);
         setRituals(mappedRituals);
         setDailyBonusEarned(payload?.dailyBonusEarned || payload?.DailyBonusEarned || false);
         return;
       }
 
-      console.warn('⚠️ Ritual suggestions empty, using fallback ritual checklist');
+      console.warn('Ã¢Å¡Â Ã¯Â¸Â Ritual suggestions empty, using fallback ritual checklist');
 
       // Build fallback list from bonding activities + today's completed records
       let activitiesList = bondingActivities;
@@ -746,11 +848,11 @@ const DashboardPage = () => {
         ...r,
         isCompleted: storedIds.has(String(r.id)) || r.isCompleted
       }));
-      console.log('✅ Fallback Rituals loaded:', fallbackRituals);
+      console.log('Ã¢Å“â€¦ Fallback Rituals loaded:', fallbackRituals);
       setRituals(fallbackRituals);
       setDailyBonusEarned(false);
     } catch (error) {
-      console.error('❌ Failed to fetch rituals', error);
+      console.error('Ã¢ÂÅ’ Failed to fetch rituals', error);
     } finally {
       setIsRitualLoading(false);
     }
@@ -826,9 +928,9 @@ const DashboardPage = () => {
     bedtimeBlessing: false
   });
 
-  // ═══════════════════════════════════════════════════════════════════
-  // Bonding Activity Persistence — localStorage with auto daily reset
-  // ═══════════════════════════════════════════════════════════════════
+  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+  // Bonding Activity Persistence – localStorage with auto daily reset
+  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
   const getStoredActivityCompletions = () => {
     try {
       const stored = localStorage.getItem('dailyActivityCompletions');
@@ -837,7 +939,7 @@ const DashboardPage = () => {
       const today = new Date().toISOString().split('T')[0];
       if (parsed.date !== today) {
         localStorage.removeItem('dailyActivityCompletions');
-        return new Set(); // New day — reset
+        return new Set(); // New day – reset
       }
       return new Set(parsed.completedIds || []);
     } catch { return new Set(); }
@@ -930,7 +1032,7 @@ const DashboardPage = () => {
         const patterns = await apiService.getBreathingPatterns();
         const cycles = await apiService.getTargetCycles();
 
-        console.log('📊 Breathing data received - Patterns:', patterns, 'Cycles:', cycles);
+        console.log('Ã°Å¸â€œÅ  Breathing data received - Patterns:', patterns, 'Cycles:', cycles);
 
         // Fallback breathing patterns if API returns empty
         const defaultPatterns = [
@@ -966,12 +1068,12 @@ const DashboardPage = () => {
 
         // Use fallback if no API data
         if (!patterns || patterns.length === 0) {
-          console.warn('⚠️ No breathing patterns from API, using defaults');
+          console.warn('Ã¢Å¡Â Ã¯Â¸Â No breathing patterns from API, using defaults');
           patternData = defaultPatterns;
         }
 
         if (!cycles || cycles.length === 0) {
-          console.warn('⚠️ No target cycles from API, using defaults');
+          console.warn('Ã¢Å¡Â Ã¯Â¸Â No target cycles from API, using defaults');
           cycleData = defaultCycles;
         }
 
@@ -989,13 +1091,13 @@ const DashboardPage = () => {
               }
             };
           });
-          console.log('✅ Processed patterns:', processedPatterns);
+          console.log('Ã¢Å“â€¦ Processed patterns:', processedPatterns);
           setBreathingPatterns(processedPatterns);
           setSelectedBreathingPattern(processedPatterns[0].id);
         }
 
         if (cycleData && cycleData.length > 0) {
-          console.log('✅ Setting target cycles:', cycleData);
+          console.log('Ã¢Å“â€¦ Setting target cycles:', cycleData);
           setTargetCycles(cycleData);
           setSelectedTargetCycles(cycleData[0].id);
         }
@@ -1195,7 +1297,7 @@ const DashboardPage = () => {
       try {
         setIsLoadingPoints(true);
         // Use getBondingActivities instead of getAllPoints to get the actual rituals with IDs
-        const points = await apiService.getBondingActivities(currentUserId);
+        const points = await apiService.getBondingActivities(userId);
 
         const pointsMap = {};
         const idMap = {};
@@ -1251,11 +1353,11 @@ const DashboardPage = () => {
       const dogId = localStorage.getItem('dogId') || '00000000-0000-0000-0000-000000000000';
 
       const response = await apiService.calculateBondedScore(userId, dogId);
-      console.log('📊 Dashboard fetchBondedScore response:', response);
+      console.log('Ã°Å¸â€œÅ  Dashboard fetchBondedScore response:', response);
 
       const data = response?.data || response || {};
       const score = data.BondedScore !== undefined ? data.BondedScore : (data.bondedScore || 50);
-      const level = data.BondLevel || data.bondLevel || 'New Connection ✿';
+      const level = data.BondLevel || data.bondLevel || 'New Connection Ã¢Å“Â¿';
 
       const currentScoreInt = Math.round(score);
       setBondedScore(currentScoreInt);
@@ -1299,7 +1401,7 @@ const DashboardPage = () => {
     try {
       setIsSavingCheckin(true);
       const userId = apiService.getCurrentUserId();
-      const checkIns = checkInItems.map(ci => ({ CheckInId: ci.checkInId, Rating: ratingsById[ci.checkInId] ?? null }));
+      const checkIns = checkInItems.map(ci => ({ CheckInId: normalizeId(ci.checkInId), Rating: ratingsById[normalizeId(ci.checkInId)] ?? null }));
 
       const res = await apiService.updateUserCheckIns(userId, checkIns);
       // If we reach here without an error/exception, the request succeeded (200 range)
@@ -1340,7 +1442,7 @@ const DashboardPage = () => {
           }
         });
 
-        console.log('🔄 Updated ratings from server:', updated);
+        console.log('Ã°Å¸â€â€ž Updated ratings from server:', updated);
         setRatingsById(updated);
       }
     } catch (err) {
@@ -1389,12 +1491,23 @@ const DashboardPage = () => {
               }
             });
 
-            console.log('🔄 Initial ratings loaded from server (today only):', initial);
+            console.log('Ã°Å¸â€â€ž Initial ratings loaded from server (today only):', initial);
             setHoursTogether(foundHours);
           }
         }
 
-        setRatingsById(initial);
+        // Merge: don't overwrite suggestion scores already applied by fetchSuggestions
+        setRatingsById(prev => {
+          const merged = { ...initial };
+          // Keep non-zero values already in state (suggestions may have loaded first)
+          Object.keys(prev).forEach(id => {
+            const normId = normalizeId(id);
+            if (prev[id] !== 0 && (merged[normId] === 0 || merged[normId] === undefined)) {
+              merged[normId] = prev[id];
+            }
+          });
+          return merged;
+        });
       } catch (_) { }
     };
     loadCheckIns();
@@ -1493,7 +1606,7 @@ const DashboardPage = () => {
         interactionType: a.interactionType || 'Checkbox'
       }));
 
-      // ✅ KEY FIX: Seed todayIds with any activity the backend already flagged as Completed=true.
+      // Ã¢Å“â€¦ KEY FIX: Seed todayIds with any activity the backend already flagged as Completed=true.
       // GetAllBondingActivities cross-checks RitualLogs, ChakraLogs, CheckIns and UserBondingActivities.
       // Without this, rituals completed via Daily Rituals tab are never marked in Activities tab.
       activitiesWithProps.forEach(a => {
@@ -1694,7 +1807,7 @@ const DashboardPage = () => {
   }, []);
 
   // Chakra Sync State
-  // ─── Initialize from localStorage (persists for today, resets next day) ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Initialize from localStorage (persists for today, resets next day) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const getStoredChakraValues = () => {
     try {
       const stored = localStorage.getItem('dailyChakraSync');
@@ -1703,7 +1816,7 @@ const DashboardPage = () => {
       const today = new Date().toISOString().split('T')[0];
       if (parsed.date !== today) {
         localStorage.removeItem('dailyChakraSync');
-        return null; // New day — reset to defaults
+        return null; // New day – reset to defaults
       }
       return parsed.values;
     } catch { return null; }
@@ -1737,7 +1850,7 @@ const DashboardPage = () => {
   const nerveCenterInstructions = {
     root: {
       key: 'root',
-      title: 'Root Nerve Center — Practice',
+      title: 'Root Nerve Center – Practice',
       color: 'from-red-500 via-red-600 to-red-700',
       textColor: 'text-red-600',
       governs: 'Safety, groundedness, survival, physical security',
@@ -1745,7 +1858,7 @@ const DashboardPage = () => {
     },
     sacral: {
       key: 'sacral',
-      title: 'Sacral Nerve Center — Practice',
+      title: 'Sacral Nerve Center – Practice',
       color: 'from-orange-500 via-orange-600 to-orange-700',
       textColor: 'text-orange-600',
       governs: 'Emotion, pleasure, creativity, flow, adaptability',
@@ -1753,7 +1866,7 @@ const DashboardPage = () => {
     },
     solarPlexus: {
       key: 'solarPlexus',
-      title: 'Solar Plexus Nerve Center — Practice',
+      title: 'Solar Plexus Nerve Center – Practice',
       color: 'from-yellow-500 via-yellow-600 to-yellow-700',
       textColor: 'text-yellow-600',
       governs: 'Personal power, confidence, will, self-trust, gut instincts',
@@ -1761,7 +1874,7 @@ const DashboardPage = () => {
     },
     heart: {
       key: 'heart',
-      title: 'Heart Nerve Center — Practice',
+      title: 'Heart Nerve Center – Practice',
       color: 'from-green-500 via-green-600 to-green-700',
       textColor: 'text-green-600',
       governs: 'Love, compassion, connection, bonding, emotional openness',
@@ -1769,7 +1882,7 @@ const DashboardPage = () => {
     },
     throat: {
       key: 'throat',
-      title: 'Throat Nerve Center — Practice',
+      title: 'Throat Nerve Center – Practice',
       color: 'from-blue-500 via-blue-600 to-blue-700',
       textColor: 'text-blue-600',
       governs: 'Expression, communication, truth, voice',
@@ -1777,7 +1890,7 @@ const DashboardPage = () => {
     },
     thirdEye: {
       key: 'thirdEye',
-      title: 'Insight Nerve Center — Practice',
+      title: 'Insight Nerve Center – Practice',
       color: 'from-purple-500 via-purple-600 to-purple-700',
       textColor: 'text-purple-600',
       governs: 'Intuition, perception, insight, awareness',
@@ -1785,7 +1898,7 @@ const DashboardPage = () => {
     },
     crown: {
       key: 'crown',
-      title: 'Crown Nerve Center — Practice',
+      title: 'Crown Nerve Center – Practice',
       color: 'from-violet-500 via-violet-600 to-violet-700',
       textColor: 'text-violet-600',
       governs: 'Connection to something larger, purpose, meaning, transcendence',
@@ -2310,6 +2423,7 @@ const DashboardPage = () => {
               } catch (err) {
                 console.error('Failed to award ritual bonus:', err);
               }
+
             }
           };
           setAudioInstance(currentAudio);
@@ -2865,7 +2979,7 @@ const handleNextChakra = () => {
                       />
                     ) : (
                       <div className="w-20 h-20 bg-gradient-to-br from-amber-300 to-amber-400 rounded-full flex items-center justify-center">
-                        <span className="text-amber-700 text-lg">🐕</span>
+                        <span className="text-amber-700 text-lg">Ã°Å¸Ââ€¢</span>
                       </div>
                     )}
                   </div>
@@ -2898,7 +3012,7 @@ const handleNextChakra = () => {
                 >
                   {!hasChakraSyncAccess && (
                     <div className="absolute top-3 right-3 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                      <span>⭐</span>
+                      <span>Ã¢Â­Â</span>
                       <span>Premium</span>
                     </div>
                   )}
@@ -3249,7 +3363,7 @@ const handleNextChakra = () => {
         {/* Wellness Tab Content */}
         {activeTab === 'wellness' && (
           <>
-            {/* ── Reset Baseline Confirmation Modal (real API) ─────────────── */}
+            {/* Ã¢â€â‚¬Ã¢â€â‚¬ Reset Baseline Confirmation Modal (real API) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
             {wlShowResetModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                 <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4">
@@ -3269,7 +3383,7 @@ const handleNextChakra = () => {
               </div>
             )}
 
-            {/* ── Recalibrate (simulated) Confirmation Modal ───────────────── */}
+            {/* Ã¢â€â‚¬Ã¢â€â‚¬ Recalibrate (simulated) Confirmation Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
             {showRecalibrateConfirm && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                 <div className="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4 animate-fadeIn">
@@ -3318,10 +3432,10 @@ const handleNextChakra = () => {
                   <p className="text-sm text-gray-500 mb-4">Please stay calm and relaxed. We're collecting your HRV, heart rate, activity, and sleep patterns...</p>
                   <div className="space-y-3">
                     {[
-                      { label: 'Heart Rate', icon: '❤️', done: recalibrateProgress > 25 },
-                      { label: 'HRV Analysis', icon: '📊', done: recalibrateProgress > 50 },
-                      { label: 'Activity Scan', icon: '🏃', done: recalibrateProgress > 75 },
-                      { label: 'Sleep Pattern', icon: '😴', done: recalibrateProgress > 90 },
+                      { label: 'Heart Rate', icon: 'Ã¢ÂÂ¤Ã¯Â¸Â', done: recalibrateProgress > 25 },
+                      { label: 'HRV Analysis', icon: 'Ã°Å¸â€œÅ ', done: recalibrateProgress > 50 },
+                      { label: 'Activity Scan', icon: 'Ã°Å¸ÂÆ’', done: recalibrateProgress > 75 },
+                      { label: 'Sleep Pattern', icon: 'Ã°Å¸ËœÂ´', done: recalibrateProgress > 90 },
                     ].map(item => (
                       <div key={item.label} className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${item.done ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-100'
                         }`}>
@@ -3338,7 +3452,7 @@ const handleNextChakra = () => {
               </div>
             )}
 
-            {/* ── ONBOARDING: Setting up your wellness profile ─────────────── */}
+            {/* Ã¢â€â‚¬Ã¢â€â‚¬ ONBOARDING: Setting up your wellness profile Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
             {wlIsFirstLoad ? (
               <div className="flex items-center justify-center py-16">
                 <div className="flex flex-col items-center space-y-3">
@@ -3347,7 +3461,7 @@ const handleNextChakra = () => {
                 </div>
               </div>
             ) : !wlHasBaseline ? (
-              /* ── No baseline yet: show onboarding card ─────────────────── */
+              /* Ã¢â€â‚¬Ã¢â€â‚¬ No baseline yet: show onboarding card Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
               <div className="flex items-center justify-center py-10">
                 <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center border border-gray-100">
                   {/* Paw icon */}
@@ -3361,7 +3475,7 @@ const handleNextChakra = () => {
 
                   <h2 className="text-lg font-extrabold text-gray-900 mb-2">Setting up your wellness profile</h2>
 
-                  {!wlIsDeviceConnected ? (
+                  {(!wlIsDeviceConnected && !wlIsDogConnected) ? (
                     <div className="py-6">
                       <div className="flex flex-col items-center space-y-4">
                         <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
@@ -3370,7 +3484,32 @@ const handleNextChakra = () => {
                           </svg>
                         </div>
                         <h3 className="text-lg font-bold text-gray-900">Device Not Connected</h3>
-                        <p className="text-gray-500 max-w-xs text-sm">Please connect your HumanWatch device first to start collecting your wellness data and create your baseline.</p>
+                        <p className="text-gray-500 max-w-xs text-sm">Connect both Fitbit and FitBark to start collecting your shared wellness data and create your baseline.</p>
+                      </div>
+                    </div>
+                  ) : (!wlIsDeviceConnected && wlIsDogConnected) ? (
+                    <div className="py-6">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center">
+                          <svg className="w-8 h-8 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M12 2a10 10 0 110 20 10 10 0 010-20z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900">FitBark Connected</h3>
+                        <p className="text-gray-500 max-w-xs text-sm">FitBark is connected, but Fitbit is not. Connect Fitbit to start collecting your wellness baseline and shared bond insights.</p>
+                      </div>
+                    </div>
+                  ) : (!wlIsDogConnected && wlIsDeviceConnected) ? (
+                    <div className="py-6">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center">
+                          <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3v4h6v-4c0-1.657-1.343-3-3-3z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 20h14a2 2 0 002-2v-5a7 7 0 00-14 0v5a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900">Fitbit Connected</h3>
+                        <p className="text-gray-500 max-w-xs text-sm">Fitbit is connected, but your dogÃ¢â‚¬â„¢s FitBark device is not. Connect FitBark to begin dog health tracking and shared analysis.</p>
                       </div>
                     </div>
                   ) : (
@@ -3405,7 +3544,7 @@ const handleNextChakra = () => {
                       >
                         {wlVitalsCount >= wlRequiredCount
                           ? 'Ready to create baseline'
-                          : `${wlVitalsCount} of ${wlRequiredCount} records — Collecting data`}
+                          : `${wlVitalsCount} of ${wlRequiredCount} records – Collecting data`}
                       </div> */}
 
                       {/* High temp warning */}
@@ -3413,7 +3552,7 @@ const handleNextChakra = () => {
                         <div className="flex items-center justify-center space-x-2 px-4 py-2 rounded-xl bg-orange-50 border border-orange-200 mb-5 text-sm text-orange-600 font-semibold">
                           <span>🌡️</span>
                           <span>
-                            High temp detected ({Math.round(wlWeather.temperatureCelsius)}°C) — Baseline will auto-adjust for heat
+                            High temp detected ({Math.round(wlWeather.temperatureCelsius)}°C) – Baseline will auto-adjust for heat
                           </span>
                         </div>
                       )}
@@ -3428,7 +3567,7 @@ const handleNextChakra = () => {
                           {wlIsCreatingBaseline ? (
                             <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span>Creating...</span></>
                           ) : (
-                            <span>Create My Baseline ✓</span>
+                            <span>Create My Baseline Ã¢Å“â€œ</span>
                           )}
                         </button>
                       ) : (
@@ -3441,7 +3580,7 @@ const handleNextChakra = () => {
                 </div>
               </div>
             ) : (
-              /* ── Baseline established: show live wellness dashboard ──────── */
+              /* Ã¢â€â‚¬Ã¢â€â‚¬ Baseline established: show live wellness dashboard Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
               <div className={`space-y-4 transition-all duration-500 ${isRecalibrating ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
 
                 {/* Header info row */}
@@ -3469,14 +3608,14 @@ const handleNextChakra = () => {
                   {wlWeather && (
                     <div className="flex items-center space-x-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-                      <span>{Math.round(wlWeather.temperatureCelsius || 0)}°C • {wlWeather.condition || ''}</span>
+                      <span>{Math.round(wlWeather.temperatureCelsius || 0)}Ã‚Â°C Ã¢â‚¬Â¢ {wlWeather.condition || ''}</span>
                     </div>
                   )}
                 </div>
 
-                {/* ── You + Dog status cards ──────────────────────────────────── */}
+                {/* Ã¢â€â‚¬Ã¢â€â‚¬ You + Dog status cards Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* You Card — driven by real API */}
+                  {/* You Card – driven by real API */}
                   {(() => {
                     const hasAlert = !!wlActiveAlert;
                     const humanStatus = wlSyncScore?.humanStatus;
@@ -3498,16 +3637,16 @@ const handleNextChakra = () => {
                           <div className={`text-lg font-bold ${isHumanStressed ? 'text-red-600' : isHumanModerate ? 'text-orange-500' : 'text-green-700'}`}>{statusLabel}</div>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-sm text-gray-600">HRV: <span className="font-medium text-gray-900">{currentHRV != null ? `${currentHRV.toFixed(1)} ms` : '—'}</span></div>
+                          <div className="text-sm text-gray-600">HRV: <span className="font-medium text-gray-900">{currentHRV != null ? `${currentHRV.toFixed(1)} ms` : '–'}</span></div>
                           {humanScore != null && <div className="text-sm text-gray-600">Health Score: <span className="font-medium text-gray-900">{humanScore}/100</span></div>}
                           {baselineHRV != null && <div className="text-xs text-gray-400">Baseline: {baselineHRV.toFixed(1)} ms</div>}
                           {currentHRV != null && baselineHRV != null && currentHRV < baselineHRV && (
                             <div className={`text-xs font-semibold mt-1 ${currentHRV < 35 ? 'text-red-500' : 'text-orange-500'}`}>
-                              ↓ {(baselineHRV - currentHRV).toFixed(1)} ms below baseline
+                              Ã¢â€ â€œ {(baselineHRV - currentHRV).toFixed(1)} ms below baseline
                             </div>
                           )}
                           {currentHRV != null && baselineHRV != null && currentHRV >= baselineHRV && (
-                            <div className="text-xs font-semibold mt-1 text-green-600">↑ Above baseline</div>
+                            <div className="text-xs font-semibold mt-1 text-green-600">Ã¢â€ â€˜ Above baseline</div>
                           )}
                           {humanStatus?.summary && <div className="text-xs text-gray-500 pt-1">{humanStatus.summary}</div>}
                         </div>
@@ -3515,7 +3654,7 @@ const handleNextChakra = () => {
                     );
                   })()}
 
-                  {/* Dog Card — driven by real API */}
+                  {/* Dog Card – driven by real API */}
                   {!wlIsDogConnected ? (
                     <div className="rounded-2xl p-4 shadow-sm border bg-orange-50/50 border-orange-100 relative">
                       <div className="flex flex-col items-center justify-center space-y-4 py-6">
@@ -3568,7 +3707,7 @@ const handleNextChakra = () => {
                   )}
                 </div>
 
-                {/* ── Bond Sync Score ─────────────────────────────────────────── */}
+                {/* Ã¢â€â‚¬Ã¢â€â‚¬ Bond Sync Score Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
                 {(wlSyncScore || (selectedHistoricalDate && calendarDateDetail)) && (() => {
                   const isHistory = !!(selectedHistoricalDate && calendarDateDetail);
                   const activeScore = isHistory ? calendarDateDetail.score : wlSyncScore.score;
@@ -3581,18 +3720,40 @@ const handleNextChakra = () => {
                       {isHistory && (
                         <div className="flex items-center justify-between mb-4">
                           <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">
-                            📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                            Ã°Å¸â€œâ€¦ {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                           </span>
                           <button
                             onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
                             className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
-                          >✕ Back to Today</button>
+                          >Ã¢Å“â€¢ Back to Today</button>
                         </div>
                       )}
                       <div className={`text-6xl font-bold mb-2 transition-colors duration-700 ${getScoreColor(activeScore)}`}>
-                        {isLoadingDateDetail ? '…' : activeScore}
+                        {isLoadingDateDetail ? 'Ã¢â‚¬Â¦' : activeScore}
                       </div>
                       <div className="text-sm font-medium text-gray-500 mb-4">Bond Sync Score</div>
+
+                      {!isHistory && (wlIsDogConnected !== wlIsDeviceConnected || (!wlIsDeviceConnected && !wlIsDogConnected)) && (
+                        <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${
+                          wlIsDogConnected && !wlIsDeviceConnected ? 'bg-sky-50 border-sky-200 text-sky-800' :
+                          wlIsDeviceConnected && !wlIsDogConnected ? 'bg-amber-50 border-amber-200 text-amber-800' :
+                          'bg-gray-50 border-gray-200 text-gray-700'
+                        }`}>
+                          {wlIsDogConnected && !wlIsDeviceConnected
+                            ? 'FitBark is connected. Connect Fitbit to calculate your Bond Sync Score and unlock full shared insights.'
+                            : wlIsDeviceConnected && !wlIsDogConnected
+                              ? 'Fitbit is connected. Connect your dogÃ¢â‚¬â„¢s FitBark device to compute the Bond Sync Score.'
+                              : 'Connect both Fitbit and FitBark to generate your Bond Sync Score.'}
+                          <div className="mt-3">
+                            <button
+                              onClick={() => navigate('/integrations')}
+                              className="inline-flex items-center justify-center rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-slate-800 transition"
+                            >
+                              Manage integrations
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Live sub-metrics (only shown for today) */}
                       {!isHistory && (
@@ -3621,12 +3782,12 @@ const handleNextChakra = () => {
                       {isHistory && calendarDateDetail.detailedMetrics && (
                         <div className="grid grid-cols-3 gap-3 mb-4">
                           {[
-                            { icon: '❤️', label: 'Avg Heart Rate', value: calendarDateDetail.detailedMetrics.avgHeartRate > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm` : 'Processing...' },
-                            { icon: '📡', label: 'Avg HRV', value: calendarDateDetail.detailedMetrics.avgHRV > 0 ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms` : 'Processing...' },
-                            { icon: '👟', label: 'Total Steps', value: calendarDateDetail.detailedMetrics.totalSteps > 0 ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString() : 'Processing...' },
-                            { icon: '😴', label: 'Avg Sleep (min)', value: calendarDateDetail.detailedMetrics.avgSleepScore > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min` : 'Processing...' },
-                            { icon: '🧠', label: 'Avg Stress', value: calendarDateDetail.detailedMetrics.avgStressScore > 0 ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore) : 'Processing...' },
-                            { icon: '📊', label: 'Data Points', value: calendarDateDetail.detailedMetrics.dataPointsCount || '--' },
+                            { icon: 'Ã¢ÂÂ¤Ã¯Â¸Â', label: 'Avg Heart Rate', value: calendarDateDetail.detailedMetrics.avgHeartRate > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm` : 'Processing...' },
+                            { icon: 'Ã°Å¸â€œÂ¡', label: 'Avg HRV', value: calendarDateDetail.detailedMetrics.avgHRV > 0 ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms` : 'Processing...' },
+                            { icon: 'Ã°Å¸â€˜Å¸', label: 'Total Steps', value: calendarDateDetail.detailedMetrics.totalSteps > 0 ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString() : 'Processing...' },
+                            { icon: 'Ã°Å¸ËœÂ´', label: 'Avg Sleep (min)', value: calendarDateDetail.detailedMetrics.avgSleepScore > 0 ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min` : 'Processing...' },
+                            { icon: 'Ã°Å¸Â§Â ', label: 'Avg Stress', value: calendarDateDetail.detailedMetrics.avgStressScore > 0 ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore) : 'Processing...' },
+                            { icon: 'Ã°Å¸â€œÅ ', label: 'Data Points', value: calendarDateDetail.detailedMetrics.dataPointsCount || '--' },
                           ].map((m, i) => (
                             <div key={i} className="bg-gray-50 rounded-xl p-3 flex flex-col items-center text-center">
                               <span className="text-base mb-1">{m.icon}</span>
@@ -3659,7 +3820,7 @@ const handleNextChakra = () => {
                   );
                 })()}
 
-                {/* ── Wellness Alert / All Good box ────────────────────────────── */}
+                {/* Ã¢â€â‚¬Ã¢â€â‚¬ Wellness Alert / All Good box Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
                 {/* {(() => {
                 const hasAlert = !!wlActiveAlert;
                 const suggestion = wlActiveAlert?.suggestion || '';
@@ -3668,12 +3829,12 @@ const handleNextChakra = () => {
                     hasAlert ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200'
                   }`}>
                     <h3 className={`text-lg font-bold mb-2 ${hasAlert ? 'text-red-700' : 'text-green-700'}`}>
-                      {hasAlert ? '⚠️ Wellness Alert!' : 'All Good! ✓'}
+                      {hasAlert ? 'Ã¢Å¡Â Ã¯Â¸Â Wellness Alert!' : 'All Good! Ã¢Å“â€œ'}
                     </h3>
                     <p className={`text-sm mb-4 ${hasAlert ? 'text-red-800' : 'text-green-800'}`}>
                       {hasAlert
-                        ? (suggestion || 'Your stress levels are elevated. Go check on your dog — your bond needs attention! 🐾')
-                        : 'Your vitals are within normal range. Keep up the great work! 💚'}
+                        ? (suggestion || 'Your stress levels are elevated. Go check on your dog – your bond needs attention! Ã°Å¸ÂÂ¾')
+                        : 'Your vitals are within normal range. Keep up the great work! Ã°Å¸â€™Å¡'}
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {hasAlert && wlActiveAlert.dogStateAtAlert && (
@@ -3691,7 +3852,7 @@ const handleNextChakra = () => {
                           <span className="text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm bg-green-500">
                             HRV: {(wlStressStatus?.currentHRV ?? wlBaseline?.avgHRV ?? 0).toFixed(1)} ms
                           </span>
-                          <span className="text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm bg-green-600">✓ Normal</span>
+                          <span className="text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm bg-green-600">Ã¢Å“â€œ Normal</span>
                         </>
                       )}
                     </div>
@@ -3704,18 +3865,18 @@ const handleNextChakra = () => {
                 );
               })()} */}
 
-                {/* ── Baseline Info Card ───────────────────────────────────────── */}
+                {/* Ã¢â€â‚¬Ã¢â€â‚¬ Baseline Info Card Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
                 {(wlBaseline || (selectedHistoricalDate && calendarDateDetail?.detailedMetrics)) && (() => {
                   const isHistory = !!(selectedHistoricalDate && calendarDateDetail?.detailedMetrics);
                   const m = isHistory ? calendarDateDetail.detailedMetrics : null;
                   return (
                     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                      {/* High-temp notice — live only */}
+                      {/* High-temp notice – live only */}
                       {!isHistory && wlWeather?.temperatureCelsius > 30 && (
                         <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 mb-4 text-sm text-orange-600 font-semibold">
                           <span>🌡️</span>
                           <span>
-                            {Math.round(wlWeather.temperatureCelsius)}°C detected — HR +{((wlWeather.temperatureCelsius - 30) * 0.5).toFixed(1)} bpm and
+                            {Math.round(wlWeather.temperatureCelsius)}Ã‚Â°C detected – HR +{((wlWeather.temperatureCelsius - 30) * 0.5).toFixed(1)} bpm and
                             HRV -{((wlWeather.temperatureCelsius - 30) * 0.3).toFixed(1)} ms adjustment applied
                           </span>
                         </div>
@@ -3917,8 +4078,8 @@ const handleNextChakra = () => {
 
                   {/* Legend */}
                   <div className="flex justify-center space-x-6 text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500"></div><span>Calm (≥70)</span></div>
-                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div><span>Moderate (50–69)</span></div>
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500"></div><span>Calm (Ã¢â€°Â¥70)</span></div>
+                    <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div><span>Moderate (50Ã¢â‚¬â€œ69)</span></div>
                     <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500"></div><span>Stressed (&lt;50)</span></div>
                     <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div><span>No data</span></div>
                   </div>
@@ -3929,13 +4090,13 @@ const handleNextChakra = () => {
                       {/* Header row */}
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-base font-bold text-gray-800">
-                          📅 {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                          Ã°Å¸â€œâ€¦ {new Date(selectedHistoricalDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                         </h4>
                         <button
                           onClick={() => { setSelectedHistoricalDate(null); setCalendarDateDetail(null); }}
                           className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1 transition-colors"
                         >
-                          ✕ Close
+                          Ã¢Å“â€¢ Close
                         </button>
                       </div>
 
@@ -3955,12 +4116,12 @@ const handleNextChakra = () => {
                             <div>
                               <p className="text-sm font-bold text-gray-800">{calendarDateDetail.scoreTitle}</p>
                               <p className="text-xs text-gray-400">
-                                Bond Sync Score · {calendarDateDetail.trend === 'realtime' ? 'Live data' : `Trend: ${calendarDateDetail.trend ?? 'stable'}`}
+                                Bond Sync Score Ã‚Â· {calendarDateDetail.trend === 'realtime' ? 'Live data' : `Trend: ${calendarDateDetail.trend ?? 'stable'}`}
                               </p>
                             </div>
                           </div>
 
-                          {/* Metrics grid — real values from HumanDailySummaries, 'Processing...' if null/0 */}
+                          {/* Metrics grid – real values from HumanDailySummaries, 'Processing...' if null/0 */}
                           <div className="grid grid-cols-3 gap-3">
                             {[
                               {
@@ -3968,7 +4129,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
                                   ? `${Math.round(calendarDateDetail.detailedMetrics.avgHeartRate)} bpm`
                                   : 'Processing...',
-                                icon: '❤️',
+                                icon: 'Ã¢ÂÂ¤Ã¯Â¸Â',
                                 hasData: calendarDateDetail.detailedMetrics?.avgHeartRate > 0
                               },
                               {
@@ -3976,7 +4137,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.avgHRV > 0
                                   ? `${calendarDateDetail.detailedMetrics.avgHRV.toFixed(1)} ms`
                                   : 'Processing...',
-                                icon: '📡',
+                                icon: 'Ã°Å¸â€œÂ¡',
                                 hasData: calendarDateDetail.detailedMetrics?.avgHRV > 0
                               },
                               {
@@ -3984,7 +4145,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.totalSteps > 0
                                   ? calendarDateDetail.detailedMetrics.totalSteps.toLocaleString()
                                   : 'Processing...',
-                                icon: '👟',
+                                icon: 'Ã°Å¸â€˜Å¸',
                                 hasData: calendarDateDetail.detailedMetrics?.totalSteps > 0
                               },
                               {
@@ -3992,7 +4153,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
                                   ? `${Math.round(calendarDateDetail.detailedMetrics.avgSleepScore)} min`
                                   : 'Processing...',
-                                icon: '😴',
+                                icon: 'Ã°Å¸ËœÂ´',
                                 hasData: calendarDateDetail.detailedMetrics?.avgSleepScore > 0
                               },
                               {
@@ -4000,7 +4161,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.avgStressScore > 0
                                   ? Math.round(calendarDateDetail.detailedMetrics.avgStressScore)
                                   : 'Processing...',
-                                icon: '🧠',
+                                icon: 'Ã°Å¸Â§Â ',
                                 hasData: calendarDateDetail.detailedMetrics?.avgStressScore > 0
                               },
                               {
@@ -4008,7 +4169,7 @@ const handleNextChakra = () => {
                                 value: calendarDateDetail.detailedMetrics?.dataPointsCount > 0
                                   ? calendarDateDetail.detailedMetrics.dataPointsCount
                                   : '--',
-                                icon: '📊',
+                                icon: 'Ã°Å¸â€œÅ ',
                                 hasData: true
                               },
                             ].map((m, i) => (
@@ -4038,7 +4199,7 @@ const handleNextChakra = () => {
                         </div>
                       ) : (
                         <div className="text-center py-6">
-                          <div className="text-lg mb-3">📭</div>
+                          <div className="text-lg mb-3">Ã°Å¸â€œÂ­</div>
                           <p className="text-sm font-semibold text-gray-600">No data available for this date</p>
                           <p className="text-xs text-gray-400 mt-1">Daily summary has not been generated yet for this day</p>
                         </div>
@@ -4064,7 +4225,7 @@ const handleNextChakra = () => {
                   {/* Left Section - Title and Subtitle */}
                   <div className="flex-1">
                     <h1 className="text-lg font-bold text-gray-900 mb-2">
-                      Bonded Score<sup className="text-lg">™</sup>
+                      Bonded Score<sup className="text-lg">Ã¢â€žÂ¢</sup>
                     </h1>
                     <p className="text-lg text-purple-600">Growing Connection</p>
 
@@ -4163,11 +4324,11 @@ const handleNextChakra = () => {
                   {(() => {
                     const completedCount = rituals.filter(r => r.isCompleted).length;
                     const totalRituals = rituals.length;
-                    console.log('🎯 Progress Calculation:', { completedCount, totalRituals, rituals });
+                    console.log('Ã°Å¸Å½Â¯ Progress Calculation:', { completedCount, totalRituals, rituals });
 
                     // Handle empty rituals case
                     if (totalRituals === 0) {
-                      console.warn('⚠️ No rituals available for today');
+                      console.warn('Ã¢Å¡Â Ã¯Â¸Â No rituals available for today');
                       return (
                         <div className="bg-green-50 rounded-xl p-4 mb-4">
                           <div className="flex items-center justify-between mb-4">
@@ -4188,7 +4349,7 @@ const handleNextChakra = () => {
 
                     const completionPercentage = Math.round((completedCount / totalRituals) * 100);
                     const progressBarWidth = (completedCount / totalRituals) * 100;
-                    console.log('📊 Completion %:', completionPercentage, 'Progress bar width:', progressBarWidth);
+                    console.log('Ã°Å¸â€œÅ  Completion %:', completionPercentage, 'Progress bar width:', progressBarWidth);
 
                     return (
                       <>
@@ -4249,11 +4410,16 @@ const handleNextChakra = () => {
                           <input
                             type="checkbox"
                             checked={ritual.isCompleted}
-                            onChange={() => handleRitualToggle(ritual.id, ritual.isCompleted)}
+                            onChange={() => { setUserOverrides(prev => ({ ...prev, [ritual.id]: true })); handleRitualToggle(ritual.id, ritual.isCompleted); }}
                             className="w-5 h-5 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500"
                           />
                           <div className="flex-1">
-                            <h4 className={`font-medium ${ritual.isCompleted ? 'text-green-700' : 'text-gray-900'}`}>{ritual.title}</h4>
+                            <h4 className={`font-medium ${ritual.isCompleted ? 'text-green-700' : 'text-gray-900'}`}>
+                              {ritual.title}
+                              {autoRituals[ritual.id] && !userOverrides[ritual.id] && ritual.isCompleted && (
+                                <span title={autoRituals[ritual.id]} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-2 cursor-help">✨ AI Suggested</span>
+                              )}
+                            </h4>
                             <p className="text-sm text-gray-600">{ritual.description}</p>
                             {ritual.isCompleted && (
                               <div className="flex items-center space-x-2 mt-2">
@@ -4330,7 +4496,6 @@ const handleNextChakra = () => {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">Evening Rituals</h3>
                   </div>
-
                   <div className="space-y-4">
                     {rituals.filter(r => r.category === 'Evening').length === 0 && <p className="text-sm text-gray-500 italic">No evening rituals found.</p>}
                     {rituals.filter(r => r.category === 'Evening').map(ritual => (
@@ -4367,31 +4532,28 @@ const handleNextChakra = () => {
 
                 {/* Save Rituals Button */}
                 <div className="flex justify-end mt-4">
-                  <button
-                    onClick={handleSaveRituals}
-                    disabled={isRitualLoading || !rituals.some(r => r.isCompleted && !r.originallyCompleted)}
-                    className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading
-                      ? 'bg-gray-400 cursor-not-allowed transform-none'
-                      : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'
-                      }`}
-                  >
-                    {isRitualLoading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Saving...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Save Rituals</span>
-                      </>
-                    )}
-                  </button>
+                   <button
+                     onClick={handleSaveRituals}
+                     disabled={isRitualLoading || !rituals.some(r => r.isCompleted && !r.originallyCompleted)}
+                     className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading ? 'bg-gray-400 cursor-not-allowed transform-none' : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'}`}
+                   >
+                     {isRitualLoading ? (
+                       <>
+                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                         </svg>
+                         <span>Saving...</span>
+                       </>
+                     ) : (
+                       <>
+                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                         </svg>
+                         <span>Save Rituals</span>
+                       </>
+                     )}
+                   </button>
                 </div>
               </>
             )}
@@ -4403,7 +4565,7 @@ const handleNextChakra = () => {
 
                 {/* Dynamic check-ins from API */}
                 {checkInItems.map((ci, idx) => {
-                  const id = ci.checkInId;
+                  const id = normalizeId(ci.checkInId);
                   const question = ci.questions;
                   const isHours = (question || '').toLowerCase().includes('hours spent');
                   const max = isHours ? 10 : 10;  // Backend counts max 10 hours
@@ -4420,7 +4582,12 @@ const handleNextChakra = () => {
                   return (
                     <div className="mb-4" key={id}>
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-medium text-gray-900">{question} ({value}/{max})</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {question} ({value}/{max})
+                          {autoCheckIns[id] && !userOverrides[id] && value === autoCheckIns[id].suggestedRating && (
+                             <span title={autoCheckIns[id].reason} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-2 cursor-help">✨ AI Suggested</span>
+                          )}
+                        </span>
                       </div>
                       <div className="relative">
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -4436,7 +4603,8 @@ const handleNextChakra = () => {
                           value={value}
                           onChange={(e) => {
                             const val = parseInt(e.target.value);
-                            console.log(`📊 Slider changed: ${question.substring(0, 30)}... = ${val}`);
+                            console.log(`Ã°Å¸â€œÅ  Slider changed: ${question.substring(0, 30)}... = ${val}`);
+                            setUserOverrides(prev => ({ ...prev, [id]: true }));
                             setRatingsById(prev => ({ ...prev, [id]: val }));
                             if (isHours) setHoursTogether(val);
                           }}
@@ -4880,7 +5048,7 @@ const handleNextChakra = () => {
                             <p className="text-sm text-gray-600 mb-1">Your Nerve Center Harmony Score</p>
                             <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
+                              {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? 'Ã°Å¸Å’Å¸ Good balance' : 'Ã°Å¸â€™Â« Room for improvement'}
                             </p>
                           </div>
                         </div>
@@ -5055,7 +5223,7 @@ const handleNextChakra = () => {
                               <p className="text-sm text-gray-600 mb-1">Your Nerve Center Harmony Score</p>
                               <p className="text-lg font-bold text-purple-600">{Math.round(harmonyScore)}/10</p>
                               <p className="text-xs text-gray-500 mt-1">
-                                {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? '🌟 Good balance' : '💫 Room for improvement'}
+                                {harmonyScore >= 8 ? '✨ Excellent harmony!' : harmonyScore >= 6 ? 'Ã°Å¸Å’Å¸ Good balance' : 'Ã°Å¸â€™Â« Room for improvement'}
                               </p>
                             </div>
                           </div>
@@ -5233,7 +5401,7 @@ const handleNextChakra = () => {
 
                       const handleActivityClick = () => {
                         // 1. Prevent action if already completed (Read-Only)
-                        if (isCompleted) return;
+                        if (isCompleted && !autoActivities[activityId]) return;
 
                         // 2. Custom tab routing based on activity name
                         if (activity.activityName === 'Nerve Center Sync') {
@@ -5324,7 +5492,12 @@ const handleNextChakra = () => {
                                 )}
                               </div>
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{activity.activityName}</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {activity.activityName}
+                                  {autoActivities[activityId] && !userOverrides[activityId] && isCompleted && (
+                                    <span title={autoActivities[activityId]} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-2 cursor-help">✨ AI Suggested</span>
+                                  )}
+                                </h3>
                                 <p className="text-sm text-gray-600">+{ritualPointsMap[activity.activityName] || activity.points} bonding points</p>
                               </div>
                             </div>
@@ -5657,7 +5830,7 @@ const handleNextChakra = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-semibold text-gray-900">Energy Alignment Meditation</h4>
-                      <p className="text-sm text-gray-500">15 minutes • Beginner</p>
+                      <p className="text-sm text-gray-500">15 minutes Ã¢â‚¬Â¢ Beginner</p>
                     </div>
                     <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
                       Start Session
@@ -5669,7 +5842,7 @@ const handleNextChakra = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-semibold text-gray-900">Chakra Healing Journey</h4>
-                      <p className="text-sm text-gray-500">25 minutes • Intermediate</p>
+                      <p className="text-sm text-gray-500">25 minutes Ã¢â‚¬Â¢ Intermediate</p>
                     </div>
                     <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
                       Start Session
@@ -5681,7 +5854,7 @@ const handleNextChakra = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-semibold text-gray-900">Deep Soul Connection</h4>
-                      <p className="text-sm text-gray-500">30 minutes • Advanced</p>
+                      <p className="text-sm text-gray-500">30 minutes Ã¢â‚¬Â¢ Advanced</p>
                     </div>
                     <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
                       Start Session
