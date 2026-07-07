@@ -30,6 +30,27 @@ namespace Hounded_Heart.Api.Controllers
             _configuration = configuration;
         }
 
+        private static bool ParseBool(string? value, bool fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return fallback;
+            if (bool.TryParse(value, out var parsed)) return parsed;
+            return fallback;
+        }
+
+        private static decimal ParseDecimal(string? value, decimal fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return fallback;
+            if (decimal.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsed)) return parsed;
+            return fallback;
+        }
+
+        private static int ParseInt(string? value, int fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return fallback;
+            if (int.TryParse(value, out var parsed)) return parsed;
+            return fallback;
+        }
+
 
         [HttpGet("plans")]
         public IActionResult GetPlans()
@@ -79,6 +100,7 @@ namespace Hounded_Heart.Api.Controllers
             {
                 var section = _configuration.GetSection("EarlyMemberOffer");
 
+                // Defaults from appsettings
                 bool isActive = section.GetValue<bool>("IsActive");
                 DateTime endDate = section.GetValue<DateTime>("EndDateUtc");
                 int slotsTotal = section.GetValue<int>("SlotsTotal");
@@ -88,6 +110,36 @@ namespace Hounded_Heart.Api.Controllers
                 decimal regularMonthly = section.GetValue<decimal>("RegularMonthlyPrice");
                 decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
                 bool lockInPermanent = section.GetValue<bool>("LockInPermanent");
+
+                // Override from SiteSettings table if present (admin-configurable at runtime)
+                var keys = new[] {
+                    "EarlyMember_IsActive",
+                    "EarlyMember_EndDateUtc",
+                    "EarlyMember_SlotsTotal",
+                    "EarlyMember_SlotsUsed",
+                    "EarlyMember_MonthlyPrice",
+                    "EarlyMember_YearlyPrice",
+                    "EarlyMember_RegularMonthlyPrice",
+                    "EarlyMember_RegularYearlyPrice",
+                    "EarlyMember_LockInPermanent"
+                };
+
+                var settings = await _context.SiteSettings
+                    .Where(s => keys.Contains(s.SettingKey))
+                    .ToListAsync();
+
+                var dict = settings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
+
+                // Apply overrides when present
+                if (dict.ContainsKey("EarlyMember_IsActive")) isActive = ParseBool(dict["EarlyMember_IsActive"], isActive);
+                if (dict.ContainsKey("EarlyMember_EndDateUtc") && DateTime.TryParse(dict["EarlyMember_EndDateUtc"], out var parsedEnd)) endDate = parsedEnd;
+                if (dict.ContainsKey("EarlyMember_SlotsTotal")) slotsTotal = ParseInt(dict["EarlyMember_SlotsTotal"], slotsTotal);
+                if (dict.ContainsKey("EarlyMember_SlotsUsed")) slotsUsed = ParseInt(dict["EarlyMember_SlotsUsed"], slotsUsed);
+                if (dict.ContainsKey("EarlyMember_MonthlyPrice")) monthlyPrice = ParseDecimal(dict["EarlyMember_MonthlyPrice"], monthlyPrice);
+                if (dict.ContainsKey("EarlyMember_YearlyPrice")) yearlyPrice = ParseDecimal(dict["EarlyMember_YearlyPrice"], yearlyPrice);
+                if (dict.ContainsKey("EarlyMember_RegularMonthlyPrice")) regularMonthly = ParseDecimal(dict["EarlyMember_RegularMonthlyPrice"], regularMonthly);
+                if (dict.ContainsKey("EarlyMember_RegularYearlyPrice")) regularYearly = ParseDecimal(dict["EarlyMember_RegularYearlyPrice"], regularYearly);
+                if (dict.ContainsKey("EarlyMember_LockInPermanent")) lockInPermanent = ParseBool(dict["EarlyMember_LockInPermanent"], lockInPermanent);
 
                 // Auto-expire the offer when the end date has been reached or passed
                 if (endDate != default && DateTime.UtcNow >= endDate)
@@ -147,10 +199,23 @@ namespace Hounded_Heart.Api.Controllers
             try
             {
                 var section = _configuration.GetSection("EarlyMemberOffer");
+                // Defaults from appsettings
                 bool isActive = section.GetValue<bool>("IsActive");
                 DateTime endDate = section.GetValue<DateTime>("EndDateUtc");
                 decimal regularMonthly = section.GetValue<decimal>("RegularMonthlyPrice");
                 decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
+
+                // Override from SiteSettings if present
+                var keys = new[] { "EarlyMember_IsActive", "EarlyMember_EndDateUtc", "EarlyMember_RegularMonthlyPrice", "EarlyMember_RegularYearlyPrice" };
+                var settings = await _context.SiteSettings
+                    .Where(s => keys.Contains(s.SettingKey))
+                    .ToListAsync();
+                var dict = settings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
+
+                if (dict.ContainsKey("EarlyMember_IsActive")) isActive = ParseBool(dict["EarlyMember_IsActive"], isActive);
+                if (dict.ContainsKey("EarlyMember_EndDateUtc") && DateTime.TryParse(dict["EarlyMember_EndDateUtc"], out var parsedEnd)) endDate = parsedEnd;
+                if (dict.ContainsKey("EarlyMember_RegularMonthlyPrice")) regularMonthly = ParseDecimal(dict["EarlyMember_RegularMonthlyPrice"], regularMonthly);
+                if (dict.ContainsKey("EarlyMember_RegularYearlyPrice")) regularYearly = ParseDecimal(dict["EarlyMember_RegularYearlyPrice"], regularYearly);
 
                 if (endDate != default && DateTime.UtcNow > endDate)
                     isActive = false;
