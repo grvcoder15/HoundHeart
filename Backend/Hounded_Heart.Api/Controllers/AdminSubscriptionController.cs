@@ -207,6 +207,7 @@ namespace Hounded_Heart.Api.Controllers
                 decimal offerMonthlyPrice = section.GetValue<decimal>("MonthlyPrice");
                 decimal offerYearlyPrice = section.GetValue<decimal>("YearlyPrice");
 
+
                 // Override from SiteSettings if present
                 var keys = new[] { "EarlyMember_IsActive", "EarlyMember_EndDateUtc", "EarlyMember_RegularMonthlyPrice", "EarlyMember_RegularYearlyPrice" };
                 var settings = await _context.SiteSettings
