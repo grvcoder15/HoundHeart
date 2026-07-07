@@ -204,6 +204,8 @@ namespace Hounded_Heart.Api.Controllers
                 DateTime endDate = section.GetValue<DateTime>("EndDateUtc");
                 decimal regularMonthly = section.GetValue<decimal>("RegularMonthlyPrice");
                 decimal regularYearly = section.GetValue<decimal>("RegularYearlyPrice");
+                decimal offerMonthlyPrice = section.GetValue<decimal>("MonthlyPrice");
+                decimal offerYearlyPrice = section.GetValue<decimal>("YearlyPrice");
 
                 // Override from SiteSettings if present
                 var keys = new[] { "EarlyMember_IsActive", "EarlyMember_EndDateUtc", "EarlyMember_RegularMonthlyPrice", "EarlyMember_RegularYearlyPrice" };
@@ -216,6 +218,8 @@ namespace Hounded_Heart.Api.Controllers
                 if (dict.ContainsKey("EarlyMember_EndDateUtc") && DateTime.TryParse(dict["EarlyMember_EndDateUtc"], out var parsedEnd)) endDate = parsedEnd;
                 if (dict.ContainsKey("EarlyMember_RegularMonthlyPrice")) regularMonthly = ParseDecimal(dict["EarlyMember_RegularMonthlyPrice"], regularMonthly);
                 if (dict.ContainsKey("EarlyMember_RegularYearlyPrice")) regularYearly = ParseDecimal(dict["EarlyMember_RegularYearlyPrice"], regularYearly);
+                if (dict.ContainsKey("EarlyMember_MonthlyPrice")) offerMonthlyPrice = ParseDecimal(dict["EarlyMember_MonthlyPrice"], offerMonthlyPrice);
+                if (dict.ContainsKey("EarlyMember_YearlyPrice")) offerYearlyPrice = ParseDecimal(dict["EarlyMember_YearlyPrice"], offerYearlyPrice);
 
                 if (endDate != default && DateTime.UtcNow > endDate)
                     isActive = false;
@@ -264,13 +268,15 @@ namespace Hounded_Heart.Api.Controllers
                     }
                     else if (billing == "monthly" && p.Price < 80)
                     {
-                        stripePriceId = configMonthly;                              
-                        displayPrice = isActive ? p.Price : (regularMonthly > 0 ? regularMonthly : p.Price);
+                        stripePriceId = configMonthly;
+                        // When early offer is active, show the offer's monthly price (from appsettings or SiteSettings override)
+                        displayPrice = isActive ? (offerMonthlyPrice > 0 ? offerMonthlyPrice : p.Price) : (regularMonthly > 0 ? regularMonthly : p.Price);
                     }
                     else if (billing == "yearly" && p.Price <= 80)
                     {
-                        stripePriceId = configYearly;                               
-                        displayPrice = isActive ? p.Price : (regularYearly > 0 ? regularYearly : p.Price);
+                        stripePriceId = configYearly;
+                        // When early offer is active, show the offer's yearly price (from appsettings or SiteSettings override)
+                        displayPrice = isActive ? (offerYearlyPrice > 0 ? offerYearlyPrice : p.Price) : (regularYearly > 0 ? regularYearly : p.Price);
                     }
                     else if (billing == "yearly" && p.Price > 80 && !string.IsNullOrEmpty(configPremium))
                     {
