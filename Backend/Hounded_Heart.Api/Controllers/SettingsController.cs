@@ -35,6 +35,20 @@ namespace Hounded_Heart.Api.Controllers
             public decimal? SacredGuidePrice { get; set; }
         }
 
+        public class AdminEarlyMemberOfferDto
+        {
+            public bool? IsActive { get; set; }
+            public System.DateTime? EndDateUtc { get; set; }
+            public int? SlotsTotal { get; set; }
+            public int? SlotsUsed { get; set; }
+            public decimal? MonthlyPrice { get; set; }
+            public decimal? YearlyPrice { get; set; }
+            public decimal? RegularMonthlyPrice { get; set; }
+            public decimal? RegularYearlyPrice { get; set; }
+            public decimal? PremiumYearlyPrice { get; set; }
+            public bool? LockInPermanent { get; set; }
+        }
+
         private static bool ParseBool(string? value, bool fallback)
         {
             if (string.IsNullOrWhiteSpace(value)) return fallback;
@@ -294,6 +308,100 @@ namespace Hounded_Heart.Api.Controllers
             catch (System.Exception ex)
             {
                 return StatusCode(500, ResponseHelper.Fail<object>($"An error occurred updating pricing settings: {ex.Message}", 500));
+            }
+        }
+
+        [HttpGet("admin/early-member-offer")]
+        [Authorize]
+        public async Task<IActionResult> GetAdminEarlyMemberOffer()
+        {
+            try
+            {
+                var keys = new[] {
+                    "EarlyMember_IsActive",
+                    "EarlyMember_EndDateUtc",
+                    "EarlyMember_SlotsTotal",
+                    "EarlyMember_SlotsUsed",
+                    "EarlyMember_MonthlyPrice",
+                    "EarlyMember_YearlyPrice",
+                    "EarlyMember_RegularMonthlyPrice",
+                    "EarlyMember_RegularYearlyPrice",
+                    "EarlyMember_PremiumYearlyPrice",
+                    "EarlyMember_LockInPermanent"
+                };
+
+                var settings = await _context.SiteSettings
+                    .Where(s => keys.Contains(s.SettingKey))
+                    .ToListAsync();
+
+                var dict = settings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
+
+                return Ok(ResponseHelper.Success(new
+                {
+                    isActive = ParseBool(dict.GetValueOrDefault("EarlyMember_IsActive"), false),
+                    endDateUtc = dict.GetValueOrDefault("EarlyMember_EndDateUtc"),
+                    slotsTotal = int.TryParse(dict.GetValueOrDefault("EarlyMember_SlotsTotal"), out var st) ? st : 0,
+                    slotsUsed = int.TryParse(dict.GetValueOrDefault("EarlyMember_SlotsUsed"), out var su) ? su : 0,
+                    monthlyPrice = ParseDecimal(dict.GetValueOrDefault("EarlyMember_MonthlyPrice"), 0m),
+                    yearlyPrice = ParseDecimal(dict.GetValueOrDefault("EarlyMember_YearlyPrice"), 0m),
+                    regularMonthlyPrice = ParseDecimal(dict.GetValueOrDefault("EarlyMember_RegularMonthlyPrice"), 0m),
+                    regularYearlyPrice = ParseDecimal(dict.GetValueOrDefault("EarlyMember_RegularYearlyPrice"), 0m),
+                    premiumYearlyPrice = ParseDecimal(dict.GetValueOrDefault("EarlyMember_PremiumYearlyPrice"), 0m),
+                    lockInPermanent = ParseBool(dict.GetValueOrDefault("EarlyMember_LockInPermanent"), false)
+                }, "Early member offer retrieved successfully.", 200));
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<object>($"An error occurred fetching early member offer: {ex.Message}", 500));
+            }
+        }
+
+        [HttpPut("admin/early-member-offer")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAdminEarlyMemberOffer([FromBody] AdminEarlyMemberOfferDto dto)
+        {
+            try
+            {
+                if (dto == null)
+                    return BadRequest(ResponseHelper.Fail<object>("Request body is required.", 400));
+
+                if (dto.IsActive.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_IsActive", dto.IsActive.Value.ToString());
+
+                if (dto.EndDateUtc.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_EndDateUtc", dto.EndDateUtc.Value.ToString("o"));
+
+                if (dto.SlotsTotal.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_SlotsTotal", dto.SlotsTotal.Value.ToString());
+
+                if (dto.SlotsUsed.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_SlotsUsed", dto.SlotsUsed.Value.ToString());
+
+                if (dto.MonthlyPrice.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_MonthlyPrice", dto.MonthlyPrice.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                if (dto.YearlyPrice.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_YearlyPrice", dto.YearlyPrice.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                if (dto.RegularMonthlyPrice.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_RegularMonthlyPrice", dto.RegularMonthlyPrice.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                if (dto.RegularYearlyPrice.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_RegularYearlyPrice", dto.RegularYearlyPrice.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                if (dto.PremiumYearlyPrice.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_PremiumYearlyPrice", dto.PremiumYearlyPrice.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                if (dto.LockInPermanent.HasValue)
+                    await UpsertSiteSettingAsync("EarlyMember_LockInPermanent", dto.LockInPermanent.Value.ToString());
+
+                await _context.SaveChangesAsync();
+
+                return Ok(ResponseHelper.Success<object>("Early member offer updated successfully.", "Early member offer updated successfully.", 200));
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<object>($"An error occurred updating early member offer: {ex.Message}", 500));
             }
         }
     }
