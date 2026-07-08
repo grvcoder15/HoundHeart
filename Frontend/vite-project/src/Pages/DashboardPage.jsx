@@ -4381,7 +4381,7 @@ const handleNextChakra = () => {
                             <span className="text-sm font-medium text-green-600">{completedCount}/{totalRituals} completed</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-gray-700 h-2 rounded-full transition-all duration-300" style={{ width: `${progressBarWidth}%` }}></div>
+                            <div className="bg-gray-700 h-2 rounded-full" style={{ width: `${progressBarWidth}%` }}></div>
                           </div>
                         </div>
 
