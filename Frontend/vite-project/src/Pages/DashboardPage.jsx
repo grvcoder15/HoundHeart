@@ -4231,7 +4231,7 @@ const handleNextChakra = () => {
                   {/* Left Section - Title and Subtitle */}
                   <div className="flex-1">
                     <h1 className="text-lg font-bold text-gray-900 mb-2">
-                      Bonded Score<sup className="text-lg">Ã¢â€žÂ¢</sup>
+                      Bonded Score<sup className="text-lg">™</sup>
                     </h1>
                     <p className="text-lg text-purple-600">Growing Connection</p>
 
