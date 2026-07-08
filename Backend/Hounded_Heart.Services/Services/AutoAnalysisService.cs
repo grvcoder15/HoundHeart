@@ -722,6 +722,10 @@ namespace Hounded_Heart.Services.Services
             // 12. New Trick Practice
             // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room) AND Q10=No (no stress)
             // Vitals: MinPlay > 5 min AND no stress AND human active, in an afternoon-ish window
+            int afternoonDogPlay = dogVitals.Where(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd).Sum(v => v.MinPlay ?? 0);
+            bool humanAfternoonActive = humanVitals.Any(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
+            bool afternoonTrickPractice = afternoonDogPlay > 5 && !dogShownStress && humanAfternoonActive;
+
             if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)) && !dogShownStress)
                 SuggestActivity("New Trick Practice", "Dog Check-in: playful=Yes (Q4), no stress (Q10). Environment Check-in: enough room=Yes (Q8).");
             else if (afternoonTrickPractice)
