@@ -130,9 +130,8 @@ namespace Hounded_Heart.Services.Services
                 await containerClient.CreateIfNotExistsAsync();
                 await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
 
-                // Upload to 'audios' folder
-                var blobPath = $"audios/{fileName}";
-                var blobClient = containerClient.GetBlobClient(blobPath);
+                // Upload directly to container root to avoid ADLS Gen2 directory 404s
+                var blobClient = containerClient.GetBlobClient(fileName);
 
                 using var stream = new MemoryStream(audioBytes);
                 await blobClient.UploadAsync(stream, overwrite: true);
@@ -185,8 +184,8 @@ namespace Hounded_Heart.Services.Services
                 await containerClient.CreateIfNotExistsAsync();
                 await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
 
-                var blobPath = $"images/{fileName}";
-                var blobClient = containerClient.GetBlobClient(blobPath);
+                // Upload directly to container root to avoid ADLS Gen2 directory 404s
+                var blobClient = containerClient.GetBlobClient(fileName);
 
                 using var stream = new MemoryStream(imageBytes);
                 await blobClient.UploadAsync(stream, overwrite: true);
