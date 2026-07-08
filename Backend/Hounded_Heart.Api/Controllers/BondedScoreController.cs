@@ -184,6 +184,21 @@ namespace Hounded_Heart.Api.Controllers
                     currentNegativePoints += rules["MissedCheckInPenalty"];
                 }
 
+                // Include Journals (2 points each in last 7 days)
+                var recentJournalsCount = await _context.JournalEntries
+                    .AsNoTracking()
+                    .CountAsync(x => x.UserId == userId && x.CreatedOn >= last7Days);
+                currentPositivePoints += recentJournalsCount * 2.0;
+
+                // Include Community Posts (1.5 points each in last 7 days)
+                var recentCommunityPostsCount = await _context.CommunityPosts
+                    .AsNoTracking()
+                    .CountAsync(x => x.UserId == userId && x.CreatedOn >= last7Days);
+                currentPositivePoints += recentCommunityPostsCount * 1.5;
+
+                // Include all other activities (like Breathing, etc) that were saved but not tracked above
+                currentPositivePoints += activityScoresSum;
+
                 // Apply Today's Points
                 score += (currentPositivePoints + currentNegativePoints);
                 
