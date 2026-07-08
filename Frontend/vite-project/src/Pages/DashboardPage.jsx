@@ -4564,61 +4564,6 @@ const handleNextChakra = () => {
                   </div>
                 </div>
 
-                {/* Save Rituals Button */}
-                <div className="flex justify-end mt-4">
-                   <button
-                     onClick={handleSaveRituals}
-                     disabled={isRitualLoading || !rituals.some(r => r.isCompleted && !r.originallyCompleted)}
-                     className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading ? 'bg-gray-400 cursor-not-allowed transform-none' : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'}`}
-                   >
-                     {isRitualLoading ? (
-                       <>
-                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                         </svg>
-                         <span>Saving...</span>
-                       </>
-                     ) : (
-                       <>
-                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                         </svg>
-                         <span>Save Rituals</span>
-                       </>
-                     )}
-                   </button>
-                 </div>
-              </>
-            )}
-                            type="checkbox"
-                            checked={ritual.isCompleted}
-                            onChange={() => handleRitualToggle(ritual.id, ritual.isCompleted)}
-                            className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <div className="flex-1">
-                            <h4 className={`font-medium ${ritual.isCompleted ? 'text-green-700' : 'text-gray-900'}`}>{ritual.title}</h4>
-                            <p className="text-sm text-gray-600">{ritual.description}</p>
-                            {ritual.isCompleted && (
-                              <div className="flex items-center space-x-2 mt-2">
-                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                <span className="text-sm font-medium text-green-600">Completed</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm text-gray-500">{ritual.duration}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Evening Rituals */}
                 <div className="bg-purple-50 rounded-xl p-4">
                   <div className="flex items-center space-x-3 mb-4">
@@ -4662,21 +4607,31 @@ const handleNextChakra = () => {
                     ))}
                   </div>
                 </div>
-                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                         </svg>
-                         <span>Saving...</span>
-                       </>
-                     ) : (
-                       <>
-                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                         </svg>
-                         <span>Save Rituals</span>
-                       </>
-                     )}
-                   </button>
+
+                {/* Save Rituals Button */}
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={handleSaveRituals}
+                    disabled={isRitualLoading || !rituals.some(r => r.isCompleted && !r.originallyCompleted)}
+                    className={`px-4 py-3 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ${isRitualLoading ? 'bg-gray-400 cursor-not-allowed transform-none' : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600'}`}
+                  >
+                    {isRitualLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Save Rituals</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </>
             )}
@@ -4743,19 +4698,6 @@ const handleNextChakra = () => {
                   );
                 })}
 
-                {/* Save Button (visible in Check-ins tab) */}
-                <div className="pt-2">
-                  <button
-                    onClick={handleSaveDailyCheckin}
-                    disabled={isSavingCheckin}
-                    className={`px-5 py-2.5 rounded-lg font-medium text-white transition-colors ${isSavingCheckin
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-orange-500 hover:bg-orange-600'
-                      }`}
-                  >
-                    {isSavingCheckin ? 'Saving...' : 'Save Daily Check-in'}
-                  </button>
-                </div>
                 {/* Save Button (visible in Check-ins tab) */}
                 <div className="pt-2">
                   <button

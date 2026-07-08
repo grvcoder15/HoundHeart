@@ -143,6 +143,15 @@ namespace Hounded_Heart.Api.Controllers
                     .Take(pageSize)
                     .ToListAsync();
 
+                // Convert stored S3 keys into temporary presigned URLs before returning
+                foreach (var entry in entries)        
+                {             
+                    if (!string.IsNullOrEmpty(entry.MediaUrl))                 
+                        entry.MediaUrl = _blobService.GetPresignedUrl(entry.MediaUrl);
+                    if (!string.IsNullOrEmpty(entry.ImageUrl))                 
+                        entry.ImageUrl = _blobService.GetPresignedUrl(entry.ImageUrl);         
+                }
+
                 if (entries == null || entries.Count == 0)
                     return Ok(ResponseHelper.Success(new
                     {
