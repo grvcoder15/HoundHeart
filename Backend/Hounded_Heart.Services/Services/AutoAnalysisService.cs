@@ -633,8 +633,17 @@ namespace Hounded_Heart.Services.Services
             // Each activity triggers if EITHER:
             //   A) The corresponding Dog Check-in / Environment form answers match, OR
             //   B) The vitals data (DogVitals + HumanVitals) independently supports the same conclusion.
-            // This way, a user who hasn't filled the form but whose wearables show matching patterns
-            // still gets the activity suggested automatically.
+            
+            var now = DateTime.UtcNow;
+            DateTime currentWindowStart = today;
+            DateTime currentWindowEnd = tomorrow;
+            string currentWindowName = "today";
+            if (now >= morningStart && now < morningEnd) { currentWindowStart = morningStart; currentWindowEnd = morningEnd; currentWindowName = "morning"; }
+            else if (now >= afternoonStart && now < afternoonEnd) { currentWindowStart = afternoonStart; currentWindowEnd = afternoonEnd; currentWindowName = "afternoon"; }
+            else if (now >= eveningStart && now < eveningEnd) { currentWindowStart = eveningStart; currentWindowEnd = eveningEnd; currentWindowName = "evening"; }
+
+            int currentWindowDogRest = dogVitals.Where(v => v.TimestampUtc >= currentWindowStart && v.TimestampUtc < currentWindowEnd).Sum(v => v.MinRest ?? 0);
+            bool currentWindowHumanActive = humanVitals.Any(v => v.TimestampUtc >= currentWindowStart && v.TimestampUtc < currentWindowEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
 
             // Helper: set suggested=false with a specific reason (when neither form nor vitals conditions met)
             void SetActivityNotSuggested(string name, string reason)
@@ -645,126 +654,120 @@ namespace Hounded_Heart.Services.Services
             }
 
             // ── Pre-compute vitals-based signals ─────────────────────────────────────────
-            int totalMinRest      = dogVitals.Sum(v => v.MinRest ?? 0);
-            int totalMinActive    = dogVitals.Sum(v => v.MinActive ?? 0);
-            bool dogRestingCalm   = totalMinRest > 30;                            // dog is lying down calmly
-            bool dogRestingLong   = totalMinRest > 60;                            // dog has been resting a long time
-            bool dogActiveToday   = dogVitals.Any(d => d.ActivityScore > 0 || (d.MinActive ?? 0) > 0 || (d.MinPlay ?? 0) > 0);
             bool humanActiveToday = humanVitals.Any(h => (h.Steps ?? 0) > 0 || (h.ActiveMinutes ?? 0) > 0);
-            bool bothActiveToday  = dogActiveToday && humanActiveToday;
+            
             bool lowHumanHR       = currentHumanVital != null && currentHumanVital.HeartRate.HasValue && currentHumanVital.HeartRate.Value < 70; // calm resting HR
             bool highHumanHRV     = currentHumanVital != null && (currentHumanVital.HRV ?? 0) > 40;                                             // relaxed HRV
             bool humanCalm        = lowHumanHR || highHumanHRV;                  // human is physiologically calm
-            bool dogPlayingNow    = dogVitals.Any(d => (d.MinPlay ?? 0) > 5);
-            // Alternating active/rest pattern = typical of training
-            bool trainingPattern  = dogVitals.Any(v => (v.MinActive ?? 0) > 5 && (v.MinPlay ?? 0) > 5 && (v.MinRest ?? 0) < 30);
+            
+            // Alternating active/play/rest pattern = typical of training, in daytime hours (morning or afternoon)
+            bool trainingPattern  = dogVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < eveningStart && (v.MinActive ?? 0) > 5 && (v.MinPlay ?? 0) > 5 && (v.MinRest ?? 0) < 30);
+            
             // Evening wind-down: dog mostly resting in evening window
-            bool dogEveningRest   = dogVitals.Any(v => v.TimestampUtc >= eveningStart && (v.MinRest ?? 0) > 20);
-            bool humanEveningLow  = humanVitals.Any(v => v.TimestampUtc >= eveningStart && (v.Steps ?? 0) < 200 && (v.ActiveMinutes ?? 0) < 5);
+            int eveningDogRest = dogVitals.Where(v => v.TimestampUtc >= eveningStart && v.TimestampUtc < eveningEnd).Sum(v => v.MinRest ?? 0);
+            bool dogEveningRest   = eveningDogRest > 20;
+            bool humanEveningLow  = humanVitals.Any(v => v.TimestampUtc >= eveningStart && v.TimestampUtc < eveningEnd && (v.Steps ?? 0) < 200 && (v.ActiveMinutes ?? 0) < 5);
+            
             // Morning vitals: both active in morning window
             bool dogMorningVitals = dogVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < morningEnd && (v.ActivityScore > 0 || (v.MinActive ?? 0) > 0));
             bool humanMorningVitals = humanVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < morningEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
 
             // 7. Belly Rubs
             // Form: Dog Q1=Yes (relaxed) AND Q9=Yes (settled near you)
-            // Vitals: Dog resting calmly (MinRest > 30 mins) AND human is physiologically calm
+            // Vitals: Dog resting calmly (MinRest > 30 mins) in a recent window AND human is present in that window
             if (dogIsRelaxed && dogSettledNearYou)
                 SuggestActivity("Belly Rubs", "Dog Check-in: relaxed=Yes (Q1), settled near you=Yes (Q9).");
-            else if (dogRestingCalm && humanCalm)
-                SuggestActivity("Belly Rubs", $"Vitals: dog resting ({totalMinRest} min rest) and human calm (HR/HRV) — ideal belly rubs moment.");
-            else if (dogRestingCalm && humanActiveToday)
-                SuggestActivity("Belly Rubs", $"Vitals: dog resting calmly ({totalMinRest} min rest) while human is present today.");
+            else if (currentWindowDogRest > 30 && currentWindowHumanActive)
+                SuggestActivity("Belly Rubs", $"Vitals: dog resting ({currentWindowDogRest} min rest) and human active in the {currentWindowName} window.");
             else
                 SetActivityNotSuggested("Belly Rubs", dogCheckinSubmitted
-                    ? $"Dog Check-in Q1 (relaxed)={(dogCheckinAnswers.TryGetValue("1", out var _br1) ? _br1 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _br9) ? _br9 : "not answered")}. Vitals: dog rest={totalMinRest} min."
-                    : $"No Dog Check-in today and no calm resting vitals detected (dog rest={totalMinRest} min).");
+                    ? $"Dog Check-in Q1 (relaxed)={(dogCheckinAnswers.TryGetValue("1", out var _br1) ? _br1 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _br9) ? _br9 : "not answered")}. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min."
+                    : $"No Dog Check-in today and no calm resting vitals detected in the {currentWindowName} window (dog rest={currentWindowDogRest} min).");
 
             // 8. Cuddle Time
             // Form: Dog Q3=Yes (seeks closeness) AND Q9=Yes (settled near you)
-            // Vitals: Dog resting a long time (> 60 min) AND human vitals present (owner is home)
+            // Vitals: Dog resting a long time (> 60 min) AND human vitals present in the SAME window
             if (dogSeeksCloseness && dogSettledNearYou)
                 SuggestActivity("Cuddle Time", "Dog Check-in: seeking closeness=Yes (Q3), settled near you=Yes (Q9).");
-            else if (dogRestingLong && humanActiveToday)
-                SuggestActivity("Cuddle Time", $"Vitals: dog resting ({totalMinRest} min) while owner is active — likely cuddling together.");
+            else if (currentWindowDogRest > 60 && currentWindowHumanActive)
+                SuggestActivity("Cuddle Time", $"Vitals: dog resting ({currentWindowDogRest} min) while owner is active in the {currentWindowName} window — likely cuddling together.");
             else
                 SetActivityNotSuggested("Cuddle Time", dogCheckinSubmitted
-                    ? $"Dog Check-in Q3 (seeks closeness)={(dogCheckinAnswers.TryGetValue("3", out var _ct3) ? _ct3 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _ct9) ? _ct9 : "not answered")}. Vitals: dog rest={totalMinRest} min."
-                    : $"No Dog Check-in today. Vitals: dog rest={totalMinRest} min (need >60 min) and human active={humanActiveToday}.");
+                    ? $"Dog Check-in Q3 (seeks closeness)={(dogCheckinAnswers.TryGetValue("3", out var _ct3) ? _ct3 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _ct9) ? _ct9 : "not answered")}. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min."
+                    : $"No Dog Check-in today. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min (need >60 min) and human active={currentWindowHumanActive}.");
 
             // 9. Feeding Time
             // Form: Dog Q5=Yes (appetite normal)
-            // Vitals: Any dog activity today (active dog = fed dog)
+            // Vitals: Only suggest via form, not generic vitals
             if (dogAteNormally)
                 SuggestActivity("Feeding Time", "Dog Check-in: appetite normal=Yes (Q5).");
-            else if (dogActiveToday)
-                SuggestActivity("Feeding Time", "Vitals: dog is active today — feeding routine assumed.");
             else
-                SetActivityNotSuggested("Feeding Time", "No Dog Check-in today and no dog vitals activity detected.");
+                SetActivityNotSuggested("Feeding Time", "Feeding time must be confirmed via Dog Check-in (Q5).");
 
             // 10. Grooming — No reliable signal from form or vitals. Always false per spec.
             SetActivityNotSuggested("Grooming", "No reliable signal to auto-suggest grooming.");
 
             // 11. Training Session
             // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room)
-            // Vitals: Alternating active/play/rest pattern typical of training sessions
+            // Vitals: Alternating active/play/rest pattern in daytime hours
             if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)))
                 SuggestActivity("Training Session", "Dog Check-in: playful=Yes (Q4). Environment Check-in: enough room=Yes (Q8).");
             else if (trainingPattern)
-                SuggestActivity("Training Session", $"Vitals: alternating active ({totalMinActive} min) / play / rest pattern detected — typical of a training session.");
+                SuggestActivity("Training Session", $"Vitals: alternating active/play/rest pattern detected during daytime hours — typical of a training session.");
             else
                 SetActivityNotSuggested("Training Session", dogCheckinSubmitted
-                    ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _ts4) ? _ts4 : "not answered")}. No training pattern in vitals."
-                    : $"No Dog Check-in today. Vitals training pattern: {(trainingPattern ? "yes" : "no")}.");
+                    ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _ts4) ? _ts4 : "not answered")}. No training pattern in daytime vitals."
+                    : $"No Dog Check-in today. Vitals daytime training pattern: {(trainingPattern ? "yes" : "no")}.");
 
             // 12. New Trick Practice
             // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room) AND Q10=No (no stress)
-            // Vitals: Playful bursts detected (MinPlay > 5) AND no stress signals
+            // Vitals: MinPlay > 5 min AND no stress AND human active, in an afternoon-ish window
             if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)) && !dogShownStress)
                 SuggestActivity("New Trick Practice", "Dog Check-in: playful=Yes (Q4), no stress (Q10). Environment Check-in: enough room=Yes (Q8).");
-            else if (dogPlayingNow && !dogShownStress && humanActiveToday)
-                SuggestActivity("New Trick Practice", $"Vitals: dog has play activity ({totalMinPlay} min) and no stress — good conditions for trick practice.");
+            else if (afternoonTrickPractice)
+                SuggestActivity("New Trick Practice", $"Vitals: dog has afternoon play activity ({afternoonDogPlay} min), no stress, and human active — good conditions for trick practice.");
             else
                 SetActivityNotSuggested("New Trick Practice", dogCheckinSubmitted
-                    ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _nt4) ? _nt4 : "not answered")}. Vitals: MinPlay={totalMinPlay} min."
-                    : $"No Dog Check-in today. Vitals: dog play={totalMinPlay} min, human active={humanActiveToday}.");
+                    ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _nt4) ? _nt4 : "not answered")}. Vitals: afternoon play={afternoonDogPlay} min."
+                    : $"No Dog Check-in today. Vitals: afternoon dog play={afternoonDogPlay} min, human active={humanAfternoonActive}.");
 
             // 13. Meditation Together
             // Form: Dog Q8=Yes (breathed calmly) AND (Env Q7=Calm OR Q10=Quiet)
-            // Vitals: Human is physiologically calm (low HR / high HRV) AND dog is resting
+            // Vitals: Human calm (low HR/high HRV) AND dog resting, same time window
             if (humanBreathedCalm && (envIsCalm || envIsQuiet))
                 SuggestActivity("Meditation Together", $"Dog Check-in: breathed calmly with dog=Yes (Q8). Environment: {(envIsCalm ? "calm space (Q7)" : "quiet space (Q10)")}.");
             else if (humanBreathedCalm)
                 SuggestActivity("Meditation Together", "Dog Check-in: breathed calmly with dog=Yes (Q8).");
-            else if (humanCalm && dogRestingCalm)
-                SuggestActivity("Meditation Together", $"Vitals: human is calm (HR/HRV) and dog is resting ({totalMinRest} min) — optimal meditation moment.");
+            else if (humanCalm && currentWindowDogRest > 30)
+                SuggestActivity("Meditation Together", $"Vitals: human is calm (HR/HRV) and dog is resting ({currentWindowDogRest} min) in the {currentWindowName} window.");
             else if (chakraLogs.Any())
                 SuggestActivity("Meditation Together", "Nerve Center Sync (Chakra) session completed today.");
             else
-                SetActivityNotSuggested("Meditation Together", $"No calm signals. Vitals: human calm={humanCalm}, dog rest={totalMinRest} min. Form: Q8={(dogCheckinAnswers.TryGetValue("8", out var _mt8) ? _mt8 : "not answered")}.");
+                SetActivityNotSuggested("Meditation Together", $"No calm signals. Vitals: human calm={humanCalm}, dog {currentWindowName} rest={currentWindowDogRest} min. Form: Q8={(dogCheckinAnswers.TryGetValue("8", out var _mt8) ? _mt8 : "not answered")}.");
 
             // 14. Synchronized Breathing
             // Form: Dog Q8=Yes (breathed calmly with dog)
-            // Vitals: Human calm (low HR or high HRV) AND dog resting
+            // Vitals: Human calm AND dog resting, same time window
             if (humanBreathedCalm)
                 SuggestActivity("Synchronized Breathing", $"Dog Check-in: breathed calmly with dog=Yes (Q8).{(envIsCalm ? " Environment: calm space." : envIsQuiet ? " Environment: quiet space." : "")}");
-            else if (humanCalm && dogRestingCalm)
-                SuggestActivity("Synchronized Breathing", $"Vitals: human calm (HR/HRV) and dog resting ({totalMinRest} min) — synchronized resting detected.");
+            else if (humanCalm && currentWindowDogRest > 30)
+                SuggestActivity("Synchronized Breathing", $"Vitals: human calm (HR/HRV) and dog resting ({currentWindowDogRest} min) in the {currentWindowName} window.");
             else if (chakraLogs.Any())
                 SuggestActivity("Synchronized Breathing", "Nerve Center Sync session completed today.");
             else
-                SetActivityNotSuggested("Synchronized Breathing", $"No synchronized calm signals. Vitals: human calm={humanCalm}, dog rest={totalMinRest} min.");
+                SetActivityNotSuggested("Synchronized Breathing", $"No synchronized calm signals. Vitals: human calm={humanCalm}, dog {currentWindowName} rest={currentWindowDogRest} min.");
 
             // 15. Heart-to-Heart Reflection
             // Form: Dog Q3=Yes (seeks closeness) AND Q8=Yes (breathed calmly)
-            // Vitals: Dog resting near human (MinRest > 30) + human is calm + both present together
+            // Vitals: Dog resting near human (MinRest > 30) + human is calm + both present together in same window
             if (dogSeeksCloseness && humanBreathedCalm)
                 SuggestActivity("Heart-to-Heart Reflection", "Dog Check-in: seeking closeness=Yes (Q3), breathed calmly=Yes (Q8).");
-            else if (dogRestingCalm && humanCalm)
-                SuggestActivity("Heart-to-Heart Reflection", $"Vitals: dog resting ({totalMinRest} min) and human calm — a peaceful shared moment detected.");
+            else if (currentWindowDogRest > 30 && humanCalm)
+                SuggestActivity("Heart-to-Heart Reflection", $"Vitals: dog resting ({currentWindowDogRest} min) and human calm in the {currentWindowName} window.");
             else if (chakraLogs.Any() || hasEveningJournal)
                 SuggestActivity("Heart-to-Heart Reflection", "Nerve Center Sync or evening journal completed.");
             else
-                SetActivityNotSuggested("Heart-to-Heart Reflection", $"No shared calm signals. Dog rest={totalMinRest} min, human calm={humanCalm}.");
+                SetActivityNotSuggested("Heart-to-Heart Reflection", $"No shared calm signals. Dog {currentWindowName} rest={currentWindowDogRest} min, human calm={humanCalm}.");
 
             // 16. Nerve Center Sync
             if (chakraLogs.Any()) SuggestActivity("Nerve Center Sync", "Nerve Center Sync log exists for today.");
@@ -772,13 +775,13 @@ namespace Hounded_Heart.Services.Services
 
             // 17. Gratitude Moment
             // Form: Dog Q6=Yes (slept well)
-            // Vitals: Both dog and human have morning vitals (they both woke up and started the day)
+            // Vitals: Both dog and human have morning vitals (they both woke up and started the day) specifically in the MORNING window
             if (dogSleptWell)
                 SuggestActivity("Gratitude Moment", "Dog Check-in: dog slept well=Yes (Q6) — a great morning to start with gratitude.");
             else if (hasMorningJournal || hasMorningWellness)
                 SuggestActivity("Gratitude Moment", "Morning journal or wellness check completed.");
             else if (dogMorningVitals && humanMorningVitals)
-                SuggestActivity("Gratitude Moment", "Vitals: both dog and human are active this morning — a great moment for gratitude.");
+                SuggestActivity("Gratitude Moment", "Vitals: both dog and human have vitals specifically in the morning window — a great moment for gratitude.");
             else
                 SetActivityNotSuggested("Gratitude Moment", $"No gratitude signals. Dog morning vitals={dogMorningVitals}, human morning vitals={humanMorningVitals}.");
 
@@ -793,23 +796,23 @@ namespace Hounded_Heart.Services.Services
 
             // 19. Morning Intention Setting
             // Form: Dog Q6=Yes (slept well)
-            // Vitals: Both dog and human have morning activity (fresh start to the day)
+            // Vitals: Both dog AND human morning-window vitals
             if (dogSleptWell)
                 SuggestActivity("Morning Intention Setting", "Dog Check-in: dog slept well=Yes (Q6) — good conditions for a positive morning intention.");
             else if (hasMorningJournal || hasMorningWellness)
                 SuggestActivity("Morning Intention Setting", "Morning journal or wellness check completed.");
             else if (dogMorningVitals && humanMorningVitals)
-                SuggestActivity("Morning Intention Setting", "Vitals: both dog and human active this morning — ideal for setting a morning intention.");
+                SuggestActivity("Morning Intention Setting", "Vitals: both dog and human active in the morning window — ideal for setting a morning intention.");
             else
                 SetActivityNotSuggested("Morning Intention Setting", $"No morning signals. Dog morning vitals={dogMorningVitals}, human morning vitals={humanMorningVitals}.");
 
             // 20. Bedtime Blessing
             // Form: Dog Q1=Yes (relaxed) AND Q9=Yes (settled near you)
-            // Vitals: Dog resting in the evening + human slowing down in evening (winding down together)
+            // Vitals: Dog evening-window rest + human evening-window winding down
             if (dogIsRelaxed && dogSettledNearYou)
                 SuggestActivity("Bedtime Blessing", "Dog Check-in: relaxed=Yes (Q1), settled near you=Yes (Q9) — lovely moment for a bedtime blessing.");
-            else if (dogEveningRest && (hasEveningVitals || humanEveningLow))
-                SuggestActivity("Bedtime Blessing", "Vitals: dog resting in evening and human winding down — bedtime blessing moment detected.");
+            else if (dogEveningRest && humanEveningLow)
+                SuggestActivity("Bedtime Blessing", "Vitals: dog resting in evening window and human winding down — bedtime blessing moment detected.");
             else if (hasEveningJournal || hasEveningWellness)
                 SuggestActivity("Bedtime Blessing", "Evening journal or wellness check completed.");
             else
@@ -819,7 +822,7 @@ namespace Hounded_Heart.Services.Services
 
             // 21. Evening Reflection
             // Form: Dog Q7=Yes (routine changed) OR Q10=Yes (stress signs)
-            // Vitals: Dog shows abnormal pattern (very low activity all day = possible neglect/boredom) OR evening journal/wellness
+            // Vitals: Dog abnormally inactive across the whole day (compare to baseline)
             bool dogAbnormalDay = currentDogVital != null && currentDogVital.ActivityScore < 50 && totalMinPlay == 0;
             if (routineChanged)
                 SuggestActivity("Evening Reflection", "Dog Check-in: routine changed=Yes (Q7) — good time for an evening reflection.");
