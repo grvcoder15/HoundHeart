@@ -11,21 +11,34 @@ const ChakraRitualsPage = () => {
   const [activeTab, setActiveTab] = useState('chakra-alignment');
   const [showEnergySyncModal, setShowEnergySyncModal] = useState(false);
   const [showGratitudeFlowModal, setShowGratitudeFlowModal] = useState(false);
+  const [showDeepBondingModal, setShowDeepBondingModal] = useState(false);
+  const [showHealingCircleModal, setShowHealingCircleModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [isYearlyPlan, setIsYearlyPlan] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGratitudePlaying, setIsGratitudePlaying] = useState(false);
+  const [isDeepBondingPlaying, setIsDeepBondingPlaying] = useState(false);
+  const [isHealingCirclePlaying, setIsHealingCirclePlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [gratitudeCurrentTime, setGratitudeCurrentTime] = useState(0);
+  const [deepBondingCurrentTime, setDeepBondingCurrentTime] = useState(0);
+  const [healingCircleCurrentTime, setHealingCircleCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [gratitudeDuration, setGratitudeDuration] = useState(0);
+  const [deepBondingDuration, setDeepBondingDuration] = useState(0);
+  const [healingCircleDuration, setHealingCircleDuration] = useState(0);
+
+  // Guided Practice ritual IDs (fetched from backend once)
+  const [guidedPracticeIds, setGuidedPracticeIds] = useState({ morningEnergySyncId: null, gratitudeFlowId: null });
+  // Set of ritual IDs the user has completed today
+  const [completedGuidedPractices, setCompletedGuidedPractices] = useState(new Set());
   
   // Ritual top-bar stats (fetched from Dashboard Stats)
   const [ritualStats, setRitualStats] = useState({ bondedScore: 0, dayStreak: 0, energySync: 0 });
 
-  // Resolve the user's tier from localStorage (kept in sync by ProtectedRoute)
-  const getUserTier = () => {
+  // Resolve the user's tier from localStorage or API
+  const getLocalTier = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const tier = String(user.tierLevel || 'free').toLowerCase().trim();
@@ -34,23 +47,30 @@ const ChakraRitualsPage = () => {
       return 'free';
     }
   };
-  const userTier = getUserTier(); // 'free' | 'plus' | 'premium'
-  const hasPaidAccess = userTier === 'plus' || userTier === 'premium';
+  const [hasPaidAccess, setHasPaidAccess] = useState(() => {
+    const tier = getLocalTier();
+    return tier === 'plus' || tier === 'premium';
+  });
 
   // Fetch & refresh top stats
   const fetchRitualStats = async () => {
     try {
       const uid = apiService.getCurrentUserId();
       if (!uid) return;
-      const res = await apiService.getDashboardStats(uid, new Date().toISOString());
-      const data = res?.data || res;
-      if (data) {
-        setRitualStats({
-          bondedScore: Math.round(data.bondedScore ?? 0),
-          dayStreak: data.ritualConsistency?.count ?? 0,
-          energySync: Math.round(data.weeklyProgress ?? 0),
-        });
-      }
+      const dogId = localStorage.getItem('dogId') || '00000000-0000-0000-0000-000000000000';
+
+      const res = await apiService.calculateBondedScore(uid, dogId);
+      const data = res?.data || res || {};
+      
+      const score = data.BondedScore !== undefined ? data.BondedScore : (data.bondedScore || 50);
+      const dayStreak = data.RitualDaysCount || data.ritualDaysCount || 0;
+      const energySync = data.WeeklyProgress || data.weeklyProgress || 0;
+
+      setRitualStats({
+        bondedScore: Math.round(score),
+        dayStreak: dayStreak,
+        energySync: Math.round(energySync),
+      });
     } catch (e) {
       // non-blocking
     }
@@ -79,8 +99,12 @@ const ChakraRitualsPage = () => {
   // Create audio instances
   const [audio, setAudio] = useState(null);
   const [gratitudeAudio, setGratitudeAudio] = useState(null);
+  const [deepBondingAudio, setDeepBondingAudio] = useState(null);
+  const [healingCircleAudio, setHealingCircleAudio] = useState(null);
   const [audioLoading, setAudioLoading] = useState(false);
   const [gratitudeAudioLoading, setGratitudeAudioLoading] = useState(false);
+  const [deepBondingAudioLoading, setDeepBondingAudioLoading] = useState(false);
+  const [healingCircleAudioLoading, setHealingCircleAudioLoading] = useState(false);
 
   // Helper function to get audio duration from URL
   const getAudioDuration = (audioUrl) => {
@@ -194,6 +218,60 @@ const ChakraRitualsPage = () => {
 
     fetchChakrasAndProgress();
     fetchRitualStats();
+
+    // Refresh tier from API to unlock premium content after purchase
+    const refreshTierFromAPI = async () => {
+      try {
+        const profileRes = await apiService.getUserProfile();
+        const profileData = profileRes?.data || profileRes;
+        if (profileData) {
+          const rawTier = profileData.tierLevel || profileData.TierLevel || 'free';
+          const freshTier = String(rawTier).toLowerCase().trim();
+          const isPaid = freshTier === 'plus' || freshTier === 'premium' || profileData.isPremium || profileData.IsPremium;
+          setHasPaidAccess(isPaid);
+          // Also update localStorage so it stays in sync
+          try {
+            const stored = JSON.parse(localStorage.getItem('user') || '{}');
+            stored.tierLevel = freshTier;
+            localStorage.setItem('user', JSON.stringify(stored));
+          } catch {}
+        }
+      } catch (e) {
+        // non-blocking: if API fails, keep localStorage value
+      }
+    };
+    refreshTierFromAPI();
+
+    // Seed guided practice rituals once, then fetch their IDs and today's completion status
+    const initGuidedPractices = async () => {
+      try {
+        const uid = apiService.getCurrentUserId();
+        // Seed (idempotent — safe to call every time)
+        await apiService.seedGuidedPractices();
+        // Fetch stable IDs
+        const idsRes = await apiService.getGuidedPracticeIds();
+        const ids = idsRes?.data || idsRes;
+        if (ids) {
+          setGuidedPracticeIds({ morningEnergySyncId: ids.morningEnergySyncId, gratitudeFlowId: ids.gratitudeFlowId });
+          // Check which ones the user completed today via ritual suggestions
+          if (uid) {
+            const suggestRes = await apiService.makeRequest(`/Rituals/suggestions?userId=${uid}`, { method: 'GET' });
+            const suggestData = suggestRes?.data || suggestRes;
+            const rituals = suggestData?.rituals || [];
+            const doneIds = new Set(
+              rituals
+                .filter(r => r.isCompleted)
+                .map(r => String(r.id))
+            );
+            setCompletedGuidedPractices(doneIds);
+          }
+        }
+      } catch (e) {
+        // non-blocking
+        console.warn('Guided practice init error:', e);
+      }
+    };
+    initGuidedPractices();
   }, []);
 
   // Scroll animation effect
@@ -269,6 +347,19 @@ const ChakraRitualsPage = () => {
       newAudio.addEventListener('ended', () => {
         setIsPlaying(false);
         setCurrentTime(0);
+        setShowEnergySyncModal(false); // Close modal automatically
+        
+        // Mark Morning Energy Sync as completed in the DB
+        const uid = apiService.getCurrentUserId();
+        const rid = guidedPracticeIds.morningEnergySyncId;
+        if (uid && rid) {
+          apiService.completeRitual(uid, rid)
+            .then(() => {
+              setCompletedGuidedPractices(prev => new Set([...prev, String(rid)]));
+              console.log('✅ Morning Energy Sync marked completed');
+            })
+            .catch(e => console.warn('completeRitual error:', e));
+        }
       });
       
       newAudio.addEventListener('error', (e) => {
@@ -334,6 +425,19 @@ const ChakraRitualsPage = () => {
         newGratitudeAudio.addEventListener('ended', () => {
           setIsGratitudePlaying(false);
           setGratitudeCurrentTime(0);
+          setShowGratitudeFlowModal(false); // Close modal automatically
+          
+          // Mark Gratitude Flow as completed in the DB
+          const uid = apiService.getCurrentUserId();
+          const rid = guidedPracticeIds.gratitudeFlowId;
+          if (uid && rid) {
+            apiService.completeRitual(uid, rid)
+              .then(() => {
+                setCompletedGuidedPractices(prev => new Set([...prev, String(rid)]));
+                console.log('✅ Gratitude Flow marked completed');
+              })
+              .catch(e => console.warn('completeRitual error:', e));
+          }
         });
         
         newGratitudeAudio.addEventListener('error', (e) => {
@@ -361,6 +465,50 @@ const ChakraRitualsPage = () => {
       tryLoadAudio();
     }
   }, [showEnergySyncModal, showGratitudeFlowModal, audio, gratitudeAudio]);
+
+  // Initialize Deep Bonding audio
+  useEffect(() => {
+    if (showDeepBondingModal && !deepBondingAudio) {
+      setDeepBondingAudioLoading(true);
+      const newAudio = new Audio('/smooth-jazz-podcast-instrumental-background-music-355744.mp3');
+      newAudio.preload = 'metadata';
+      newAudio.addEventListener('loadedmetadata', () => {
+        setDeepBondingDuration(newAudio.duration);
+        setDeepBondingAudioLoading(false);
+      });
+      newAudio.addEventListener('timeupdate', () => setDeepBondingCurrentTime(newAudio.currentTime));
+      newAudio.addEventListener('ended', () => { 
+        setIsDeepBondingPlaying(false); 
+        setDeepBondingCurrentTime(0); 
+        setShowDeepBondingModal(false);
+        setCompletedGuidedPractices(prev => new Set([...prev, 'deep_bonding']));
+      });
+      newAudio.addEventListener('error', () => setDeepBondingAudioLoading(false));
+      setDeepBondingAudio(newAudio);
+    }
+  }, [showDeepBondingModal, deepBondingAudio]);
+
+  // Initialize Healing Circle audio
+  useEffect(() => {
+    if (showHealingCircleModal && !healingCircleAudio) {
+      setHealingCircleAudioLoading(true);
+      const newAudio = new Audio('/smooth-jazz-podcast-instrumental-background-music-355744.mp3');
+      newAudio.preload = 'metadata';
+      newAudio.addEventListener('loadedmetadata', () => {
+        setHealingCircleDuration(newAudio.duration);
+        setHealingCircleAudioLoading(false);
+      });
+      newAudio.addEventListener('timeupdate', () => setHealingCircleCurrentTime(newAudio.currentTime));
+      newAudio.addEventListener('ended', () => { 
+        setIsHealingCirclePlaying(false); 
+        setHealingCircleCurrentTime(0);
+        setShowHealingCircleModal(false);
+        setCompletedGuidedPractices(prev => new Set([...prev, 'healing_circle']));
+      });
+      newAudio.addEventListener('error', () => setHealingCircleAudioLoading(false));
+      setHealingCircleAudio(newAudio);
+    }
+  }, [showHealingCircleModal, healingCircleAudio]);
 
   // Initialize chakra audio when modal opens
   useEffect(() => {
@@ -603,11 +751,51 @@ const ChakraRitualsPage = () => {
         setShowEnergySyncModal(true);
       } else if (practiceName === 'Gratitude Flow') {
         setShowGratitudeFlowModal(true);
-      } else {
-        // Navigate to other practice sessions
+      } else if (practiceName === 'Deep Bonding Meditation') {
+        setShowDeepBondingModal(true);
+      } else if (practiceName === 'Healing Circle Practice') {
+        setShowHealingCircleModal(true);
       }
     }
     // Locked items do nothing - visually disabled, no redirect
+  };
+
+  const handleCloseDeepBondingModal = () => {
+    if (deepBondingAudio) { deepBondingAudio.pause(); deepBondingAudio.currentTime = 0; }
+    setShowDeepBondingModal(false);
+    setIsDeepBondingPlaying(false);
+    setDeepBondingCurrentTime(0);
+  };
+
+  const handleDeepBondingPlayPause = () => {
+    if (!deepBondingAudio) return;
+    if (isDeepBondingPlaying) {
+      deepBondingAudio.pause();
+      setIsDeepBondingPlaying(false);
+    } else {
+      deepBondingAudio.play()
+        .then(() => setIsDeepBondingPlaying(true))
+        .catch(e => { if (e.name === 'NotAllowedError') alert('Please click play to start the audio.'); });
+    }
+  };
+
+  const handleCloseHealingCircleModal = () => {
+    if (healingCircleAudio) { healingCircleAudio.pause(); healingCircleAudio.currentTime = 0; }
+    setShowHealingCircleModal(false);
+    setIsHealingCirclePlaying(false);
+    setHealingCircleCurrentTime(0);
+  };
+
+  const handleHealingCirclePlayPause = () => {
+    if (!healingCircleAudio) return;
+    if (isHealingCirclePlaying) {
+      healingCircleAudio.pause();
+      setIsHealingCirclePlaying(false);
+    } else {
+      healingCircleAudio.play()
+        .then(() => setIsHealingCirclePlaying(true))
+        .catch(e => { if (e.name === 'NotAllowedError') alert('Please click play to start the audio.'); });
+    }
   };
 
   const handleCloseModal = () => {
@@ -940,28 +1128,36 @@ const ChakraRitualsPage = () => {
       description: 'Start your day aligned with your dog\'s energy',
       duration: '8 minutes',
       isLocked: false,
-      isPremium: false
+      isPremium: false,
+      isCompleted: guidedPracticeIds.morningEnergySyncId
+        ? completedGuidedPractices.has(String(guidedPracticeIds.morningEnergySyncId))
+        : false
     },
     {
       name: 'Deep Bonding Meditation',
       description: 'Strengthen your spiritual connection',
       duration: '15 minutes',
       isLocked: !hasPaidAccess,
-      isPremium: true
+      isPremium: true,
+      isCompleted: completedGuidedPractices.has('deep_bonding')
     },
     {
       name: 'Healing Circle Practice',
       description: 'Send healing energy to your dog',
       duration: '12 minutes',
       isLocked: !hasPaidAccess,
-      isPremium: true
+      isPremium: true,
+      isCompleted: completedGuidedPractices.has('healing_circle')
     },
     {
       name: 'Gratitude Flow',
       description: 'Appreciate the gift of your bond',
       duration: '10 minutes',
       isLocked: false,
-      isPremium: false
+      isPremium: false,
+      isCompleted: guidedPracticeIds.gratitudeFlowId
+        ? completedGuidedPractices.has(String(guidedPracticeIds.gratitudeFlowId))
+        : false
     }
   ];
 
@@ -1011,7 +1207,7 @@ const ChakraRitualsPage = () => {
           {/* Completed Rituals */}
           <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
             <div className="text-3xl font-bold text-purple-600 mb-2">
-              {allChakraProgress.filter(p => p.isCompleted).length}
+              {allChakraProgress.filter(p => p.isCompleted).length + completedGuidedPractices.size}
             </div>
             <div className="text-gray-600">Completed Rituals</div>
           </div>
@@ -1161,13 +1357,25 @@ const ChakraRitualsPage = () => {
                 <div
                   key={practice.name}
                   className={`bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 relative ${
-                    practice.isLocked 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:shadow-xl transform hover:scale-105'
+                    practice.isLocked
+                      ? 'opacity-50 cursor-not-allowed'
+                      : practice.isCompleted
+                        ? 'ring-2 ring-green-400 hover:shadow-xl'
+                        : 'hover:shadow-xl transform hover:scale-105'
                   }`}
                 >
+                  {/* Completed Badge */}
+                  {practice.isCompleted && (
+                    <div className="absolute top-4 right-4 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>Done</span>
+                    </div>
+                  )}
+
                   {/* Premium Badge for Locked Items */}
-                  {practice.isLocked && (
+                  {practice.isLocked && !practice.isCompleted && (
                     <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                       <span>⭐</span>
                       <span>Premium</span>
@@ -1177,8 +1385,8 @@ const ChakraRitualsPage = () => {
                   {/* Practice Info */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className={`text-lg font-semibold ${practice.isLocked ? 'text-gray-500' : 'text-gray-900'}`}>{practice.name}</h3>
-                      {practice.isPremium && !practice.isLocked && (
+                      <h3 className={`text-lg font-semibold ${practice.isLocked ? 'text-gray-500' : practice.isCompleted ? 'text-green-700' : 'text-gray-900'}`}>{practice.name}</h3>
+                      {practice.isPremium && !practice.isLocked && !practice.isCompleted && (
                         <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
@@ -1187,9 +1395,11 @@ const ChakraRitualsPage = () => {
                     <p className={`${practice.isLocked ? 'text-gray-400' : 'text-gray-600'} text-sm mb-3`}>{practice.description}</p>
                     <div className="flex items-center justify-between">
                       <div className={`inline-block ${
-                        practice.isLocked 
-                          ? 'bg-gray-200 text-gray-500' 
-                          : 'bg-gray-100 text-gray-700'
+                        practice.isLocked
+                          ? 'bg-gray-200 text-gray-500'
+                          : practice.isCompleted
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-700'
                       } px-3 py-1 rounded-full text-xs font-medium`}>
                         {practice.duration}
                       </div>
@@ -1202,6 +1412,16 @@ const ChakraRitualsPage = () => {
                         >
                           <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </button>
+                      ) : practice.isCompleted ? (
+                        <button
+                          onClick={() => handlePracticeClick(practice.name, false)}
+                          title="Completed! Click to replay"
+                          className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition-all duration-300"
+                        >
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         </button>
                       ) : (
@@ -1218,6 +1438,7 @@ const ChakraRitualsPage = () => {
                   </div>
                 </div>
               ))}
+
             </div>
           )}
         </div>
@@ -1558,6 +1779,144 @@ const ChakraRitualsPage = () => {
         </div>
       )}
 
+
+      {/* Deep Bonding Meditation Modal */}
+      {showDeepBondingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Deep Bonding Meditation</h2>
+                  <p className="text-sm text-gray-500">Strengthen your spiritual connection • 15 minutes</p>
+                </div>
+              </div>
+              <button onClick={handleCloseDeepBondingModal} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Visualizer */}
+              <div className="flex justify-center mb-8">
+                <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
+                  <div className={`w-20 h-20 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center ${isDeepBondingPlaying ? 'animate-pulse' : ''}`}>
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-sm text-gray-500 mb-2">
+                  <span>{formatTime(deepBondingCurrentTime)}</span>
+                  <span>{formatTime(deepBondingDuration)}</span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-300" style={{ width: `${deepBondingDuration > 0 ? (deepBondingCurrentTime / deepBondingDuration) * 100 : 0}%` }}></div>
+                </div>
+              </div>
+              {/* Controls */}
+              <div className="flex items-center justify-center space-x-6 mb-6">
+                <button onClick={() => { if (deepBondingAudio) deepBondingAudio.currentTime = Math.max(0, deepBondingAudio.currentTime - 10); }} className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                  <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                </button>
+                <button onClick={handleDeepBondingPlayPause} disabled={deepBondingAudioLoading || !deepBondingAudio} className={`w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg ${(deepBondingAudioLoading || !deepBondingAudio) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  {deepBondingAudioLoading ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : isDeepBondingPlaying ? (
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  )}
+                </button>
+                <button onClick={handleCloseDeepBondingModal} className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors">Close</button>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4 text-center">
+                <p className="text-purple-800 text-sm">Sit comfortably with your dog. Breathe together and feel your spirits connect.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Healing Circle Practice Modal */}
+      {showHealingCircleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Healing Circle Practice</h2>
+                  <p className="text-sm text-gray-500">Send healing energy to your dog • 12 minutes</p>
+                </div>
+              </div>
+              <button onClick={handleCloseHealingCircleModal} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Visualizer */}
+              <div className="flex justify-center mb-8">
+                <div className="w-32 h-32 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center">
+                  <div className={`w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center ${isHealingCirclePlaying ? 'animate-pulse' : ''}`}>
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-sm text-gray-500 mb-2">
+                  <span>{formatTime(healingCircleCurrentTime)}</span>
+                  <span>{formatTime(healingCircleDuration)}</span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300" style={{ width: `${healingCircleDuration > 0 ? (healingCircleCurrentTime / healingCircleDuration) * 100 : 0}%` }}></div>
+                </div>
+              </div>
+              {/* Controls */}
+              <div className="flex items-center justify-center space-x-6 mb-6">
+                <button onClick={() => { if (healingCircleAudio) healingCircleAudio.currentTime = Math.max(0, healingCircleAudio.currentTime - 10); }} className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                  <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                </button>
+                <button onClick={handleHealingCirclePlayPause} disabled={healingCircleAudioLoading || !healingCircleAudio} className={`w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg ${(healingCircleAudioLoading || !healingCircleAudio) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  {healingCircleAudioLoading ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : isHealingCirclePlaying ? (
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  )}
+                </button>
+                <button onClick={handleCloseHealingCircleModal} className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors">Close</button>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4 text-center">
+                <p className="text-orange-800 text-sm">Place your hands gently on your dog. Visualize warm, healing light flowing between you.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pricing Modal */}
       {showPricingModal && (

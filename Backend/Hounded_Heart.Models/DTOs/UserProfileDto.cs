@@ -18,6 +18,8 @@ namespace Hounded_Heart.Models.DTOs
         public bool? IsProfileSetupCompleted { get; set; }
         public int JournalEntryCount { get; set; }
         public bool IsGoogleSignIn { get; set; }
+        public string TierLevel { get; set; } = "free";
+        public bool IsPremium { get; set; } = false;
 
         public DogDto? Dog { get; set; }
         public List<DogDto> Dogs { get; set; } = new List<DogDto>();

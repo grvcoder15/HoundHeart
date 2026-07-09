@@ -681,6 +681,8 @@ namespace Hounded_Heart.Api.Controllers
                         Email = user.Email,
                         RoleId = user.RoleId,
                         IsAdmin = user.IsAdmin,
+                        TierLevel = user.TierLevel,
+                        IsPremium = user.IsPremium,
                         IsEmailVerified = false,
                         Message = "Please verify your email. Check your inbox for the verification code."
                     };
@@ -701,6 +703,8 @@ namespace Hounded_Heart.Api.Controllers
                     Email = user.Email,
                     RoleId = user.RoleId,
                     IsAdmin = user.IsAdmin,
+                    TierLevel = user.TierLevel,
+                    IsPremium = user.IsPremium,
                     IsEmailVerified = true
                 };
                 return Ok(ResponseHelper.Success(response2, "Login Successful", 200));
@@ -833,6 +837,8 @@ namespace Hounded_Heart.Api.Controllers
                 IsProfileSetupCompleted = user.IsProfileSetupCompleted,
                 JournalEntryCount= journalEntryCount,
                 IsGoogleSignIn =user.IsGoogleSignIn,
+                TierLevel = user.TierLevel,
+                IsPremium = user.IsPremium,
                 Dog = activeDog == null ? null : new DogDto
                 {
                     DogId = activeDog.DogId,

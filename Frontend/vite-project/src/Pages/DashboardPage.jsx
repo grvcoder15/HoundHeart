@@ -2363,22 +2363,24 @@ const DashboardPage = () => {
 
   const hasChakraSyncAccess = (() => {
     const tier = getCurrentTierLevel();
-    if (tier === 'plus' || tier === 'premium') {
-      return true;
-    }
+    if (tier === 'plus' || tier === 'premium') return true;
 
-    const planName = String(currentSubscription?.planName || '').toLowerCase();
-    return planName.includes('plus') || planName.includes('premium');
+    const subTier = String(currentSubscription?.tierLevel || currentSubscription?.TierLevel || '').toLowerCase().trim();
+    if (subTier === 'plus' || subTier === 'premium') return true;
+
+    const planName = String(currentSubscription?.planName || currentSubscription?.PlanName || '').toLowerCase();
+    return planName.includes('plus') || planName.includes('premium') || planName.includes('houndheart premium');
   })();
 
   const hasUnlimitedMemories = (() => {
     const tier = getCurrentTierLevel();
-    if (tier === 'plus' || tier === 'premium') {
-      return true;
-    }
+    if (tier === 'plus' || tier === 'premium') return true;
 
-    const planName = String(currentSubscription?.planName || '').toLowerCase();
-    return planName.includes('plus') || planName.includes('premium');
+    const subTier = String(currentSubscription?.tierLevel || currentSubscription?.TierLevel || '').toLowerCase().trim();
+    if (subTier === 'plus' || subTier === 'premium') return true;
+
+    const planName = String(currentSubscription?.planName || currentSubscription?.PlanName || '').toLowerCase();
+    return planName.includes('plus') || planName.includes('premium') || planName.includes('houndheart premium');
   })();
 
   const handleStartRitual = async () => {
