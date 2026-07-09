@@ -236,7 +236,8 @@ const DashboardPage = () => {
             if (generateRes.ok) {
               const generateData = await generateRes.json();
               if (generateData.data) {
-                await fetchWellnessData(false);
+                // Prevent infinite recursion by not calling fetchWellnessData(false) here.
+                // The next poll will pick up the new alert.
                 return;
               }
             }
@@ -249,7 +250,8 @@ const DashboardPage = () => {
               }).then(res => res.json())
             ));
 
-            await fetchWellnessData(false);
+            // Prevent infinite recursion by not calling fetchWellnessData(false) here.
+            // The next poll will pick up the recovered alert.
             return;
           }
         } catch (e) {
@@ -607,7 +609,9 @@ const DashboardPage = () => {
   const [rituals, setRituals] = useState([]);
   const [dailyBonusEarned, setDailyBonusEarned] = useState(false);
   const [isRitualLoading, setIsRitualLoading] = useState(false);
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Auto-Analysis Suggestions Fetching Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  const refreshFns = useRef({});
+
+  // Ã¢â€ â‚¬Ã¢â€ â‚¬ Auto-Analysis Suggestions Fetching Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬
   useEffect(() => {
     if (activeTab === 'bond-building' && userId) {
       const fetchSuggestions = async () => {
@@ -667,6 +671,9 @@ const DashboardPage = () => {
                 if (checkInsPayload.length > 0) {
                   await apiService.updateUserCheckIns(autoSaveUserId, checkInsPayload);
                   console.log('âœ… AI check-in scores auto-saved silently:', checkInsPayload);
+                  refreshFns.current.fetchCheckInStatus?.();
+                  refreshFns.current.fetchBondedScore?.();
+                  refreshFns.current.fetchDashboardStats?.();
                 }
               } catch (saveErr) {
                 console.warn('âš ï¸ Auto-save of AI suggestions failed (silent):', saveErr);
@@ -674,44 +681,47 @@ const DashboardPage = () => {
             }
             
             // Auto-fill Rituals
-            const ritualsToSaveIds = [];
-            setRituals(prevRituals => {
-                return prevRituals.map(r => {
-                    if (ritualsMap[r.id] && !userOverrides[r.id]) {
-                        if (!r.isCompleted) ritualsToSaveIds.push(r.id);
-                        return { ...r, isCompleted: true };
-                    }
-                    return r;
-                });
-            });
+            const ritualsToSaveIds = Object.keys(ritualsMap).filter(id => !userOverrides[id]);
             if (ritualsToSaveIds.length > 0) {
+              setRituals(prevRituals => prevRituals.map(r => {
+                  if (ritualsMap[r.id] && !userOverrides[r.id]) return { ...r, isCompleted: true };
+                  return r;
+              }));
+              
               const autoSaveUserId = apiService.getCurrentUserId();
               Promise.all(ritualsToSaveIds.map(id => apiService.completeRitual(autoSaveUserId, id)))
-                .then(() => console.log('✅ AI rituals auto-saved silently'))
-                .catch(e => console.warn('⚠️ Auto-save of AI rituals failed:', e));
+                .then(() => {
+                  console.log('âœ… AI rituals auto-saved silently');
+                  refreshFns.current.fetchDashboardStats?.();
+                  refreshFns.current.fetchBondedScore?.();
+                  refreshFns.current.loadBondingActivities?.();
+                })
+                .catch(e => console.warn('âš ï¸  Auto-save of AI rituals failed:', e));
             }
 
             // Auto-fill Activities
-            const activitiesToSaveIds = [];
-            setCompletedActivityIds(prevSet => {
-                const newSet = new Set(prevSet);
-                let changed = false;
-                Object.keys(activitiesMap).forEach(id => {
-                    if (!userOverrides[id]) {
-                        if (!newSet.has(id)) activitiesToSaveIds.push(id);
-                        newSet.add(id);
-                        changed = true;
-                    }
-                });
-                return changed ? newSet : prevSet;
-            });
+            const activitiesToSaveIds = Object.keys(activitiesMap).filter(id => !userOverrides[id]);
             if (activitiesToSaveIds.length > 0) {
-              const autoSaveUserId = apiService.getCurrentUserId();
-              const activitiesPayload = activitiesToSaveIds.map(id => ({ ActivityId: id, Score: 2 }));
-              const payload = { UserId: autoSaveUserId, Date: new Date().toISOString(), Activities: activitiesPayload };
-              apiService.saveUserActivitiesScore(payload)
-                .then(() => console.log('✅ AI activities auto-saved silently'))
-                .catch(e => console.warn('⚠️ Auto-save of AI activities failed:', e));
+              setCompletedActivityIds(prevSet => {
+                  const newSet = new Set(prevSet);
+                  activitiesToSaveIds.forEach(id => newSet.add(id));
+                  return newSet;
+              });
+
+              // The user requested a 3-4 minute delay for auto-saving activities
+              console.log(`â³ Scheduling AI activities auto-save in 3 minutes...`);
+              setTimeout(() => {
+                const autoSaveUserId = apiService.getCurrentUserId();
+                const activitiesPayload = activitiesToSaveIds.map(id => ({ ActivityId: id, Score: 2 }));
+                const payload = { UserId: autoSaveUserId, Date: new Date().toISOString(), Activities: activitiesPayload };
+                apiService.saveUserActivitiesScore(payload)
+                  .then(() => {
+                    console.log('âœ… AI activities auto-saved silently after delay');
+                    refreshFns.current.loadBondingActivities?.();
+                    refreshFns.current.fetchBondedScore?.();
+                  })
+                  .catch(e => console.warn('âš ï¸  Auto-save of AI activities failed:', e));
+              }, 3 * 60 * 1000); // 3 minutes
             }
           }
         } catch (error) {
@@ -1629,23 +1639,53 @@ const DashboardPage = () => {
           .filter(Boolean)
       );
 
+      const RITUAL_ACTIVITY_NAMES = [
+        'Bedtime Blessing',
+        'Morning Intention Setting',
+        'Mindful Walk',
+        'Gratitude Moment',
+        'Evening Reflection',
+        'Energy Check-in'
+      ];
+
       // Map categories and preserve backend interaction type if valid
-      const activitiesWithProps = activities.map(a => ({
-        ...a,
-        activityId: normalizeId(a.activityId || a.ActivityId),
-        activityName: a.activityName || a.ActivityName,
-        points: a.points ?? a.Points ?? 2,
-        category: a.category || ACTIVITY_CATEGORIES[a.activityName || a.ActivityName] || 'Physical',
-        interactionType: a.interactionType || 'Checkbox'
-      }));
+      // FILTER OUT ritual activities so they don't appear in the Activities tab
+      const activitiesWithProps = activities
+        .filter(a => {
+          const name = (a.activityName || a.ActivityName || '').trim();
+          return !RITUAL_ACTIVITY_NAMES.includes(name);
+        })
+        .map(a => ({
+          ...a,
+          activityId: normalizeId(a.activityId || a.ActivityId),
+          activityName: a.activityName || a.ActivityName,
+          points: a.points ?? a.Points ?? 2,
+          category: a.category || ACTIVITY_CATEGORIES[a.activityName || a.ActivityName] || 'Physical',
+          interactionType: a.interactionType || 'Checkbox'
+        }));
 
       // Ã¢Å“â€¦ KEY FIX: Seed todayIds with any activity the backend already flagged as Completed=true.
-      // GetAllBondingActivities cross-checks RitualLogs, ChakraLogs, CheckIns and UserBondingActivities.
-      // Without this, rituals completed via Daily Rituals tab are never marked in Activities tab.
       activitiesWithProps.forEach(a => {
         const backendCompleted = a.completed === true || a.Completed === true;
         if (backendCompleted) {
           todayIds.add(normalizeId(a.activityId));
+        }
+      });
+
+      // Auto-complete Morning/Evening Walk based on time of day if data has been synced
+      const currentHour = new Date().getHours();
+      // Only auto-complete if we have some baseline/vitals data synced recently
+      const hasData = localStorage.getItem('last_known_bond_score') !== null; 
+      
+      activitiesWithProps.forEach(a => {
+        const name = (a.activityName || '').trim().toLowerCase();
+        if (hasData) {
+          if (name === 'morning walk' && currentHour >= 6) {
+            todayIds.add(normalizeId(a.activityId));
+          }
+          if (name === 'evening walk' && currentHour >= 17) { // 5 PM onwards
+            todayIds.add(normalizeId(a.activityId));
+          }
         }
       });
 
@@ -1701,6 +1741,14 @@ const DashboardPage = () => {
     } finally {
       setIsLoadingActivities(false);
     }
+  };
+
+  // Update the ref so fetchSuggestions can call these safely
+  refreshFns.current = {
+    fetchCheckInStatus,
+    fetchBondedScore,
+    fetchDashboardStats,
+    loadBondingActivities
   };
 
   useEffect(() => {
