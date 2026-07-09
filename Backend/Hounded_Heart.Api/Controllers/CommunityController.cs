@@ -91,7 +91,7 @@ namespace Hounded_Heart.Api.Controllers
                 var totalCount = await query.CountAsync();
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                var posts = await query
+                var rawPosts = await query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(p => new
@@ -103,19 +103,13 @@ namespace Hounded_Heart.Api.Controllers
                         p.CommentCount,
                         p.CreatedOn,
                         p.UserId,
-                        // Author info
-                        Author = new
-                        {
-                            p.User.UserId,
-                            p.User.FullName,
-                            p.User.ProfileName,
-                            p.User.ProfilePhoto,
-                            DogName = p.User.Dogs.OrderByDescending(d => d.CreatedOn).Select(d => d.DogName).FirstOrDefault()
-                        },
-                        // Whether the current user liked this post
+                        AuthorUserId = p.User.UserId,
+                        AuthorFullName = p.User.FullName,
+                        AuthorProfileName = p.User.ProfileName,
+                        AuthorProfilePhoto = p.User.ProfilePhoto,
+                        AuthorDogName = p.User.Dogs.OrderByDescending(d => d.CreatedOn).Select(d => d.DogName).FirstOrDefault(),
                         IsLikedByMe = _context.CommunityLikes
                             .Any(l => l.PostId == p.PostId && l.UserId == userId.Value),
-                        // Top 2 comments for preview
                         TopComments = _context.CommunityComments
                             .Where(c => c.PostId == p.PostId && !c.IsDeleted)
                             .OrderByDescending(c => c.CreatedOn)
@@ -127,15 +121,45 @@ namespace Hounded_Heart.Api.Controllers
                                 c.CreatedOn,
                                 c.UserId,
                                 c.ParentCommentId,
-                                Author = new
-                                {
-                                    c.User.FullName,
-                                    c.User.ProfilePhoto
-                                }
+                                AuthorFullName = c.User.FullName,
+                                AuthorProfilePhoto = c.User.ProfilePhoto
                             })
                             .ToList()
                     })
                     .ToListAsync();
+
+                var posts = rawPosts.Select(p => new
+                {
+                    p.PostId,
+                    p.Content,
+                    ImageUrl = !string.IsNullOrEmpty(p.ImageUrl) ? _blobStorage.GetPresignedUrl(p.ImageUrl) : null,
+                    p.LikeCount,
+                    p.CommentCount,
+                    p.CreatedOn,
+                    p.UserId,
+                    Author = new
+                    {
+                        UserId = p.AuthorUserId,
+                        FullName = p.AuthorFullName,
+                        ProfileName = p.AuthorProfileName,
+                        ProfilePhoto = !string.IsNullOrEmpty(p.AuthorProfilePhoto) ? _blobStorage.GetPresignedUrl(p.AuthorProfilePhoto) : null,
+                        DogName = p.AuthorDogName
+                    },
+                    p.IsLikedByMe,
+                    TopComments = p.TopComments.Select(c => new
+                    {
+                        c.CommentId,
+                        c.Content,
+                        c.CreatedOn,
+                        c.UserId,
+                        c.ParentCommentId,
+                        Author = new
+                        {
+                            FullName = c.AuthorFullName,
+                            ProfilePhoto = !string.IsNullOrEmpty(c.AuthorProfilePhoto) ? _blobStorage.GetPresignedUrl(c.AuthorProfilePhoto) : null
+                        }
+                    }).ToList()
+                }).ToList();
 
                 return Ok(ResponseHelper.Success(new
                 {
@@ -229,11 +253,18 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     post.PostId,
                     post.Content,
-                    post.ImageUrl,
+                    ImageUrl = !string.IsNullOrEmpty(post.ImageUrl) ? _blobStorage.GetPresignedUrl(post.ImageUrl) : null,
                     post.LikeCount,
                     post.CommentCount,
                     post.CreatedOn,
-                    Author = author,
+                    Author = author == null ? null : new
+                    {
+                        author.UserId,
+                        author.FullName,
+                        author.ProfileName,
+                        ProfilePhoto = !string.IsNullOrEmpty(author.ProfilePhoto) ? _blobStorage.GetPresignedUrl(author.ProfilePhoto) : null,
+                        author.DogName
+                    },
                     IsLikedByMe = false,
                     TopComments = new List<object>()
                 }, "Post created successfully.", 200));
@@ -325,7 +356,7 @@ namespace Hounded_Heart.Api.Controllers
                 var totalCount = await query.CountAsync();
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                var comments = await query
+                var rawComments = await query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(c => new
@@ -335,15 +366,28 @@ namespace Hounded_Heart.Api.Controllers
                         c.CreatedOn,
                         c.UserId,
                         c.ParentCommentId,
-                        Author = new
-                        {
-                            c.User.UserId,
-                            c.User.FullName,
-                            c.User.ProfileName,
-                            c.User.ProfilePhoto
-                        }
+                        AuthorUserId = c.User.UserId,
+                        AuthorFullName = c.User.FullName,
+                        AuthorProfileName = c.User.ProfileName,
+                        AuthorProfilePhoto = c.User.ProfilePhoto
                     })
                     .ToListAsync();
+
+                var comments = rawComments.Select(c => new
+                {
+                    c.CommentId,
+                    c.Content,
+                    c.CreatedOn,
+                    c.UserId,
+                    c.ParentCommentId,
+                    Author = new
+                    {
+                        UserId = c.AuthorUserId,
+                        FullName = c.AuthorFullName,
+                        ProfileName = c.AuthorProfileName,
+                        ProfilePhoto = !string.IsNullOrEmpty(c.AuthorProfilePhoto) ? _blobStorage.GetPresignedUrl(c.AuthorProfilePhoto) : null
+                    }
+                }).ToList();
 
                 return Ok(ResponseHelper.Success(new
                 {
@@ -423,7 +467,13 @@ namespace Hounded_Heart.Api.Controllers
                     comment.Content,
                     comment.CreatedOn,
                     comment.ParentCommentId,
-                    Author = author,
+                    Author = author == null ? null : new
+                    {
+                        author.UserId,
+                        author.FullName,
+                        author.ProfileName,
+                        ProfilePhoto = !string.IsNullOrEmpty(author.ProfilePhoto) ? _blobStorage.GetPresignedUrl(author.ProfilePhoto) : null
+                    },
                     post.CommentCount
                 }, "Comment added.", 200));
             }
