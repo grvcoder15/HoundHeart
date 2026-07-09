@@ -167,7 +167,8 @@ namespace Hounded_Heart.Api.Controllers
                 url = await SaveLocalCourseFileAsync(bytes, fileName);
             }
 
-            return Ok(ResponseHelper.Success(new { url = !string.IsNullOrEmpty(url) ? _blobService.GetPresignedUrl(url) : url, fileName }, "File uploaded.", 200));
+            // return Ok(ResponseHelper.Success(new { url = !string.IsNullOrEmpty(url) ? _blobService.GetPresignedUrl(url) : url, fileName }, "File uploaded.", 200));
+       return Ok(ResponseHelper.Success(new { url, fileName }, "File uploaded.", 200));
         }
 
         // ─── Books ───────────────────────────────────────────────────────
