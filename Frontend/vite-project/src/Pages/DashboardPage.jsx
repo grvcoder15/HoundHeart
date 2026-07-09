@@ -5490,7 +5490,7 @@ const handleNextChakra = () => {
 
                 {/* Activities List */}
                 <div className="space-y-4">
-                  {isLoadingActivities ? (
+                  {isLoadingActivities && bondingActivities.length === 0 ? (
                     <div className="bg-white rounded-xl p-4 border border-gray-200 text-center text-gray-600">
                       Loading bonding activities...
                     </div>
