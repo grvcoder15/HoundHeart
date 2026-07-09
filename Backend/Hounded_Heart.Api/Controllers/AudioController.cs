@@ -55,7 +55,7 @@ namespace Hounded_Heart.Api.Controllers
                 return Ok(ResponseHelper.Success(new
                 {
                     chakraType = request.ChakraType,
-                    audioUrl = audioUrl,
+                    audioUrl = _blobService.GetPresignedUrl(audioUrl),
                     uploadedAt = DateTime.UtcNow
                 }, "Audio uploaded successfully.", 200));
             }
@@ -79,7 +79,16 @@ namespace Hounded_Heart.Api.Controllers
             try
             {
                 var chakras = await _chakraService.GetAllChakrasAsync();
-                return Ok(ResponseHelper.Success(chakras, "Chakras retrieved successfully.", 200));
+                var result = chakras.Select(c => new
+                {
+                    c.ChakraId,
+                    c.ChakraName,
+                    c.IsActive,
+                    c.CreatedOn,
+                    c.UpdatedOn,
+                    AudioUrl = !string.IsNullOrEmpty(c.AudioUrl) ? _blobService.GetPresignedUrl(c.AudioUrl) : null
+                });
+                return Ok(ResponseHelper.Success(result, "Chakras retrieved successfully.", 200));
             }
             catch (Exception ex)
             {

@@ -24,7 +24,18 @@ namespace Hounded_Heart.Api.Controllers
         public async Task<IActionResult> GetProducts()
         {
             var products = await _context.StoreProducts.OrderBy(p => p.DisplayOrder).ToListAsync();
-            return Ok(new { success = true, data = products });
+            var result = products.Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Description,
+                p.Price,
+                p.DisplayOrder,
+                p.IsComingSoon,
+                p.CreatedAt,
+                ImageUrl = !string.IsNullOrEmpty(p.ImageUrl) ? _blobService.GetPresignedUrl(p.ImageUrl) : null
+            });
+            return Ok(new { success = true, data = result });
         }
 
         [HttpPost("products")]
@@ -60,7 +71,17 @@ namespace Hounded_Heart.Api.Controllers
                 _context.StoreProducts.Add(product);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, message = "Product added successfully", data = product });
+                return Ok(new { success = true, message = "Product added successfully", data = new
+                {
+                    product.Id,
+                    product.Name,
+                    product.Description,
+                    product.Price,
+                    product.DisplayOrder,
+                    product.IsComingSoon,
+                    product.CreatedAt,
+                    ImageUrl = !string.IsNullOrEmpty(product.ImageUrl) ? _blobService.GetPresignedUrl(product.ImageUrl) : null
+                } });
             }
             catch (Exception ex)
             {
@@ -94,7 +115,17 @@ namespace Hounded_Heart.Api.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, message = "Product updated successfully", data = product });
+                return Ok(new { success = true, message = "Product updated successfully", data = new
+                {
+                    product.Id,
+                    product.Name,
+                    product.Description,
+                    product.Price,
+                    product.DisplayOrder,
+                    product.IsComingSoon,
+                    product.CreatedAt,
+                    ImageUrl = !string.IsNullOrEmpty(product.ImageUrl) ? _blobService.GetPresignedUrl(product.ImageUrl) : null
+                } });
             }
             catch (Exception ex)
             {

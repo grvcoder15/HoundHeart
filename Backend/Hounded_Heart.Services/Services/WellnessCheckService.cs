@@ -538,12 +538,39 @@ namespace Hounded_Heart.Services.Services
 
         private WellnessCheckResponseDto MapToDto(WellnessCheck c, bool isAsync, string? msg, DateTime? environmentReferenceCreatedAt = null)
         {
+            // Convert stored S3 key → presigned URL for single photo
+            string? presignedPhotoUrl = !string.IsNullOrEmpty(c.PhotoUrl)
+                ? _blobService.GetPresignedUrl(c.PhotoUrl)
+                : null;
+
+            // Convert each stored S3 key in PhotoUrlsJson → presigned URL
+            string? presignedPhotoUrlsJson = null;
+            if (!string.IsNullOrEmpty(c.PhotoUrlsJson))
+            {
+                try
+                {
+                    var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(c.PhotoUrlsJson);
+                    if (dict != null)
+                    {
+                        var mapped = dict.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => !string.IsNullOrEmpty(kvp.Value) ? _blobService.GetPresignedUrl(kvp.Value) : kvp.Value);
+                        presignedPhotoUrlsJson = JsonSerializer.Serialize(mapped);
+                    }
+                }
+                catch
+                {
+                    // Fallback: return as-is if parsing fails
+                    presignedPhotoUrlsJson = c.PhotoUrlsJson;
+                }
+            }
+
             return new WellnessCheckResponseDto
             {
                 Id = c.Id,
                 Type = c.Type,
-                PhotoUrl = c.PhotoUrl,
-                PhotoUrlsJson = c.PhotoUrlsJson,
+                PhotoUrl = presignedPhotoUrl,
+                PhotoUrlsJson = presignedPhotoUrlsJson,
                 AnswersJson = c.AnswersJson,
                 AiResponseJson = c.AiResponseJson,
                 DetailedOverviewJson = c.DetailedOverviewJson,

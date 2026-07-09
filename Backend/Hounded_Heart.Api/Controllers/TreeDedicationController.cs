@@ -76,7 +76,7 @@ namespace Hounded_Heart.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetLiveDedications()
         {
-            var dedications = await _context.TreeDedications
+            var rawDedications = await _context.TreeDedications
                 .Where(t => t.Status == "Live")
                 .Include(t => t.User)
                 .OrderByDescending(t => t.CreatedAt)
@@ -93,6 +93,18 @@ namespace Hounded_Heart.Api.Controllers
                 })
                 .ToListAsync();
 
+            var dedications = rawDedications.Select(t => new
+            {
+                t.Id,
+                t.DogName,
+                t.TributeMessage,
+                PhotoUrl = !string.IsNullOrEmpty(t.PhotoUrl) ? _blobStorage.GetPresignedUrl(t.PhotoUrl) : null,
+                t.DedicationType,
+                t.GrowthStage,
+                t.CreatedAt,
+                t.UserFullName
+            }).ToList();
+
             return Ok(ResponseHelper.Success(dedications, "Live dedications retrieved successfully.", 200));
         }
 
@@ -105,10 +117,22 @@ namespace Hounded_Heart.Api.Controllers
             if (userId == null)
                 return Unauthorized(ResponseHelper.Fail<object>("Unauthorized."));
 
-            var dedications = await _context.TreeDedications
+            var rawDedications = await _context.TreeDedications
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+            var dedications = rawDedications.Select(t => new
+            {
+                t.Id,
+                t.DogName,
+                t.TributeMessage,
+                PhotoUrl = !string.IsNullOrEmpty(t.PhotoUrl) ? _blobStorage.GetPresignedUrl(t.PhotoUrl) : null,
+                t.DedicationType,
+                t.GrowthStage,
+                t.Status,
+                t.CreatedAt
+            }).ToList();
 
             return Ok(ResponseHelper.Success(dedications, "User dedications retrieved successfully.", 200));
         }
@@ -118,7 +142,7 @@ namespace Hounded_Heart.Api.Controllers
         [Authorize] // Should ideally check if admin, but keeping consistent with existing patterns
         public async Task<IActionResult> GetPendingDedications()
         {
-            var dedications = await _context.TreeDedications
+            var rawDedications = await _context.TreeDedications
                 .Where(t => t.Status == "PendingReview")
                 .Include(t => t.User)
                 .OrderByDescending(t => t.CreatedAt)
@@ -134,6 +158,17 @@ namespace Hounded_Heart.Api.Controllers
                 })
                 .ToListAsync();
 
+            var dedications = rawDedications.Select(t => new
+            {
+                t.Id,
+                t.DogName,
+                t.TributeMessage,
+                PhotoUrl = !string.IsNullOrEmpty(t.PhotoUrl) ? _blobStorage.GetPresignedUrl(t.PhotoUrl) : null,
+                t.DedicationType,
+                t.CreatedAt,
+                t.UserFullName
+            }).ToList();
+
             return Ok(ResponseHelper.Success(dedications, "Pending dedications retrieved.", 200));
         }
 
@@ -142,7 +177,7 @@ namespace Hounded_Heart.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAdminLiveDedications()
         {
-            var dedications = await _context.TreeDedications
+            var rawDedications = await _context.TreeDedications
                 .Where(t => t.Status == "Live")
                 .Include(t => t.User)
                 .OrderByDescending(t => t.CreatedAt)
@@ -158,6 +193,18 @@ namespace Hounded_Heart.Api.Controllers
                     UserFullName = t.User != null ? t.User.FullName : "Anonymous"
                 })
                 .ToListAsync();
+
+            var dedications = rawDedications.Select(t => new
+            {
+                t.Id,
+                t.DogName,
+                t.TributeMessage,
+                PhotoUrl = !string.IsNullOrEmpty(t.PhotoUrl) ? _blobStorage.GetPresignedUrl(t.PhotoUrl) : null,
+                t.DedicationType,
+                t.GrowthStage,
+                t.CreatedAt,
+                t.UserFullName
+            }).ToList();
 
             return Ok(ResponseHelper.Success(dedications, "Live dedications retrieved.", 200));
         }

@@ -167,7 +167,7 @@ namespace Hounded_Heart.Api.Controllers
                 url = await SaveLocalCourseFileAsync(bytes, fileName);
             }
 
-            return Ok(ResponseHelper.Success(new { url, fileName }, "File uploaded.", 200));
+            return Ok(ResponseHelper.Success(new { url = !string.IsNullOrEmpty(url) ? _blobService.GetPresignedUrl(url) : url, fileName }, "File uploaded.", 200));
         }
 
         // ─── Books ───────────────────────────────────────────────────────
@@ -522,38 +522,44 @@ namespace Hounded_Heart.Api.Controllers
             (await _context.CourseResources.Where(x => x.CourseId == courseId).OrderBy(x => x.DisplayOrder).ToListAsync())
             .Select(MapResource).ToList();
 
-        private static CourseContentItemDto MapBook(CourseBookContent x) => new()
+        private CourseContentItemDto MapBook(CourseBookContent x) => new()
         {
             Id = x.Id, CourseId = x.CourseId, Title = x.Title, Description = x.Description,
-            FileUrl = x.FileUrl, DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished,
+            FileUrl = !string.IsNullOrEmpty(x.FileUrl) ? _blobService.GetPresignedUrl(x.FileUrl) : null,
+            DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished,
             CreatedAt = x.CreatedAt, UpdatedAt = x.UpdatedAt
         };
 
-        private static CourseContentItemDto MapVideo(CourseVideo x) => new()
+        private CourseContentItemDto MapVideo(CourseVideo x) => new()
         {
             Id = x.Id, CourseId = x.CourseId, Title = x.Title, Description = x.Description,
-            VideoUrl = x.VideoUrl, ThumbnailUrl = x.ThumbnailUrl, DurationSeconds = x.DurationSeconds,
+            VideoUrl = !string.IsNullOrEmpty(x.VideoUrl) ? _blobService.GetPresignedUrl(x.VideoUrl) : null,
+            ThumbnailUrl = !string.IsNullOrEmpty(x.ThumbnailUrl) ? _blobService.GetPresignedUrl(x.ThumbnailUrl) : null,
+            DurationSeconds = x.DurationSeconds,
             DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished, CreatedAt = x.CreatedAt, UpdatedAt = x.UpdatedAt
         };
 
-        private static CourseContentItemDto MapVisual(CourseVisual x) => new()
+        private CourseContentItemDto MapVisual(CourseVisual x) => new()
         {
             Id = x.Id, CourseId = x.CourseId, Title = x.Title, Description = x.Description,
-            ImageUrl = x.ImageUrl, DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished,
+            ImageUrl = !string.IsNullOrEmpty(x.ImageUrl) ? _blobService.GetPresignedUrl(x.ImageUrl) : null,
+            DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished,
             CreatedAt = x.CreatedAt, UpdatedAt = x.UpdatedAt
         };
 
-        private static CourseContentItemDto MapAudio(CourseAudio x) => new()
+        private CourseContentItemDto MapAudio(CourseAudio x) => new()
         {
             Id = x.Id, CourseId = x.CourseId, Title = x.Title, Description = x.Description,
-            AudioUrl = x.AudioUrl, DurationSeconds = x.DurationSeconds,
+            AudioUrl = !string.IsNullOrEmpty(x.AudioUrl) ? _blobService.GetPresignedUrl(x.AudioUrl) : null,
+            DurationSeconds = x.DurationSeconds,
             DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished, CreatedAt = x.CreatedAt, UpdatedAt = x.UpdatedAt
         };
 
-        private static CourseContentItemDto MapResource(CourseResource x) => new()
+        private CourseContentItemDto MapResource(CourseResource x) => new()
         {
             Id = x.Id, CourseId = x.CourseId, Title = x.Title, Description = x.Description,
-            FileUrl = x.FileUrl, ExternalUrl = x.ExternalUrl,
+            FileUrl = !string.IsNullOrEmpty(x.FileUrl) ? _blobService.GetPresignedUrl(x.FileUrl) : null,
+            ExternalUrl = x.ExternalUrl,
             DisplayOrder = x.DisplayOrder, IsPublished = x.IsPublished, CreatedAt = x.CreatedAt, UpdatedAt = x.UpdatedAt
         };
 

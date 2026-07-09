@@ -462,7 +462,7 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     UserId = user.UserId,
                     ProfileName = user.FullName,
-                    ProfilePhoto = user.ProfilePhoto
+                    ProfilePhoto = !string.IsNullOrEmpty(user.ProfilePhoto) ? _blobService.GetPresignedUrl(user.ProfilePhoto) : null
                 }, "Profile completed successfully.", 200));
             }
             catch (Exception ex)
@@ -535,7 +535,7 @@ namespace Hounded_Heart.Api.Controllers
                 {
                     existingDog.DogId,
                     existingDog.DogName,
-                    existingDog.ProfilePhoto,
+                    ProfilePhoto = !string.IsNullOrEmpty(existingDog.ProfilePhoto) ? _blobService.GetPresignedUrl(existingDog.ProfilePhoto) : null,
                     existingDog.Breed
                 }, "Dog profile saved successfully.", 200));
             }
@@ -827,7 +827,7 @@ namespace Hounded_Heart.Api.Controllers
                 UserId = user.UserId,
                 FullName = user.FullName,
                 Email = user.Email,
-                ProfilePhoto = user.ProfilePhoto,
+                ProfilePhoto = !string.IsNullOrEmpty(user.ProfilePhoto) ? _blobService.GetPresignedUrl(user.ProfilePhoto) : null,
                 ProfileName = user.ProfileName,
                 PhoneNumber = humanProfile?.PhoneNumber,
                 IsProfileSetupCompleted = user.IsProfileSetupCompleted,
@@ -840,7 +840,7 @@ namespace Hounded_Heart.Api.Controllers
                     Breed = activeDog.Breed,
                     Age = activeDog.Age,
                     Weight = activeDog.Weight,
-                    ProfilePhoto = activeDog.ProfilePhoto,
+                    ProfilePhoto = !string.IsNullOrEmpty(activeDog.ProfilePhoto) ? _blobService.GetPresignedUrl(activeDog.ProfilePhoto) : null,
                     Status = activeDog.Status,
                     DateOfDeath = activeDog.DateOfDeath,
                     DateLost = activeDog.DateLost,
@@ -853,7 +853,7 @@ namespace Hounded_Heart.Api.Controllers
                     Breed = d.Breed,
                     Age = d.Age,
                     Weight = d.Weight,
-                    ProfilePhoto = d.ProfilePhoto,
+                    ProfilePhoto = !string.IsNullOrEmpty(d.ProfilePhoto) ? _blobService.GetPresignedUrl(d.ProfilePhoto) : null,
                     Status = d.Status,
                     DateOfDeath = d.DateOfDeath,
                     DateLost = d.DateLost,
@@ -1208,7 +1208,7 @@ namespace Hounded_Heart.Api.Controllers
                     UserId = user.UserId,
                     ProfileName = user.ProfileName,
                     Email = user.Email,
-                    ProfilePhoto = user.ProfilePhoto,
+                    ProfilePhoto = !string.IsNullOrEmpty(user.ProfilePhoto) ? _blobService.GetPresignedUrl(user.ProfilePhoto) : null,
                     Dog = activeDogForResponse == null ? null : new
                     {
                         DogId = activeDogForResponse.DogId,
@@ -1216,7 +1216,7 @@ namespace Hounded_Heart.Api.Controllers
                         Breed = activeDogForResponse.Breed,
                         Age = activeDogForResponse.Age,
                         Weight = activeDogForResponse.Weight,
-                        DogProfilePhoto = activeDogForResponse.ProfilePhoto,
+                        DogProfilePhoto = !string.IsNullOrEmpty(activeDogForResponse.ProfilePhoto) ? _blobService.GetPresignedUrl(activeDogForResponse.ProfilePhoto) : null,
                         Status = activeDogForResponse.Status,
                         DateOfDeath = activeDogForResponse.DateOfDeath,
                         DateLost = activeDogForResponse.DateLost,
@@ -1242,7 +1242,7 @@ namespace Hounded_Heart.Api.Controllers
         {
             try
             {
-                var user = await _context.Users
+                var userRaw = await _context.Users
                     .Where(u => u.UserId == userId && !u.IsDeleted && u.IsActive)
                     .Select(u => new
                     {
@@ -1259,10 +1259,24 @@ namespace Hounded_Heart.Api.Controllers
                     })
                     .FirstOrDefaultAsync();
 
-                if (user == null)
+                if (userRaw == null)
                 {
                     return NotFound(ResponseHelper.Fail<string>("User not found.", 404));
                 }
+
+                var user = new
+                {
+                    userRaw.UserId,
+                    userRaw.FullName,
+                    userRaw.Email,
+                    userRaw.ProfileName,
+                    ProfilePhoto = !string.IsNullOrEmpty(userRaw.ProfilePhoto) ? _blobService.GetPresignedUrl(userRaw.ProfilePhoto) : null,
+                    userRaw.RoleId,
+                    userRaw.IsProfileSetupCompleted,
+                    userRaw.IsGoogleSignIn,
+                    userRaw.CreatedOn,
+                    userRaw.UpdatedOn
+                };
 
                 return Ok(ResponseHelper.Success(user, "User details retrieved successfully.", 200));
             }
