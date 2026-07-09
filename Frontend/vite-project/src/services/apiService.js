@@ -1136,6 +1136,27 @@ class ApiService {
     }
   }
 
+  // Get stable GUIDs for guided practice rituals (Morning Energy Sync, Gratitude Flow)
+  async getGuidedPracticeIds() {
+    try {
+      const response = await this.makeRequest('/Rituals/guided-practice-ids', { method: 'GET' });
+      return response;
+    } catch (error) {
+      console.error('Get guided practice IDs error:', error);
+      return null;
+    }
+  }
+
+  // Seed the guided practice rituals into the DB (call once on app startup)
+  async seedGuidedPractices() {
+    try {
+      const response = await this.makeRequest('/Rituals/seed-guided-practices', { method: 'POST' });
+      return response;
+    } catch (error) {
+      console.error('Seed guided practices error:', error);
+      return null;
+    }
+  }
 
   // Sync Chakra Scores and get recommendation
   async syncChakra(data) {

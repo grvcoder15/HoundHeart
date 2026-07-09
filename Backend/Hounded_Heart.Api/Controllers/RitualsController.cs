@@ -129,5 +129,73 @@ namespace Hounded_Heart.Api.Controllers
             public Guid UserId { get; set; }
             public Guid RitualId { get; set; }
         }
+
+        // Stable GUIDs for the Guided Practice rituals — never change these
+        public static readonly Guid MorningEnergySyncId = new Guid("a1b2c3d4-e5f6-7890-abcd-111111111111");
+        public static readonly Guid GratitudeFlowId     = new Guid("a1b2c3d4-e5f6-7890-abcd-222222222222");
+
+        /// <summary>
+        /// Seeds "Morning Energy Sync" and "Gratitude Flow" into the Rituals table.
+        /// Safe to call multiple times — uses upsert logic.
+        /// </summary>
+        [HttpPost("seed-guided-practices")]
+        public async Task<IActionResult> SeedGuidedPractices()
+        {
+            var toSeed = new[]
+            {
+                new Ritual
+                {
+                    Id          = MorningEnergySyncId,
+                    Title       = "Morning Energy Sync",
+                    Description = "Start your day aligned with your dog's energy.",
+                    Duration    = "8 min",
+                    Category    = "Guided Practice",
+                    IconType    = "Sun"
+                },
+                new Ritual
+                {
+                    Id          = GratitudeFlowId,
+                    Title       = "Gratitude Flow",
+                    Description = "Appreciate the gift of your bond.",
+                    Duration    = "10 min",
+                    Category    = "Guided Practice",
+                    IconType    = "Heart"
+                }
+            };
+
+            int added = 0;
+            foreach (var ritual in toSeed)
+            {
+                var existing = await _context.Rituals.FindAsync(ritual.Id);
+                if (existing == null)
+                {
+                    _context.Rituals.Add(ritual);
+                    added++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(ResponseHelper.Success(new
+            {
+                message        = $"{added} guided practice ritual(s) seeded.",
+                morningEnergySyncId = MorningEnergySyncId,
+                gratitudeFlowId     = GratitudeFlowId
+            }, "Guided practices seeded.", 200));
+        }
+
+        /// <summary>
+        /// Returns the stable GUIDs for the two guided-practice rituals.
+        /// Frontend calls this once on mount so it knows which IDs to pass to /complete.
+        /// </summary>
+        [HttpGet("guided-practice-ids")]
+        public IActionResult GetGuidedPracticeIds()
+        {
+            return Ok(ResponseHelper.Success(new
+            {
+                morningEnergySyncId = MorningEnergySyncId,
+                gratitudeFlowId     = GratitudeFlowId
+            }, "Guided practice IDs retrieved.", 200));
+        }
     }
 }
