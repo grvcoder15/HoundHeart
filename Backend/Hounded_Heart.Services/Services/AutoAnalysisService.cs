@@ -196,9 +196,40 @@ namespace Hounded_Heart.Services.Services
                 .Where(w => w.UserId == userId && w.CreatedAt >= today && w.CreatedAt < tomorrow)
                 .ToListAsync();
 
+            var todayActivityScores = await _context.UserActivitiesScores
+                .Where(u => u.UserId == userId && u.CreatedAt >= today && u.CreatedAt < tomorrow)
+                .ToListAsync();
+            var todayActivities = todayActivityScores.Select(u => u.ActivityId).ToList();
+
             var allCheckIns = await _context.CheckIns.Where(c => !c.IsDeleted).ToListAsync();
             var allRituals = await _context.Rituals.ToListAsync();
             var allActivities = await _context.BondingActivities.ToListAsync();
+
+            var syncBreathingActivity = allActivities.FirstOrDefault(a => a.ActivityName == "Synchronized Breathing");
+            bool didBreathingToday = syncBreathingActivity != null && todayActivities.Contains(syncBreathingActivity.ActivityId);
+
+            int distinctBreathingPatternsCount = 0;
+            if (didBreathingToday)
+            {
+                var breathingScores = todayActivityScores.Where(u => u.ActivityId == syncBreathingActivity.ActivityId).ToList();
+                var distinctPatterns = new HashSet<string>();
+                foreach (var score in breathingScores)
+                {
+                    if (!string.IsNullOrEmpty(score.ActivityDetails))
+                    {
+                        try
+                        {
+                            var details = System.Text.Json.JsonDocument.Parse(score.ActivityDetails);
+                            if (details.RootElement.TryGetProperty("PatternName", out var patternNameProp))
+                            {
+                                distinctPatterns.Add(patternNameProp.GetString());
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                distinctBreathingPatternsCount = distinctPatterns.Count;
+            }
 
             // ── HARD GATE: No vitals = no AI suggestions ─────────────────────
             // If neither dog vitals nor human vitals have been synced yet
@@ -556,14 +587,18 @@ namespace Hounded_Heart.Services.Services
             bool hasEnvOutdoor = wellnessChecks.Any(w => w.Type == "Environment" && w.AnswersJson != null && (w.AnswersJson.Contains("outdoor", StringComparison.OrdinalIgnoreCase) || w.AnswersJson.Contains("outside", StringComparison.OrdinalIgnoreCase) || w.AnswersJson.Contains("Walking area", StringComparison.OrdinalIgnoreCase) || w.AnswersJson.Contains("Backyard", StringComparison.OrdinalIgnoreCase)));
             if (hasEnvOutdoor || hasGPS) SuggestActivity("Outdoor Adventure", "Outdoor environment check or GPS location detected.");
 
+            // Calculate total dog play time for the day
+            int totalMinPlay = dogVitals.Sum(v => v.MinPlay ?? 0);
+
             // 4. Play Fetch
-            bool hasFetch = dogVitals.Any(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd && (v.MinPlay ?? 0) > 10) &&
-                            humanVitals.Any(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd && ((v.ActiveMinutes ?? 0) > 0 || (v.Steps ?? 0) > 100));
-            if (hasFetch) SuggestActivity("Play Fetch", "Afternoon play bursts detected with human activity.");
+            // User requested: if play is > 3 minutes, mark Play Fetch completed
+            if (totalMinPlay > 3) 
+                SuggestActivity("Play Fetch", $"Dog vitals recorded {totalMinPlay} minutes of play today (requires > 3).");
 
             // 5. Playtime
-            int totalMinPlay = dogVitals.Sum(v => v.MinPlay ?? 0);
-            if (totalMinPlay > 15) SuggestActivity("Playtime", "Substantial dog play time detected today.");
+            // User requested: if play is > 10 minutes, mark Playtime completed
+            if (totalMinPlay > 10) 
+                SuggestActivity("Playtime", $"Dog vitals recorded {totalMinPlay} minutes of play today (requires > 10).");
 
             // 6. Mindful Walk (Activity)
             if (hasAfternoonVitals) SuggestActivity("Mindful Walk", "Afternoon walk pattern detected in vitals data.");
@@ -672,29 +707,27 @@ namespace Hounded_Heart.Services.Services
             bool dogMorningVitals = dogVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < morningEnd && (v.ActivityScore > 0 || (v.MinActive ?? 0) > 0));
             bool humanMorningVitals = humanVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < morningEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
 
-            // 7. Belly Rubs
-            // Form: Dog Q1=Yes (relaxed) AND Q9=Yes (settled near you)
-            // Vitals: Dog resting calmly (MinRest > 30 mins) in a recent window AND human is present in that window
-            if (dogIsRelaxed && dogSettledNearYou)
-                SuggestActivity("Belly Rubs", "Dog Check-in: relaxed=Yes (Q1), settled near you=Yes (Q9).");
-            else if (currentWindowDogRest > 30 && currentWindowHumanActive)
-                SuggestActivity("Belly Rubs", $"Vitals: dog resting ({currentWindowDogRest} min rest) and human active in the {currentWindowName} window.");
-            else
-                SetActivityNotSuggested("Belly Rubs", dogCheckinSubmitted
-                    ? $"Dog Check-in Q1 (relaxed)={(dogCheckinAnswers.TryGetValue("1", out var _br1) ? _br1 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _br9) ? _br9 : "not answered")}. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min."
-                    : $"No Dog Check-in today and no calm resting vitals detected in the {currentWindowName} window (dog rest={currentWindowDogRest} min).");
+            // 7. Belly Rubs & 8. Cuddle Time
+            // User requested these ONLY trigger if Gemini analyzed an image in Wellness Checks
+            // and found a match for "belly rub" or "cuddle". Remove vitals/form fallbacks.
+            
+            bool aiDetectedBellyRub = wellnessChecks.Any(w => 
+                (w.AiResponseJson != null && w.AiResponseJson.Contains("belly rub", StringComparison.OrdinalIgnoreCase)) ||
+                (w.DetailedOverviewJson != null && w.DetailedOverviewJson.Contains("belly rub", StringComparison.OrdinalIgnoreCase)));
 
-            // 8. Cuddle Time
-            // Form: Dog Q3=Yes (seeks closeness) AND Q9=Yes (settled near you)
-            // Vitals: Dog resting a long time (> 60 min) AND human vitals present in the SAME window
-            if (dogSeeksCloseness && dogSettledNearYou)
-                SuggestActivity("Cuddle Time", "Dog Check-in: seeking closeness=Yes (Q3), settled near you=Yes (Q9).");
-            else if (currentWindowDogRest > 60 && currentWindowHumanActive)
-                SuggestActivity("Cuddle Time", $"Vitals: dog resting ({currentWindowDogRest} min) while owner is active in the {currentWindowName} window — likely cuddling together.");
+            if (aiDetectedBellyRub)
+                SuggestActivity("Belly Rubs", "Gemini AI analysis of your wellness image detected a belly rub.");
             else
-                SetActivityNotSuggested("Cuddle Time", dogCheckinSubmitted
-                    ? $"Dog Check-in Q3 (seeks closeness)={(dogCheckinAnswers.TryGetValue("3", out var _ct3) ? _ct3 : "not answered")}, Q9 (settled near you)={(dogCheckinAnswers.TryGetValue("9", out var _ct9) ? _ct9 : "not answered")}. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min."
-                    : $"No Dog Check-in today. Vitals: dog {currentWindowName} rest={currentWindowDogRest} min (need >60 min) and human active={currentWindowHumanActive}.");
+                SetActivityNotSuggested("Belly Rubs", "Gemini AI did not detect a belly rub in recent images.");
+
+            bool aiDetectedCuddle = wellnessChecks.Any(w => 
+                (w.AiResponseJson != null && w.AiResponseJson.Contains("cuddle", StringComparison.OrdinalIgnoreCase)) ||
+                (w.DetailedOverviewJson != null && w.DetailedOverviewJson.Contains("cuddle", StringComparison.OrdinalIgnoreCase)));
+
+            if (aiDetectedCuddle)
+                SuggestActivity("Cuddle Time", "Gemini AI analysis of your wellness image detected cuddle time.");
+            else
+                SetActivityNotSuggested("Cuddle Time", "Gemini AI did not detect cuddle time in recent images.");
 
             // 9. Feeding Time
             // Form: Dog Q5=Yes (appetite normal)
@@ -704,13 +737,23 @@ namespace Hounded_Heart.Services.Services
             else
                 SetActivityNotSuggested("Feeding Time", "Feeding time must be confirmed via Dog Check-in (Q5).");
 
-            // 10. Grooming — No reliable signal from form or vitals. Always false per spec.
-            SetActivityNotSuggested("Grooming", "No reliable signal to auto-suggest grooming.");
+            var dogJournalEntry = journalEntries.OrderByDescending(j => j.CreatedOn).FirstOrDefault(j => j.DogId != null && j.DogId != Guid.Empty);
+            string journalSnippet = dogJournalEntry != null 
+                ? (dogJournalEntry.Content?.Length > 35 ? dogJournalEntry.Content.Substring(0, 35) + "..." : (dogJournalEntry.Content ?? "Media post")) 
+                : "";
+
+            // 10. Grooming
+            if (dogJournalEntry != null)
+                SuggestActivity("Grooming", $"Completed because of your journal moment with your dog: '{journalSnippet}'");
+            else
+                SetActivityNotSuggested("Grooming", "No journal entry with your dog posted today.");
 
             // 11. Training Session
             // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room)
             // Vitals: Alternating active/play/rest pattern in daytime hours
-            if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)))
+            if (distinctBreathingPatternsCount >= 3)
+                SuggestActivity("Training Session", $"Completed because you practiced all 3 breathing patterns today.");
+            else if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)))
                 SuggestActivity("Training Session", "Dog Check-in: playful=Yes (Q4). Environment Check-in: enough room=Yes (Q8).");
             else if (trainingPattern)
                 SuggestActivity("Training Session", $"Vitals: alternating active/play/rest pattern detected during daytime hours — typical of a training session.");
@@ -720,20 +763,21 @@ namespace Hounded_Heart.Services.Services
                     : $"No Dog Check-in today. Vitals daytime training pattern: {(trainingPattern ? "yes" : "no")}.");
 
             // 12. New Trick Practice
-            // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room) AND Q10=No (no stress)
-            // Vitals: MinPlay > 5 min AND no stress AND human active, in an afternoon-ish window
-            int afternoonDogPlay = dogVitals.Where(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd).Sum(v => v.MinPlay ?? 0);
-            bool humanAfternoonActive = humanVitals.Any(v => v.TimestampUtc >= afternoonStart && v.TimestampUtc < afternoonEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
-            bool afternoonTrickPractice = afternoonDogPlay > 5 && !dogShownStress && humanAfternoonActive;
+            var latestChakraLog = chakraLogs.OrderByDescending(c => c.CreatedAt).FirstOrDefault();
+            int[] chakraScores = latestChakraLog != null 
+                ? new[] { latestChakraLog.RootScore, latestChakraLog.SacralScore, latestChakraLog.SolarPlexusScore, 
+                          latestChakraLog.HeartScore, latestChakraLog.ThroatScore, latestChakraLog.ThirdEyeScore, latestChakraLog.CrownScore }
+                : new int[0];
+            
+            int countSevenOrAbove = chakraScores.Count(s => s >= 7);
+            int countEightOrAbove = chakraScores.Count(s => s >= 8);
 
-            if (dogIsPlayful && (envRoomEnough != null && envRoomEnough.Equals("Yes", StringComparison.OrdinalIgnoreCase)) && !dogShownStress)
-                SuggestActivity("New Trick Practice", "Dog Check-in: playful=Yes (Q4), no stress (Q10). Environment Check-in: enough room=Yes (Q8).");
-            else if (afternoonTrickPractice)
-                SuggestActivity("New Trick Practice", $"Vitals: dog has afternoon play activity ({afternoonDogPlay} min), no stress, and human active — good conditions for trick practice.");
+            if (latestChakraLog != null && countSevenOrAbove >= 5)
+                SuggestActivity("New Trick Practice", $"Completed because {countSevenOrAbove} Nerve Centers scored 7 or higher.");
             else
-                SetActivityNotSuggested("New Trick Practice", dogCheckinSubmitted
-                    ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _nt4) ? _nt4 : "not answered")}. Vitals: afternoon play={afternoonDogPlay} min."
-                    : $"No Dog Check-in today. Vitals: afternoon dog play={afternoonDogPlay} min, human active={humanAfternoonActive}.");
+                SetActivityNotSuggested("New Trick Practice", latestChakraLog != null 
+                    ? $"Only {countSevenOrAbove} Nerve Centers scored 7 or higher (requires 5)." 
+                    : "No Nerve Center Alignment completed today.");
 
             // 13. Meditation Together
             // Form: Dog Q8=Yes (breathed calmly) AND (Env Q7=Calm OR Q10=Quiet)
@@ -752,7 +796,9 @@ namespace Hounded_Heart.Services.Services
             // 14. Synchronized Breathing
             // Form: Dog Q8=Yes (breathed calmly with dog)
             // Vitals: Human calm AND dog resting, same time window
-            if (humanBreathedCalm)
+            if (didBreathingToday)
+                SuggestActivity("Synchronized Breathing", "Completed because you practiced a breathing session today.");
+            else if (humanBreathedCalm)
                 SuggestActivity("Synchronized Breathing", $"Dog Check-in: breathed calmly with dog=Yes (Q8).{(envIsCalm ? " Environment: calm space." : envIsQuiet ? " Environment: quiet space." : "")}");
             else if (humanCalm && currentWindowDogRest > 30)
                 SuggestActivity("Synchronized Breathing", $"Vitals: human calm (HR/HRV) and dog resting ({currentWindowDogRest} min) in the {currentWindowName} window.");
@@ -762,20 +808,18 @@ namespace Hounded_Heart.Services.Services
                 SetActivityNotSuggested("Synchronized Breathing", $"No synchronized calm signals. Vitals: human calm={humanCalm}, dog {currentWindowName} rest={currentWindowDogRest} min.");
 
             // 15. Heart-to-Heart Reflection
-            // Form: Dog Q3=Yes (seeks closeness) AND Q8=Yes (breathed calmly)
-            // Vitals: Dog resting near human (MinRest > 30) + human is calm + both present together in same window
-            if (dogSeeksCloseness && humanBreathedCalm)
-                SuggestActivity("Heart-to-Heart Reflection", "Dog Check-in: seeking closeness=Yes (Q3), breathed calmly=Yes (Q8).");
-            else if (currentWindowDogRest > 30 && humanCalm)
-                SuggestActivity("Heart-to-Heart Reflection", $"Vitals: dog resting ({currentWindowDogRest} min) and human calm in the {currentWindowName} window.");
-            else if (chakraLogs.Any() || hasEveningJournal)
-                SuggestActivity("Heart-to-Heart Reflection", "Nerve Center Sync or evening journal completed.");
+            if (dogJournalEntry != null)
+                SuggestActivity("Heart-to-Heart Reflection", $"Completed because of your journal moment with your dog: '{journalSnippet}'");
             else
-                SetActivityNotSuggested("Heart-to-Heart Reflection", $"No shared calm signals. Dog {currentWindowName} rest={currentWindowDogRest} min, human calm={humanCalm}.");
+                SetActivityNotSuggested("Heart-to-Heart Reflection", "No journal entry with your dog posted today.");
 
             // 16. Nerve Center Sync
-            if (chakraLogs.Any()) SuggestActivity("Nerve Center Sync", "Nerve Center Sync log exists for today.");
-            else SetActivityNotSuggested("Nerve Center Sync", "No Nerve Center Sync session completed today.");
+            if (latestChakraLog != null && countEightOrAbove == 7)
+                SuggestActivity("Nerve Center Sync", "Completed because ALL 7 Nerve Centers scored 8 or higher.");
+            else
+                SetActivityNotSuggested("Nerve Center Sync", latestChakraLog != null 
+                    ? $"Only {countEightOrAbove} Nerve Centers scored 8 or higher (requires all 7)." 
+                    : "No Nerve Center Alignment completed today.");
 
             // 17. Gratitude Moment
             // Form: Dog Q6=Yes (slept well)

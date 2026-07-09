@@ -104,30 +104,28 @@ namespace Hounded_Heart.Api.Controllers
                     return Ok(ResponseHelper.Success<object>("Session completed. (Activity configuration missing)", "Session completed.", 200));
                 }
 
-                // Check for daily limit (2 points max)
+                // Check for daily limit (2 points max) - i.e. if they already have an entry today
                 bool alreadyCompleted = await _context.UserActivitiesScores
                     .AnyAsync(uas => uas.UserId == userId && uas.ActivityId == activity.ActivityId && uas.CreatedAt.Date == today);
 
-                if (!alreadyCompleted)
+                int pointsAwarded = alreadyCompleted ? 0 : activity.Points;
+
+                var activityDetailsJson = System.Text.Json.JsonSerializer.Serialize(request);
+
+                var score = new UserActivitiesScore
                 {
-                    var activityDetailsJson = System.Text.Json.JsonSerializer.Serialize(request);
-
-                    var score = new UserActivitiesScore
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        ActivityId = activity.ActivityId,
-                        Score = activity.Points,
-                        ActivityDetails = activityDetailsJson,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.UserActivitiesScores.Add(score);
-                    await _context.SaveChangesAsync();
-                    
-                    return Ok(ResponseHelper.Success(new { points = activity.Points }, "Session completed.", 200));
-                }
-
-                return Ok(ResponseHelper.Success(new { points = 0 }, "Session completed. Daily limit reached.", 200));
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    ActivityId = activity.ActivityId,
+                    Score = pointsAwarded,
+                    ActivityDetails = activityDetailsJson,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.UserActivitiesScores.Add(score);
+                await _context.SaveChangesAsync();
+                
+                string msg = alreadyCompleted ? "Session completed. Daily limit reached." : "Session completed.";
+                return Ok(ResponseHelper.Success(new { points = pointsAwarded }, msg, 200));
             }
             catch (Exception ex)
             {
