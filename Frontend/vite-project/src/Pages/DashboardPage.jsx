@@ -1639,30 +1639,15 @@ const DashboardPage = () => {
           .filter(Boolean)
       );
 
-      const RITUAL_ACTIVITY_NAMES = [
-        'Bedtime Blessing',
-        'Morning Intention Setting',
-        'Mindful Walk',
-        'Gratitude Moment',
-        'Evening Reflection',
-        'Energy Check-in'
-      ];
-
       // Map categories and preserve backend interaction type if valid
-      // FILTER OUT ritual activities so they don't appear in the Activities tab
-      const activitiesWithProps = activities
-        .filter(a => {
-          const name = (a.activityName || a.ActivityName || '').trim();
-          return !RITUAL_ACTIVITY_NAMES.includes(name);
-        })
-        .map(a => ({
-          ...a,
-          activityId: normalizeId(a.activityId || a.ActivityId),
-          activityName: a.activityName || a.ActivityName,
-          points: a.points ?? a.Points ?? 2,
-          category: a.category || ACTIVITY_CATEGORIES[a.activityName || a.ActivityName] || 'Physical',
-          interactionType: a.interactionType || 'Checkbox'
-        }));
+      const activitiesWithProps = activities.map(a => ({
+        ...a,
+        activityId: normalizeId(a.activityId || a.ActivityId),
+        activityName: a.activityName || a.ActivityName,
+        points: a.points ?? a.Points ?? 2,
+        category: a.category || ACTIVITY_CATEGORIES[a.activityName || a.ActivityName] || 'Physical',
+        interactionType: a.interactionType || 'Checkbox'
+      }));
 
       // Ã¢Å“â€¦ KEY FIX: Seed todayIds with any activity the backend already flagged as Completed=true.
       activitiesWithProps.forEach(a => {
