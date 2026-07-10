@@ -633,17 +633,41 @@ namespace Hounded_Heart.Services.Services
                 Console.WriteLine($"[DEBUG] DogCheckIn parsed -> Key: '{kvp.Key}' Value: '{kvp.Value}'");
             }
 
-            bool dogIsRelaxed       = dogCheckinAnswers.TryGetValue("1", out var dq1) && dq1.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogGreetedNormally = dogCheckinAnswers.TryGetValue("2", out var dq2) && dq2.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogSeeksCloseness  = dogCheckinAnswers.TryGetValue("3", out var dq3) && dq3.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogIsPlayful       = dogCheckinAnswers.TryGetValue("4", out var dq4) && dq4.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogAteNormally     = dogCheckinAnswers.TryGetValue("5", out var dq5) && dq5.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogSleptWell       = dogCheckinAnswers.TryGetValue("6", out var dq6) && dq6.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool routineChanged     = dogCheckinAnswers.TryGetValue("7", out var dq7) && dq7.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool humanBreathedCalm  = dogCheckinAnswers.TryGetValue("8", out var dq8) && dq8.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogSettledNearYou  = dogCheckinAnswers.TryGetValue("9", out var dq9) && dq9.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-            bool dogShownStress     = dogCheckinAnswers.TryGetValue("10", out var dq10) && dq10.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogIsRelaxed       = dogCheckinAnswers.TryGetValue("Has your dog seemed more relaxed than usual today?", out var dq1) && dq1.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogGreetedNormally = dogCheckinAnswers.TryGetValue("Did your dog greet you with their usual energy when you saw them today?", out var dq2) && dq2.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogSeeksCloseness  = dogCheckinAnswers.TryGetValue("Has your dog been seeking more closeness than usual \u2014 leaning, following you, wanting to be near you?", out var dq3) && dq3.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogIsPlayful       = dogCheckinAnswers.TryGetValue("Did your dog seem playful and engaged today?", out var dq4) && dq4.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogAteNormally     = dogCheckinAnswers.TryGetValue("Has your dog\u0027s appetite seemed normal today?", out var dq5) && dq5.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogSleptWell       = dogCheckinAnswers.TryGetValue("Did your dog sleep or rest well last night, as far as you noticed?", out var dq6) && dq6.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool routineChanged     = dogCheckinAnswers.TryGetValue("Has anything changed in your routine this week (new schedule, travel, guests, etc.)?", out var dq7) && dq7.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool humanBreathedCalm  = dogCheckinAnswers.TryGetValue("Did you take a moment today to just sit and breathe calmly with your dog?", out var dq8) && dq8.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogSettledNearYou  = dogCheckinAnswers.TryGetValue("Did your dog settle, sigh, or visibly relax when you were near them?", out var dq9) && dq9.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+            bool dogShownStress     = dogCheckinAnswers.TryGetValue("Has your dog shown any signs of stress today \u2014 pacing, panting, hiding, excessive barking?", out var dq10) && dq10.Equals("Yes", StringComparison.OrdinalIgnoreCase);
             bool dogCheckinSubmitted = latestDogCheckin != null;
+
+            // ── DIAGNOSTIC: log all resolved booleans to Railway console ──────────────
+            Console.WriteLine($"[DIAG] ===== DOG CHECK-IN KEY DUMP =====");
+            Console.WriteLine($"[DIAG] Total keys in dogCheckinAnswers: {dogCheckinAnswers.Count}");
+            Console.WriteLine($"[DIAG] Raw AnswersJson: {latestDogCheckin?.AnswersJson ?? "NULL"}");
+            foreach (var kvp in dogCheckinAnswers)
+                Console.WriteLine($"[DIAG] Key='{kvp.Key}' Value='{kvp.Value}'");
+            Console.WriteLine($"[DIAG] ===== RESOLVED BOOLEANS =====");
+            Console.WriteLine($"[DIAG] dogIsRelaxed       (Q1=Yes) = {dogIsRelaxed}");
+            Console.WriteLine($"[DIAG] dogGreetedNormally (Q2=Yes) = {dogGreetedNormally}");
+            Console.WriteLine($"[DIAG] dogSeeksCloseness  (Q3=Yes) = {dogSeeksCloseness}");
+            Console.WriteLine($"[DIAG] dogIsPlayful       (Q4=Yes) = {dogIsPlayful}");
+            Console.WriteLine($"[DIAG] dogAteNormally     (Q5=Yes) = {dogAteNormally}");
+            Console.WriteLine($"[DIAG] dogSleptWell       (Q6=Yes) = {dogSleptWell}");
+            Console.WriteLine($"[DIAG] routineChanged     (Q7=Yes) = {routineChanged}");
+            Console.WriteLine($"[DIAG] humanBreathedCalm  (Q8=Yes) = {humanBreathedCalm}");
+            Console.WriteLine($"[DIAG] dogSettledNearYou  (Q9=Yes) = {dogSettledNearYou}");
+            Console.WriteLine($"[DIAG] dogShownStress     (Q10=Yes)= {dogShownStress}");
+            Console.WriteLine($"[DIAG] dogCheckinSubmitted          = {dogCheckinSubmitted}");
+            Console.WriteLine($"[DIAG] ===== ACTIVITY CONDITION CHECK =====");
+            Console.WriteLine($"[DIAG] Bedtime Blessing    needs: dogIsRelaxed({dogIsRelaxed}) && dogSettledNearYou({dogSettledNearYou})");
+            Console.WriteLine($"[DIAG] Feeding Time        needs: dogAteNormally({dogAteNormally})");
+            Console.WriteLine($"[DIAG] Evening Reflection  needs: routineChanged({routineChanged}) OR dogShownStress({dogShownStress})");
+            Console.WriteLine($"[DIAG] Mindful Walk        needs: hasAfternoonVitals({hasAfternoonVitals})");
 
             // ── Parse Environment Check-in answers (Type=Environment) ─────────────────
             // Q1=space type, Q2=easy to move, Q3=clutter, Q4=changes, Q5=resting spot,
@@ -660,10 +684,26 @@ namespace Hounded_Heart.Services.Services
                 catch { envAnswers = new(); }
             }
 
-            envAnswers.TryGetValue("1", out var envSpace);    // Living room / Bedroom / Backyard / Walking area / Other
-            envAnswers.TryGetValue("7", out var envCalmness); // Calm / Mixed / Chaotic
-            envAnswers.TryGetValue("8", out var envRoomEnough); // Yes / No
-            envAnswers.TryGetValue("10", out var envNoise);   // Quiet / Some noise / Noisy
+            // Log all env answers for diagnosis
+            Console.WriteLine($"[DIAG] ===== ENV CHECK-IN KEY DUMP =====");
+            Console.WriteLine($"[DIAG] Total env keys: {envAnswers.Count}  Raw: {latestEnvCheckin?.AnswersJson ?? "NULL"}");
+            foreach (var kvp in envAnswers)
+                Console.WriteLine($"[DIAG] EnvKey='{kvp.Key}' Value='{kvp.Value}'");
+
+            // Try both numeric (legacy) and full question text keys
+            envAnswers.TryGetValue("Which space are you checking in about?", out var envSpace);
+            if (envSpace == null) envAnswers.TryGetValue("1", out envSpace);
+
+            envAnswers.TryGetValue("Does this space feel calm to you, or a bit chaotic?", out var envCalmness);
+            if (envCalmness == null) envAnswers.TryGetValue("7", out envCalmness);
+
+            envAnswers.TryGetValue("Is there enough room for you and your dog to move freely together here?", out var envRoomEnough);
+            if (envRoomEnough == null) envAnswers.TryGetValue("8", out envRoomEnough);
+
+            envAnswers.TryGetValue("Is this space generally quiet, or is there a lot of background noise?", out var envNoise);
+            if (envNoise == null) envAnswers.TryGetValue("10", out envNoise);
+
+            Console.WriteLine($"[DIAG] envSpace='{envSpace}' envCalmness='{envCalmness}' envNoise='{envNoise}'");
 
             bool envIsCalm   = envCalmness != null && envCalmness.Equals("Calm", StringComparison.OrdinalIgnoreCase);
             bool envIsQuiet  = envNoise != null && envNoise.Equals("Quiet", StringComparison.OrdinalIgnoreCase);
