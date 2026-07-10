@@ -1078,7 +1078,12 @@ const DashboardPage = () => {
   const [isBreathingSessionActive, setIsBreathingSessionActive] = useState(false);
   const [breathingPhase, setBreathingPhase] = useState('ready'); // ready, inhale, hold, exhale, holdAfterExhale
   const [timeLeftInPhase, setTimeLeftInPhase] = useState(0);
-  const [currentCycle, setCurrentCycle] = useState(0);
+  const getTodayDateStr = () => new Date().toISOString().split('T')[0];
+  const getSavedBreathingCycles = () => {
+    const saved = localStorage.getItem(`dailyBreathing_${getTodayDateStr()}`);
+    return saved ? parseInt(saved, 10) : 0;
+  };
+  const [currentCycle, setCurrentCycle] = useState(getSavedBreathingCycles);
 
   // Refs for timer management
   const timerRef = React.useRef(null);
@@ -1133,12 +1138,12 @@ const DashboardPage = () => {
 
         // Use fallback if no API data
         if (!patterns || patterns.length === 0) {
-          console.warn('Ã¢Å¡Â Ã¯Â¸Â No breathing patterns from API, using defaults');
+          console.warn('Ã¢Å¡Â Ã¯Â¸Â  No breathing patterns from API, using defaults');
           patternData = defaultPatterns;
         }
 
         if (!cycles || cycles.length === 0) {
-          console.warn('Ã¢Å¡Â Ã¯Â¸Â No target cycles from API, using defaults');
+          console.warn('Ã¢Å¡Â Ã¯Â¸Â  No target cycles from API, using defaults');
           cycleData = defaultCycles;
         }
 
@@ -1214,8 +1219,6 @@ const DashboardPage = () => {
     isSessionActiveRef.current = false;
     setBreathingPhase('ready');
     setTimeLeftInPhase(0);
-    setCurrentCycle(0);
-    currentCycleRef.current = 0;
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -1301,8 +1304,9 @@ const DashboardPage = () => {
     setIsBreathingSessionActive(false);
     isSessionActiveRef.current = false; // Ensure ref is synced
     setBreathingPhase('ready');
-    setCurrentCycle(0);
-    currentCycleRef.current = 0;
+    // Persist completed cycles for today so the progress bar stays filled
+    localStorage.setItem(`dailyBreathing_${getTodayDateStr()}`, completedCount.toString());
+    // Do NOT reset currentCycle to 0 here
 
     try {
       // Calculate duration
