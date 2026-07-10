@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -1293,9 +1293,12 @@ const DashboardPage = () => {
       const targetCycleObj = targetCycles.find(c => c.id === selectedTargetCycles);
       const targetCount = targetCycleObj ? parseInt(targetCycleObj.cycles) : 10;
 
+      // patternId must be a valid UUID or null — never send a name string as patternId
+      const isValidGuid = (v) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+      const rawPatternId = pattern ? pattern.id : null;
       const payload = {
-        patternId: pattern ? pattern.id : selectedBreathingPattern,
-        patternName: pattern ? pattern.name : 'Unknown Pattern',
+        patternId: isValidGuid(rawPatternId) ? rawPatternId : null,
+        patternName: pattern ? pattern.name : (selectedBreathingPattern || 'Unknown Pattern'),
         targetCycles: targetCount,
         completedCycles: completedCount || 0,
         durationSeconds: duration

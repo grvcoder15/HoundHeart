@@ -43,10 +43,10 @@ namespace Hounded_Heart.Services.Services
                 .OrderByDescending(w => w.CreatedAt)
                 .FirstOrDefaultAsync();
 
-            if (latestDogCheckin == null && latestEnvironmentCheckin == null)
-            {
-                throw new Exception("Please complete at least one Dog or Environment wellness check-in before requesting a detailed analysis.");
-            }
+            var latestHumanCheckin = await _context.WellnessChecks
+                .Where(w => w.UserId == userId && w.Type == "HumanCheckIn" && w.Status == "Complete")
+                .OrderByDescending(w => w.CreatedAt)
+                .FirstOrDefaultAsync();
 
             DogBaseline? latestBaseline = null;
             DogVitalsRecord? latestVitals = null;
@@ -61,6 +61,11 @@ namespace Hounded_Heart.Services.Services
                     .Where(v => v.DogId == activeDog.DogId)
                     .OrderByDescending(v => v.TimestampUtc)
                     .FirstOrDefaultAsync();
+            }
+
+            if (latestDogCheckin == null && latestEnvironmentCheckin == null && latestHumanCheckin == null && latestVitals == null)
+            {
+                throw new Exception("Please complete at least one wellness check-in (Dog, Human, or Environment) or connect a wearable before requesting a detailed analysis.");
             }
 
             var baselineSnapshot = latestBaseline != null
@@ -105,11 +110,15 @@ namespace Hounded_Heart.Services.Services
             string? dogCheckinReflection = latestDogCheckin?.AiResponseJson ?? "No prior dog check-in reflection available.";
             string? envCheckinAnswers = latestEnvironmentCheckin?.AnswersJson ?? "No environment check-in available.";
             string? envCheckinReflection = latestEnvironmentCheckin?.AiResponseJson ?? "No prior environment check-in reflection available.";
+            string? humanCheckinAnswers = latestHumanCheckin?.AnswersJson ?? "No human check-in available.";
+            string? humanCheckinReflection = latestHumanCheckin?.AiResponseJson ?? "No prior human check-in reflection available.";
 
             answers["Dog Check-in Answers"] = dogCheckinAnswers;
             answers["Dog Check-in Reflection"] = dogCheckinReflection;
             answers["Environment Check-in Answers"] = envCheckinAnswers;
             answers["Environment Check-in Reflection"] = envCheckinReflection;
+            answers["Human Check-in Answers"] = humanCheckinAnswers;
+            answers["Human Check-in Reflection"] = humanCheckinReflection;
 
             var photoUrls = new Dictionary<string, string>();
             AddWellnessCheckPhotos(photoUrls, latestDogCheckin, "Dog Check-in Photo");
