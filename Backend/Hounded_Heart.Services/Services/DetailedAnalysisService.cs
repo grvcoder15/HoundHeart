@@ -129,7 +129,7 @@ namespace Hounded_Heart.Services.Services
                 answers["Photo Notes"] = "Photos are included for context when available.";
             }
 
-            var prompt = string.Format(DetailedAnalysisPromptBase, "Use the full summary and the attached answer sections to build the report.");
+            var prompt = DetailedAnalysisPromptBase + "\nUse the full summary and the attached answer sections to build the report.";
 
             string reportJson = await _geminiService.AnalyzeWithContextAsync(prompt, answers, photoUrls.Count > 0 ? photoUrls : null);
 
