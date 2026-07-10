@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -833,13 +833,17 @@ const DashboardPage = () => {
           isCompleted: storedIds.has(String(r.id || r.Id)) || !!r.isCompleted,
           originallyCompleted: !!r.isCompleted
         }));
-        console.log('Ã¢Å“â€¦ API Rituals loaded:', mappedRituals);
-        setRituals(mappedRituals);
+        // Deduplicate by id so progress bar always shows the real unique count
+        const uniqueRituals = Object.values(
+          mappedRituals.reduce((acc, r) => { acc[String(r.id || r.Id)] = r; return acc; }, {})
+        );
+        console.log('✅ API Rituals loaded (deduped):', uniqueRituals);
+        setRituals(uniqueRituals);
         setDailyBonusEarned(payload?.dailyBonusEarned || payload?.DailyBonusEarned || false);
         return;
       }
 
-      console.warn('Ã¢Å¡Â Ã¯Â¸Â Ritual suggestions empty, using fallback ritual checklist');
+      console.warn('Ã¢Å¡Â Ã¯Â¸Â  Ritual suggestions empty, using fallback ritual checklist');
 
       // Build fallback list from bonding activities + today's completed records
       let activitiesList = bondingActivities;
