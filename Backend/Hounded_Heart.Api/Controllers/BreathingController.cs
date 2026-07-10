@@ -78,8 +78,8 @@ namespace Hounded_Heart.Api.Controllers
 
         public class CompleteBreathingSessionRequest
         {
-            public Guid PatternId { get; set; }
-            public string PatternName { get; set; }
+            public Guid? PatternId { get; set; }   // nullable — may be omitted
+            public string PatternName { get; set; } = string.Empty;
             public int TargetCycles { get; set; }
             public int CompletedCycles { get; set; }
             public int DurationSeconds { get; set; }
