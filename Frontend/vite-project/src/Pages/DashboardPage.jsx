@@ -4387,7 +4387,7 @@ const handleNextChakra = () => {
 
                     // Handle empty rituals case
                     if (totalRituals === 0) {
-                      console.warn('Ã¢Å¡Â Ã¯Â¸Â No rituals available for today');
+                      console.warn('No rituals available for today');
                       return (
                         <div className="bg-green-50 rounded-xl p-4 mb-4">
                           <div className="flex items-center justify-between mb-4">
@@ -4408,7 +4408,7 @@ const handleNextChakra = () => {
 
                     const completionPercentage = Math.round((completedCount / totalRituals) * 100);
                     const progressBarWidth = (completedCount / totalRituals) * 100;
-                    console.log('Ã°Å¸â€œÅ  Completion %:', completionPercentage, 'Progress bar width:', progressBarWidth);
+                    console.log('Completion %:', completionPercentage, 'Progress bar width:', progressBarWidth);
 
                     return (
                       <>
