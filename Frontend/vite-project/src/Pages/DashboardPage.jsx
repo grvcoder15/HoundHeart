@@ -4585,49 +4585,6 @@ const handleNextChakra = () => {
                   </div>
                 </div>
 
-                {/* Evening Rituals */}
-                <div className="bg-purple-50 rounded-xl p-4">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.57.46-3.03 1.24-4.26C6.11 9.5 8.89 11 12 11s5.89-1.5 6.76-3.26C19.54 8.97 20 10.43 20 12c0 4.41-3.59 8-8 8z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Evening Rituals</h3>
-                  </div>
-                  <div className="space-y-4">
-                    {rituals.filter(r => r.category === 'Evening').length === 0 && <p className="text-sm text-gray-500 italic">No evening rituals found.</p>}
-                    {rituals.filter(r => r.category === 'Evening').map(ritual => (
-                      <div key={ritual.id} className="flex items-center justify-between p-4 bg-white rounded-lg">
-                        <div className="flex items-center space-x-3 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={ritual.isCompleted}
-                            onChange={() => handleRitualToggle(ritual.id, ritual.isCompleted)}
-                            className="w-5 h-5 text-purple-500 border-gray-300 rounded focus:ring-purple-500"
-                          />
-                          <div className="flex-1">
-                            <h4 className={`font-medium ${ritual.isCompleted ? 'text-green-700' : 'text-gray-900'}`}>{ritual.title}</h4>
-                            <p className="text-sm text-gray-600">{ritual.description}</p>
-                            {ritual.isCompleted && (
-                              <div className="flex items-center space-x-2 mt-2">
-                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                <span className="text-sm font-medium text-green-600">Completed</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm text-gray-500">{ritual.duration}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Save Rituals Button */}
                 <div className="flex justify-end mt-4">
