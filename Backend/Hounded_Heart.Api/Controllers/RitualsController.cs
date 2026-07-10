@@ -116,6 +116,52 @@ namespace Hounded_Heart.Api.Controllers
 
             await _context.SaveChangesAsync();
 
+            // 5. Automatic completion of Nerve Center Sync & New Trick Practice based on Guided Practice count
+            var guidedPracticeIds = new[] { MorningEnergySyncId, GratitudeFlowId, DeepBondingMeditationId, HealingCirclePracticeId };
+            
+            int completedGuidedCount = await _context.RitualLogs
+                .CountAsync(l => l.UserId == request.UserId 
+                              && guidedPracticeIds.Contains(l.RitualId)
+                              && l.CompletedAt >= today 
+                              && l.CompletedAt < today.AddDays(1));
+
+            if (completedGuidedCount >= 2)
+            {
+                var nerveCenterActivity = await _context.BondingActivities.FirstOrDefaultAsync(a => a.ActivityName == "Nerve Center Sync");
+                if (nerveCenterActivity != null)
+                {
+                    bool nerveCenterDone = await _context.UserBondingActivities.AnyAsync(a => a.UserId == request.UserId && a.ActivityId == nerveCenterActivity.ActivityId && a.ActivityDate >= today && a.ActivityDate < today.AddDays(1));
+                    if (!nerveCenterDone)
+                    {
+                        _context.UserBondingActivities.Add(new Hounded_Heart.Models.Data.UserBondingActivity
+                        {
+                            UserId = request.UserId,
+                            ActivityId = nerveCenterActivity.ActivityId,
+                            ActivityDate = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            if (completedGuidedCount >= 4)
+            {
+                var newTrickActivity = await _context.BondingActivities.FirstOrDefaultAsync(a => a.ActivityName == "New Trick Practice");
+                if (newTrickActivity != null)
+                {
+                    bool newTrickDone = await _context.UserBondingActivities.AnyAsync(a => a.UserId == request.UserId && a.ActivityId == newTrickActivity.ActivityId && a.ActivityDate >= today && a.ActivityDate < today.AddDays(1));
+                    if (!newTrickDone)
+                    {
+                        _context.UserBondingActivities.Add(new Hounded_Heart.Models.Data.UserBondingActivity
+                        {
+                            UserId = request.UserId,
+                            ActivityId = newTrickActivity.ActivityId,
+                            ActivityDate = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+            await _context.SaveChangesAsync();
+
             return Ok(ResponseHelper.Success(new
             {
                 message = "Ritual completed.",
@@ -133,6 +179,8 @@ namespace Hounded_Heart.Api.Controllers
         // Stable GUIDs for the Guided Practice rituals — never change these
         public static readonly Guid MorningEnergySyncId = new Guid("a1b2c3d4-e5f6-7890-abcd-111111111111");
         public static readonly Guid GratitudeFlowId     = new Guid("a1b2c3d4-e5f6-7890-abcd-222222222222");
+        public static readonly Guid DeepBondingMeditationId = new Guid("a1b2c3d4-e5f6-7890-abcd-333333333333");
+        public static readonly Guid HealingCirclePracticeId = new Guid("a1b2c3d4-e5f6-7890-abcd-444444444444");
 
         /// <summary>
         /// Seeds "Morning Energy Sync" and "Gratitude Flow" into the Rituals table.
@@ -160,6 +208,24 @@ namespace Hounded_Heart.Api.Controllers
                     Duration    = "10 min",
                     Category    = "Guided Practice",
                     IconType    = "Heart"
+                },
+                new Ritual
+                {
+                    Id          = DeepBondingMeditationId,
+                    Title       = "Deep Bonding Meditation",
+                    Description = "Strengthen your spiritual connection.",
+                    Duration    = "15 min",
+                    Category    = "Guided Practice",
+                    IconType    = "Meditation"
+                },
+                new Ritual
+                {
+                    Id          = HealingCirclePracticeId,
+                    Title       = "Healing Circle Practice",
+                    Description = "Send healing energy to your dog.",
+                    Duration    = "12 min",
+                    Category    = "Guided Practice",
+                    IconType    = "Sparkle"
                 }
             };
 
@@ -180,7 +246,9 @@ namespace Hounded_Heart.Api.Controllers
             {
                 message        = $"{added} guided practice ritual(s) seeded.",
                 morningEnergySyncId = MorningEnergySyncId,
-                gratitudeFlowId     = GratitudeFlowId
+                gratitudeFlowId     = GratitudeFlowId,
+                deepBondingMeditationId = DeepBondingMeditationId,
+                healingCirclePracticeId = HealingCirclePracticeId
             }, "Guided practices seeded.", 200));
         }
 
@@ -194,7 +262,9 @@ namespace Hounded_Heart.Api.Controllers
             return Ok(ResponseHelper.Success(new
             {
                 morningEnergySyncId = MorningEnergySyncId,
-                gratitudeFlowId     = GratitudeFlowId
+                gratitudeFlowId     = GratitudeFlowId,
+                deepBondingMeditationId = DeepBondingMeditationId,
+                healingCirclePracticeId = HealingCirclePracticeId
             }, "Guided practice IDs retrieved.", 200));
         }
     }

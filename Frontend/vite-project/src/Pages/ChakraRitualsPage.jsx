@@ -30,7 +30,12 @@ const ChakraRitualsPage = () => {
   const [healingCircleDuration, setHealingCircleDuration] = useState(0);
 
   // Guided Practice ritual IDs (fetched from backend once)
-  const [guidedPracticeIds, setGuidedPracticeIds] = useState({ morningEnergySyncId: null, gratitudeFlowId: null });
+  const [guidedPracticeIds, setGuidedPracticeIds] = useState({
+    morningEnergySyncId: null,
+    gratitudeFlowId: null,
+    deepBondingMeditationId: null,
+    healingCirclePracticeId: null
+  });
   // Set of ritual IDs the user has completed today
   const [completedGuidedPractices, setCompletedGuidedPractices] = useState(new Set());
   
@@ -252,7 +257,12 @@ const ChakraRitualsPage = () => {
         const idsRes = await apiService.getGuidedPracticeIds();
         const ids = idsRes?.data || idsRes;
         if (ids) {
-          setGuidedPracticeIds({ morningEnergySyncId: ids.morningEnergySyncId, gratitudeFlowId: ids.gratitudeFlowId });
+          setGuidedPracticeIds({ 
+            morningEnergySyncId: ids.morningEnergySyncId, 
+            gratitudeFlowId: ids.gratitudeFlowId,
+            deepBondingMeditationId: ids.deepBondingMeditationId,
+            healingCirclePracticeId: ids.healingCirclePracticeId
+          });
           // Check which ones the user completed today via ritual suggestions
           if (uid) {
             const suggestRes = await apiService.makeRequest(`/Rituals/suggestions?userId=${uid}`, { method: 'GET' });
@@ -481,7 +491,19 @@ const ChakraRitualsPage = () => {
         setIsDeepBondingPlaying(false); 
         setDeepBondingCurrentTime(0); 
         setShowDeepBondingModal(false);
-        setCompletedGuidedPractices(prev => new Set([...prev, 'deep_bonding']));
+        
+        const uid = apiService.getCurrentUserId();
+        const rid = guidedPracticeIds.deepBondingMeditationId;
+        if (uid && rid) {
+          apiService.completeRitual(uid, rid)
+            .then(() => {
+              setCompletedGuidedPractices(prev => new Set([...prev, String(rid)]));
+              console.log('✅ Deep Bonding Meditation marked completed');
+            })
+            .catch(e => console.warn('completeRitual error:', e));
+        } else {
+          setCompletedGuidedPractices(prev => new Set([...prev, 'deep_bonding']));
+        }
       });
       newAudio.addEventListener('error', () => setDeepBondingAudioLoading(false));
       setDeepBondingAudio(newAudio);
@@ -503,7 +525,19 @@ const ChakraRitualsPage = () => {
         setIsHealingCirclePlaying(false); 
         setHealingCircleCurrentTime(0);
         setShowHealingCircleModal(false);
-        setCompletedGuidedPractices(prev => new Set([...prev, 'healing_circle']));
+
+        const uid = apiService.getCurrentUserId();
+        const rid = guidedPracticeIds.healingCirclePracticeId;
+        if (uid && rid) {
+          apiService.completeRitual(uid, rid)
+            .then(() => {
+              setCompletedGuidedPractices(prev => new Set([...prev, String(rid)]));
+              console.log('✅ Healing Circle Practice marked completed');
+            })
+            .catch(e => console.warn('completeRitual error:', e));
+        } else {
+          setCompletedGuidedPractices(prev => new Set([...prev, 'healing_circle']));
+        }
       });
       newAudio.addEventListener('error', () => setHealingCircleAudioLoading(false));
       setHealingCircleAudio(newAudio);
@@ -1139,7 +1173,9 @@ const ChakraRitualsPage = () => {
       duration: '15 minutes',
       isLocked: !hasPaidAccess,
       isPremium: true,
-      isCompleted: completedGuidedPractices.has('deep_bonding')
+      isCompleted: guidedPracticeIds.deepBondingMeditationId
+        ? completedGuidedPractices.has(String(guidedPracticeIds.deepBondingMeditationId))
+        : completedGuidedPractices.has('deep_bonding')
     },
     {
       name: 'Healing Circle Practice',
@@ -1147,7 +1183,9 @@ const ChakraRitualsPage = () => {
       duration: '12 minutes',
       isLocked: !hasPaidAccess,
       isPremium: true,
-      isCompleted: completedGuidedPractices.has('healing_circle')
+      isCompleted: guidedPracticeIds.healingCirclePracticeId
+        ? completedGuidedPractices.has(String(guidedPracticeIds.healingCirclePracticeId))
+        : completedGuidedPractices.has('healing_circle')
     },
     {
       name: 'Gratitude Flow',
