@@ -863,7 +863,10 @@ namespace Hounded_Heart.Services.Services
             // 13. Meditation Together
             // Form: Dog Q8=Yes (breathed calmly) AND (Env Q7=Calm OR Q10=Quiet)
             // Vitals: Human calm (low HR/high HRV) AND dog resting, same time window
-            if (humanBreathedCalm && (envIsCalm || envIsQuiet))
+            // Or if they manually completed a breathing session in the app
+            if (didBreathingToday)
+                SuggestActivity("Meditation Together", "Completed because you practiced a breathing session today.");
+            else if (humanBreathedCalm && (envIsCalm || envIsQuiet))
                 SuggestActivity("Meditation Together", $"Dog Check-in: breathed calmly with dog=Yes (Q8). Environment: {(envIsCalm ? "calm space (Q7)" : "quiet space (Q10)")}.");
             else if (humanBreathedCalm)
                 SuggestActivity("Meditation Together", "Dog Check-in: breathed calmly with dog=Yes (Q8).");
