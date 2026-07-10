@@ -92,9 +92,9 @@ const DashboardPage = () => {
   });
 
   const getBondLevelFromScore = (score) => {
-    if (score >= 80) return 'Kindred Spirit Ã°Å¸â€™Å“';
-    if (score >= 50) return 'Deep Bond Ã¢ÂÂ¤Ã¯Â¸Â';
-    if (score >= 20) return 'Growing Connection Ã°Å¸Å’Â±';
+    if (score >= 80) return 'Kindred Spirit 💜';
+    if (score >= 50) return 'Deep Bond ❤️';
+    if (score >= 20) return 'Growing Connection 🌱';
     return 'New Connection ✨';
   };
 
