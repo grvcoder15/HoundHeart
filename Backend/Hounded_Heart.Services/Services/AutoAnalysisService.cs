@@ -13,12 +13,14 @@ namespace Hounded_Heart.Services.Services
         private readonly AppDbContext _context;
         private readonly ILogger<AutoAnalysisService> _logger;
         private readonly IGeminiService _gemini;
+        private readonly BlobStorageService _blob;
 
-        public AutoAnalysisService(AppDbContext context, ILogger<AutoAnalysisService> logger, IGeminiService gemini)
+        public AutoAnalysisService(AppDbContext context, ILogger<AutoAnalysisService> logger, IGeminiService gemini, BlobStorageService blob)
         {
             _context = context;
             _logger = logger;
             _gemini = gemini;
+            _blob = blob;
         }
 
         public async Task<AutoAnalysisResult> GetAutoSuggestionsAsync(Guid userId, Guid dogId, DateTime date)
@@ -721,17 +723,39 @@ namespace Hounded_Heart.Services.Services
                 (w.DetailedOverviewJson != null && w.DetailedOverviewJson.Contains("cuddle", StringComparison.OrdinalIgnoreCase)));
 
             // Also analyze journal images uploaded today using Gemini Vision
+            // Check BOTH ImageUrl and MediaUrl — images may be stored in either field
             var journalImagesForAnalysis = journalEntries
-                .Where(j => !string.IsNullOrWhiteSpace(j.ImageUrl))
-                .Select(j => j.ImageUrl!)
+                .SelectMany(j =>
+                {
+                    var urls = new System.Collections.Generic.List<string>();
+                    if (!string.IsNullOrWhiteSpace(j.ImageUrl)) urls.Add(j.ImageUrl!);
+                    if (!string.IsNullOrWhiteSpace(j.MediaUrl) &&
+                        (j.MediaType == null ||
+                         j.MediaType.Contains("photo", StringComparison.OrdinalIgnoreCase) ||
+                         j.MediaType.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+                         j.MediaUrl.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                         j.MediaUrl.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                         j.MediaUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                         j.MediaUrl.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        urls.Add(j.MediaUrl!);
+                    }
+                    return urls;
+                })
                 .Distinct()
                 .ToList();
 
+            Console.WriteLine($"[AutoAnalysis] Found {journalImagesForAnalysis.Count} journal image(s) to analyze for cuddle/belly rub today.");
+
             string journalImageDetectionReason = "";
-            foreach (var imgUrl in journalImagesForAnalysis)
+            foreach (var rawKey in journalImagesForAnalysis)
             {
                 try
                 {
+                    // Convert S3 key → presigned URL so Gemini can download the image
+                    string imgUrl = rawKey.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? rawKey
+                        : _blob.GetPresignedUrl(rawKey, expiryMinutes: 5);
                     var geminiJson = await _gemini.AnalyzeJournalImageAsync(imgUrl);
                     if (string.IsNullOrWhiteSpace(geminiJson) || geminiJson == "{}") continue;
 
@@ -760,7 +784,7 @@ namespace Hounded_Heart.Services.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[AutoAnalysis] Journal image analysis failed for {imgUrl}: {ex.Message}");
+                    Console.WriteLine($"[AutoAnalysis] Journal image analysis failed for {rawKey}: {ex.Message}");
                 }
             }
 
