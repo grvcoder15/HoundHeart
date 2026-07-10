@@ -1079,11 +1079,19 @@ const DashboardPage = () => {
   const [breathingPhase, setBreathingPhase] = useState('ready'); // ready, inhale, hold, exhale, holdAfterExhale
   const [timeLeftInPhase, setTimeLeftInPhase] = useState(0);
   const getTodayDateStr = () => new Date().toISOString().split('T')[0];
-  const getSavedBreathingCycles = () => {
-    const saved = localStorage.getItem(`dailyBreathing_${getTodayDateStr()}`);
+  const getSavedBreathingCycles = (patternId) => {
+    if (!patternId) return 0;
+    const saved = localStorage.getItem(`dailyBreathing_${patternId}_${getTodayDateStr()}`);
     return saved ? parseInt(saved, 10) : 0;
   };
-  const [currentCycle, setCurrentCycle] = useState(getSavedBreathingCycles);
+  const [currentCycle, setCurrentCycle] = useState(() => getSavedBreathingCycles('4-7-8'));
+
+  // Update currentCycle when the selected pattern changes
+  useEffect(() => {
+    if (!isBreathingSessionActive && selectedBreathingPattern) {
+      setCurrentCycle(getSavedBreathingCycles(selectedBreathingPattern));
+    }
+  }, [selectedBreathingPattern, isBreathingSessionActive]);
 
   // Refs for timer management
   const timerRef = React.useRef(null);
@@ -1305,7 +1313,9 @@ const DashboardPage = () => {
     isSessionActiveRef.current = false; // Ensure ref is synced
     setBreathingPhase('ready');
     // Persist completed cycles for today so the progress bar stays filled
-    localStorage.setItem(`dailyBreathing_${getTodayDateStr()}`, completedCount.toString());
+    if (pattern && pattern.id) {
+      localStorage.setItem(`dailyBreathing_${pattern.id}_${getTodayDateStr()}`, completedCount.toString());
+    }
     // Do NOT reset currentCycle to 0 here
 
     try {
