@@ -272,14 +272,13 @@ const DashboardPage = () => {
   // Background polling runs globally regardless of active tab
   useEffect(() => {
     fetchWellnessData(false);
-    // Pre-baseline: poll every 10s to detect when enough vitals are collected.
-    // Post-baseline: poll every 5 minutes – FitBark syncs every 4 min and Fitbit every ~4 min,
-    // so refreshing faster than 5 min returns the same data with no score change.
-    const pollInterval = (!wlBaseline || !wlBaseline.humanBaselineEstablished) ? 10000 : 300000;
+    // FitBark syncs every 4 min and Fitbit every ~4 min,
+    // so refreshing faster than 3 minutes returns the same data and causes unnecessary server load.
+    const pollInterval = 180000; // 3 minutes
     const interval = setInterval(() => fetchWellnessData(true), pollInterval);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wlBaseline?.humanBaselineEstablished]);
+  }, []);
 
   // Auto-calculate baseline trigger when data threshold is met
   // eslint-disable-next-line react-hooks/exhaustive-deps
