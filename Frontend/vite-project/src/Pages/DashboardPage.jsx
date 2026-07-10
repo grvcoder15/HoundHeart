@@ -1657,22 +1657,6 @@ const DashboardPage = () => {
         }
       });
 
-      // Auto-complete Morning/Evening Walk based on time of day if data has been synced
-      const currentHour = new Date().getHours();
-      // Only auto-complete if we have some baseline/vitals data synced recently
-      const hasData = localStorage.getItem('last_known_bond_score') !== null; 
-      
-      activitiesWithProps.forEach(a => {
-        const name = (a.activityName || '').trim().toLowerCase();
-        if (hasData) {
-          if (name === 'morning walk' && currentHour >= 6) {
-            todayIds.add(normalizeId(a.activityId));
-          }
-          if (name === 'evening walk' && currentHour >= 17) { // 5 PM onwards
-            todayIds.add(normalizeId(a.activityId));
-          }
-        }
-      });
 
       // Fallback: if Chakra was completed in this session/day, keep it marked.
       const chakraLocalKey = `chakraSyncCompletedDate:${currentUserId}`;
