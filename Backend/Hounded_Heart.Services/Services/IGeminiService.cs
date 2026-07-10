@@ -14,5 +14,11 @@ namespace Hounded_Heart.Services.Services
         /// Images are optional in both checks.
         /// </summary>
         Task<string> CompareChecksAsync(string prompt, string? oldImageUrl, string? newImageUrl);
+
+        /// <summary>
+        /// Analyze a journal image URL using Gemini Vision to detect physical interactions (cuddle, belly rub, etc.).
+        /// Returns a JSON string with detected interaction labels.
+        /// </summary>
+        Task<string> AnalyzeJournalImageAsync(string imageUrl);
     }
 }

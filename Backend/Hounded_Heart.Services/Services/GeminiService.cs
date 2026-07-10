@@ -154,5 +154,72 @@ private const string ProModel   = "gemini-2.5-flash";
 
             return text ?? "{}";
         }
+        // ── Journal Image Analysis: detect cuddle, belly rub, close contact ──
+        public async Task<string> AnalyzeJournalImageAsync(string imageUrl)
+        {
+            var prompt = @"You are a computer vision assistant analyzing a photo from a dog owner's journal.
+Look at the image carefully and identify if any of the following physical interactions are visible between a human and a dog.
+Return a JSON object with boolean fields only. Do NOT add any explanation — only return the JSON.
+
+{
+  ""cuddle"": true/false,        // human and dog are cuddling, hugging, or pressed closely together cheek-to-cheek or chest-to-body
+  ""belly_rub"": true/false,     // human hand is touching the dog's belly/stomach area, or dog is lying on back with human nearby
+  ""close_contact"": true/false  // human and dog are in very close physical proximity (faces touching, dog on lap, embracing)
+}";
+
+            try
+            {
+                using var client = _httpClientFactory.CreateClient("gemini");
+                byte[] imageBytes = await client.GetByteArrayAsync(imageUrl);
+                string base64 = Convert.ToBase64String(imageBytes);
+                string mimeType = imageUrl.ToLower().Contains(".png") ? "image/png" : "image/jpeg";
+
+                var parts = new System.Collections.Generic.List<object>
+                {
+                    new { text = prompt },
+                    new
+                    {
+                        inlineData = new
+                        {
+                            mimeType = mimeType,
+                            data = base64
+                        }
+                    }
+                };
+
+                var requestUrl = $"{BaseUrl}/{FlashModel}:generateContent?key={_apiKey}";
+                var requestBody = new
+                {
+                    contents = new[] { new { parts = parts.ToArray() } },
+                    generationConfig = new { responseMimeType = "application/json" }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(requestUrl, content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[GeminiService] AnalyzeJournalImageAsync error {response.StatusCode}: {responseBody}");
+                    return "{}";
+                }
+
+                using var doc = System.Text.Json.JsonDocument.Parse(responseBody);
+                var text = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                return text ?? "{}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GeminiService] AnalyzeJournalImageAsync failed for {imageUrl}: {ex.Message}");
+                return "{}";
+            }
+        }
     }
 }
