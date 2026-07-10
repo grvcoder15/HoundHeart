@@ -12,11 +12,13 @@ namespace Hounded_Heart.Services.Services
     {
         private readonly AppDbContext _context;
         private readonly ILogger<AutoAnalysisService> _logger;
+        private readonly IGeminiService _gemini;
 
-        public AutoAnalysisService(AppDbContext context, ILogger<AutoAnalysisService> logger)
+        public AutoAnalysisService(AppDbContext context, ILogger<AutoAnalysisService> logger, IGeminiService gemini)
         {
             _context = context;
             _logger = logger;
+            _gemini = gemini;
         }
 
         public async Task<AutoAnalysisResult> GetAutoSuggestionsAsync(Guid userId, Guid dogId, DateTime date)
@@ -708,24 +710,71 @@ namespace Hounded_Heart.Services.Services
             bool humanMorningVitals = humanVitals.Any(v => v.TimestampUtc >= morningStart && v.TimestampUtc < morningEnd && ((v.Steps ?? 0) > 0 || (v.ActiveMinutes ?? 0) > 0));
 
             // 7. Belly Rubs & 8. Cuddle Time
-            // User requested these ONLY trigger if Gemini analyzed an image in Wellness Checks
-            // and found a match for "belly rub" or "cuddle". Remove vitals/form fallbacks.
-            
-            bool aiDetectedBellyRub = wellnessChecks.Any(w => 
+            // Check wellness check AI data first, then also analyze today's journal images via Gemini Vision.
+
+            bool aiDetectedBellyRub = wellnessChecks.Any(w =>
                 (w.AiResponseJson != null && w.AiResponseJson.Contains("belly rub", StringComparison.OrdinalIgnoreCase)) ||
                 (w.DetailedOverviewJson != null && w.DetailedOverviewJson.Contains("belly rub", StringComparison.OrdinalIgnoreCase)));
 
-            if (aiDetectedBellyRub)
-                SuggestActivity("Belly Rubs", "Gemini AI analysis of your wellness image detected a belly rub.");
-            else
-                SetActivityNotSuggested("Belly Rubs", "Gemini AI did not detect a belly rub in recent images.");
-
-            bool aiDetectedCuddle = wellnessChecks.Any(w => 
+            bool aiDetectedCuddle = wellnessChecks.Any(w =>
                 (w.AiResponseJson != null && w.AiResponseJson.Contains("cuddle", StringComparison.OrdinalIgnoreCase)) ||
                 (w.DetailedOverviewJson != null && w.DetailedOverviewJson.Contains("cuddle", StringComparison.OrdinalIgnoreCase)));
 
+            // Also analyze journal images uploaded today using Gemini Vision
+            var journalImagesForAnalysis = journalEntries
+                .Where(j => !string.IsNullOrWhiteSpace(j.ImageUrl))
+                .Select(j => j.ImageUrl!)
+                .Distinct()
+                .ToList();
+
+            string journalImageDetectionReason = "";
+            foreach (var imgUrl in journalImagesForAnalysis)
+            {
+                try
+                {
+                    var geminiJson = await _gemini.AnalyzeJournalImageAsync(imgUrl);
+                    if (string.IsNullOrWhiteSpace(geminiJson) || geminiJson == "{}") continue;
+
+                    using var doc = System.Text.Json.JsonDocument.Parse(geminiJson);
+                    var root = doc.RootElement;
+
+                    bool imgCuddle = root.TryGetProperty("cuddle", out var cProp) && cProp.ValueKind == System.Text.Json.JsonValueKind.True;
+                    bool imgBellyRub = root.TryGetProperty("belly_rub", out var bProp) && bProp.ValueKind == System.Text.Json.JsonValueKind.True;
+                    bool imgCloseContact = root.TryGetProperty("close_contact", out var ccProp) && ccProp.ValueKind == System.Text.Json.JsonValueKind.True;
+
+                    if (imgCuddle || imgCloseContact)
+                    {
+                        aiDetectedCuddle = true;
+                        journalImageDetectionReason = "Gemini AI detected cuddling/close contact in your journal photo.";
+                    }
+
+                    // If very close contact (cuddle/hug) is detected, also infer belly rub
+                    if (imgBellyRub || (imgCuddle && imgCloseContact))
+                    {
+                        aiDetectedBellyRub = true;
+                        if (string.IsNullOrEmpty(journalImageDetectionReason))
+                            journalImageDetectionReason = "Gemini AI detected close physical contact in your journal photo.";
+                    }
+
+                    if (aiDetectedCuddle && aiDetectedBellyRub) break; // No need to check more images
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[AutoAnalysis] Journal image analysis failed for {imgUrl}: {ex.Message}");
+                }
+            }
+
+            if (aiDetectedBellyRub)
+                SuggestActivity("Belly Rubs", !string.IsNullOrEmpty(journalImageDetectionReason)
+                    ? journalImageDetectionReason
+                    : "Gemini AI detected a belly rub in your wellness image.");
+            else
+                SetActivityNotSuggested("Belly Rubs", "Gemini AI did not detect a belly rub in recent images.");
+
             if (aiDetectedCuddle)
-                SuggestActivity("Cuddle Time", "Gemini AI analysis of your wellness image detected cuddle time.");
+                SuggestActivity("Cuddle Time", !string.IsNullOrEmpty(journalImageDetectionReason)
+                    ? journalImageDetectionReason
+                    : "Gemini AI detected cuddle time in your wellness image.");
             else
                 SetActivityNotSuggested("Cuddle Time", "Gemini AI did not detect cuddle time in recent images.");
 
