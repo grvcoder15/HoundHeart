@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -4380,9 +4380,10 @@ const handleNextChakra = () => {
                 {/* Strengthen Your Bond Section */}
                 <div className="bg-green-50 rounded-xl p-4 mb-4">
                   {(() => {
-                    const completedCount = rituals.filter(r => r.isCompleted).length;
-                    const totalRituals = rituals.length;
-                    console.log('Ã°Å¸Å½Â¯ Progress Calculation:', { completedCount, totalRituals, rituals });
+                    const visibleRituals = rituals.filter(r => ['Morning', 'Afternoon', 'Evening'].includes(r.category));
+                    const completedCount = visibleRituals.filter(r => r.isCompleted).length;
+                    const totalRituals = visibleRituals.length;
+                    console.log('🎯 Progress Calculation:', { completedCount, totalRituals, visibleRituals });
 
                     // Handle empty rituals case
                     if (totalRituals === 0) {
