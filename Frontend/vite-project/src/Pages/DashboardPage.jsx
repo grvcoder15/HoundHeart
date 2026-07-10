@@ -690,12 +690,12 @@ const DashboardPage = () => {
               const autoSaveUserId = apiService.getCurrentUserId();
               Promise.all(ritualsToSaveIds.map(id => apiService.completeRitual(autoSaveUserId, id)))
                 .then(() => {
-                  console.log('âœ… AI rituals auto-saved silently');
+                  console.log('✅ AI rituals auto-saved silently');
                   refreshFns.current.fetchDashboardStats?.();
                   refreshFns.current.fetchBondedScore?.();
                   refreshFns.current.loadBondingActivities?.();
                 })
-                .catch(e => console.warn('âš ï¸  Auto-save of AI rituals failed:', e));
+                .catch(e => console.warn('⚠️  Auto-save of AI rituals failed:', e));
             }
 
             // Auto-fill Activities
@@ -707,20 +707,39 @@ const DashboardPage = () => {
                   return newSet;
               });
 
-              // The user requested a 3-4 minute delay for auto-saving activities
-              console.log(`â³ Scheduling AI activities auto-save in 3 minutes...`);
-              setTimeout(() => {
+              // Gemini image-detected activities (Cuddle Time, Belly Rubs) → save IMMEDIATELY
+              const imageDetectedReasons = ['Gemini AI detected cuddling', 'Gemini AI detected close physical'];
+              const immediateIds = activitiesToSaveIds.filter(id =>
+                imageDetectedReasons.some(r => (activitiesMap[id] || '').startsWith(r))
+              );
+              const delayedIds = activitiesToSaveIds.filter(id => !immediateIds.includes(id));
+
+              if (immediateIds.length > 0) {
                 const autoSaveUserId = apiService.getCurrentUserId();
-                const activitiesPayload = activitiesToSaveIds.map(id => ({ ActivityId: id, Score: 2 }));
-                const payload = { UserId: autoSaveUserId, Date: new Date().toISOString(), Activities: activitiesPayload };
-                apiService.saveUserActivitiesScore(payload)
+                const immediatePayload = { UserId: autoSaveUserId, Date: new Date().toISOString(), Activities: immediateIds.map(id => ({ ActivityId: id, Score: 2 })) };
+                apiService.saveUserActivitiesScore(immediatePayload)
                   .then(() => {
-                    console.log('âœ… AI activities auto-saved silently after delay');
+                    console.log('✅ Gemini image-detected activities saved immediately:', immediateIds);
                     refreshFns.current.loadBondingActivities?.();
                     refreshFns.current.fetchBondedScore?.();
                   })
-                  .catch(e => console.warn('âš ï¸  Auto-save of AI activities failed:', e));
-              }, 3 * 60 * 1000); // 3 minutes
+                  .catch(e => console.warn('⚠️ Immediate save of image-detected activities failed:', e));
+              }
+
+              if (delayedIds.length > 0) {
+                console.log('⏳ Scheduling AI activities auto-save in 3 minutes...');
+                setTimeout(() => {
+                  const autoSaveUserId = apiService.getCurrentUserId();
+                  const payload = { UserId: autoSaveUserId, Date: new Date().toISOString(), Activities: delayedIds.map(id => ({ ActivityId: id, Score: 2 })) };
+                  apiService.saveUserActivitiesScore(payload)
+                    .then(() => {
+                      console.log('✅ AI activities auto-saved silently after delay');
+                      refreshFns.current.loadBondingActivities?.();
+                      refreshFns.current.fetchBondedScore?.();
+                    })
+                    .catch(e => console.warn('⚠️ Auto-save of AI activities failed:', e));
+                }, 3 * 60 * 1000);
+              }
             }
           }
         } catch (error) {
@@ -1679,7 +1698,14 @@ const DashboardPage = () => {
       storedActivities.forEach(id => todayIds.add(id));
 
       setBondingActivities(activitiesWithProps);
-      setCompletedActivityIds(todayIds);
+      // Merge DB ids + localStorage + in-memory AI-suggested ids
+      // (autoActivities holds ids suggested by AI that haven't been saved to DB yet due to 3-min delay)
+      setCompletedActivityIds(prevIds => {
+        const merged = new Set(todayIds);
+        // Keep any AI-suggested ids already in the previous set that aren't in DB yet
+        prevIds.forEach(id => merged.add(id));
+        return merged;
+      });
 
       // Update Ritual Checkboxes based on today's activities
       const newRituals = {

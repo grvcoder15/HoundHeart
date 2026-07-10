@@ -19,6 +19,16 @@ namespace Hounded_Heart.Services.Services
         /// Analyze a journal image URL using Gemini Vision to detect physical interactions (cuddle, belly rub, etc.).
         /// Returns a JSON string with detected interaction labels.
         /// </summary>
+        /// <summary>
+        /// Analyze a journal image URL using Gemini Vision to detect physical interactions (cuddle, belly rub, etc.).
+        /// Returns a JSON string with detected interaction labels.
+        /// </summary>
         Task<string> AnalyzeJournalImageAsync(string imageUrl);
+
+        /// <summary>
+        /// Analyze journal text using Gemini Flash to generate a personalized reason for a suggested activity.
+        /// Returns a single sentence reason.
+        /// </summary>
+        Task<string> AnalyzeJournalTextForActivityAsync(string[] journalTexts, string activityName);
     }
 }

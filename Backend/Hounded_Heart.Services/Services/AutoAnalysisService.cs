@@ -810,16 +810,21 @@ namespace Hounded_Heart.Services.Services
             else
                 SetActivityNotSuggested("Feeding Time", "Feeding time must be confirmed via Dog Check-in (Q5).");
 
-            var dogJournalEntry = journalEntries.OrderByDescending(j => j.CreatedOn).FirstOrDefault(j => j.DogId != null && j.DogId != Guid.Empty);
-            string journalSnippet = dogJournalEntry != null 
-                ? (dogJournalEntry.Content?.Length > 35 ? dogJournalEntry.Content.Substring(0, 35) + "..." : (dogJournalEntry.Content ?? "Media post")) 
-                : "";
+            var allJournalTextsToday = journalEntries
+                .Where(j => !string.IsNullOrWhiteSpace(j.Content))
+                .Select(j => j.Content!)
+                .ToArray();
 
             // 10. Grooming
-            if (dogJournalEntry != null)
-                SuggestActivity("Grooming", $"Completed because of your journal moment with your dog: '{journalSnippet}'");
+            if (journalEntries.Count >= 1)
+            {
+                string groomingReason = await _gemini.AnalyzeJournalTextForActivityAsync(allJournalTextsToday, "Grooming");
+                SuggestActivity("Grooming", groomingReason);
+            }
             else
-                SetActivityNotSuggested("Grooming", "No journal entry with your dog posted today.");
+            {
+                SetActivityNotSuggested("Grooming", "Upload at least 1 journal entry today to unlock this activity.");
+            }
 
             // 11. Training Session
             // Form: Dog Q4=Yes (playful) AND Environment Q8=Yes (enough room)
@@ -884,10 +889,15 @@ namespace Hounded_Heart.Services.Services
                 SetActivityNotSuggested("Synchronized Breathing", $"No synchronized calm signals. Vitals: human calm={humanCalm}, dog {currentWindowName} rest={currentWindowDogRest} min.");
 
             // 15. Heart-to-Heart Reflection
-            if (dogJournalEntry != null)
-                SuggestActivity("Heart-to-Heart Reflection", $"Completed because of your journal moment with your dog: '{journalSnippet}'");
+            if (journalEntries.Count >= 3)
+            {
+                string reflectionReason = await _gemini.AnalyzeJournalTextForActivityAsync(allJournalTextsToday, "Heart-to-Heart Reflection");
+                SuggestActivity("Heart-to-Heart Reflection", reflectionReason);
+            }
             else
-                SetActivityNotSuggested("Heart-to-Heart Reflection", "No journal entry with your dog posted today.");
+            {
+                SetActivityNotSuggested("Heart-to-Heart Reflection", $"Only {journalEntries.Count} out of 3 journal entries uploaded today.");
+            }
 
             // 16. Nerve Center Sync
             if (completedGuidedCount >= 2)

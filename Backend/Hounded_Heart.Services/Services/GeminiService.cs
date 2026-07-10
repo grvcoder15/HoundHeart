@@ -221,5 +221,57 @@ Return a JSON object with boolean fields only. Do NOT add any explanation — on
                 return "{}";
             }
         }
+        // ── Journal Text Analysis: personalized reason ──
+        public async Task<string> AnalyzeJournalTextForActivityAsync(string[] journalTexts, string activityName)
+        {
+            if (journalTexts == null || journalTexts.Length == 0) return $"Completed because of your journal entries today.";
+
+            string combinedTexts = string.Join("\n- ", journalTexts);
+            var prompt = $@"You are an AI wellness companion for dog owners. 
+Based on these journal entries from the user today:
+- {combinedTexts}
+
+The user has unlocked the '{activityName}' bonding activity. 
+Write ONE short, personalized sentence explaining WHY they unlocked this activity based on their journal entries. 
+For example: 'Your journal about playing in the park shows a beautiful connection, perfect for Heart-to-Heart Reflection.' or 'Your note about brushing your dog makes this the perfect time for Grooming.'
+Keep it under 100 characters. Do not use quotes. Respond ONLY with the sentence.";
+
+            try
+            {
+                using var client = _httpClientFactory.CreateClient("gemini");
+                var requestUrl = $"{BaseUrl}/{FlashModel}:generateContent?key={_apiKey}";
+                
+                var requestBody = new
+                {
+                    contents = new[] { new { parts = new[] { new { text = prompt } } } },
+                    generationConfig = new { responseMimeType = "text/plain" }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(requestUrl, content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                    return $"Completed based on your {journalTexts.Length} journal entry/entries today.";
+
+                using var doc = System.Text.Json.JsonDocument.Parse(responseBody);
+                var text = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString()?.Trim();
+
+                return string.IsNullOrWhiteSpace(text) 
+                    ? $"Completed based on your {journalTexts.Length} journal entry/entries today." 
+                    : text;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GeminiService] AnalyzeJournalTextForActivityAsync failed: {ex.Message}");
+                return $"Completed based on your {journalTexts.Length} journal entry/entries today.";
+            }
+        }
     }
 }
