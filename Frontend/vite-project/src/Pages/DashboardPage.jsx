@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -3063,7 +3063,7 @@ const handleNextChakra = () => {
                 >
                   {!hasChakraSyncAccess && (
                     <div className="absolute top-3 right-3 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                      <span>Ã¢Â­Â</span>
+                      <span>⭐</span>
                       <span>Premium</span>
                     </div>
                   )}
