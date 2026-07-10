@@ -762,22 +762,25 @@ namespace Hounded_Heart.Services.Services
                     ? $"Dog Check-in Q4 (playful)={(dogCheckinAnswers.TryGetValue("4", out var _ts4) ? _ts4 : "not answered")}. No training pattern in daytime vitals."
                     : $"No Dog Check-in today. Vitals daytime training pattern: {(trainingPattern ? "yes" : "no")}.");
 
-            // 12. New Trick Practice
-            var latestChakraLog = chakraLogs.OrderByDescending(c => c.CreatedAt).FirstOrDefault();
-            int[] chakraScores = latestChakraLog != null 
-                ? new[] { latestChakraLog.RootScore, latestChakraLog.SacralScore, latestChakraLog.SolarPlexusScore, 
-                          latestChakraLog.HeartScore, latestChakraLog.ThroatScore, latestChakraLog.ThirdEyeScore, latestChakraLog.CrownScore }
-                : new int[0];
+            // Fetch today's completed guided practices count for the new rules
+            var guidedPracticeIds = new[] { 
+                new Guid("a1b2c3d4-e5f6-7890-abcd-111111111111"), // MorningEnergySync
+                new Guid("a1b2c3d4-e5f6-7890-abcd-222222222222"), // GratitudeFlow
+                new Guid("a1b2c3d4-e5f6-7890-abcd-333333333333"), // DeepBondingMeditation
+                new Guid("a1b2c3d4-e5f6-7890-abcd-444444444444")  // HealingCirclePractice
+            };
             
-            int countSevenOrAbove = chakraScores.Count(s => s >= 7);
-            int countEightOrAbove = chakraScores.Count(s => s >= 8);
+            int completedGuidedCount = _context.RitualLogs
+                .Count(l => l.UserId == userId 
+                         && guidedPracticeIds.Contains(l.RitualId)
+                         && l.CompletedAt >= today 
+                         && l.CompletedAt < today.AddDays(1));
 
-            if (latestChakraLog != null && countSevenOrAbove >= 5)
-                SuggestActivity("New Trick Practice", $"Completed because {countSevenOrAbove} Nerve Centers scored 7 or higher.");
+            // 12. New Trick Practice
+            if (completedGuidedCount >= 4)
+                SuggestActivity("New Trick Practice", "Completed because you finished all 4 Guided Practices today.");
             else
-                SetActivityNotSuggested("New Trick Practice", latestChakraLog != null 
-                    ? $"Only {countSevenOrAbove} Nerve Centers scored 7 or higher (requires 5)." 
-                    : "No Nerve Center Alignment completed today.");
+                SetActivityNotSuggested("New Trick Practice", $"Only {completedGuidedCount} out of 4 Guided Practices completed today.");
 
             // 13. Meditation Together
             // Form: Dog Q8=Yes (breathed calmly) AND (Env Q7=Calm OR Q10=Quiet)
@@ -814,12 +817,10 @@ namespace Hounded_Heart.Services.Services
                 SetActivityNotSuggested("Heart-to-Heart Reflection", "No journal entry with your dog posted today.");
 
             // 16. Nerve Center Sync
-            if (latestChakraLog != null && countEightOrAbove == 7)
-                SuggestActivity("Nerve Center Sync", "Completed because ALL 7 Nerve Centers scored 8 or higher.");
+            if (completedGuidedCount >= 2)
+                SuggestActivity("Nerve Center Sync", $"Completed because you finished {completedGuidedCount} Guided Practices today.");
             else
-                SetActivityNotSuggested("Nerve Center Sync", latestChakraLog != null 
-                    ? $"Only {countEightOrAbove} Nerve Centers scored 8 or higher (requires all 7)." 
-                    : "No Nerve Center Alignment completed today.");
+                SetActivityNotSuggested("Nerve Center Sync", $"Only {completedGuidedCount} out of 2 Guided Practices completed today.");
 
             // 17. Gratitude Moment
             // Form: Dog Q6=Yes (slept well)
