@@ -2714,6 +2714,125 @@ class ApiService {
       throw error;
     }
   }
+
+  // ==========================================
+  // Video Consultation Sessions
+  // ==========================================
+
+  /**
+   * Create a Stripe PaymentIntent for a $30 video session.
+   * Returns { clientSecret, paymentIntentId, amount, currency }
+   */
+  async createVideoPaymentIntent(expertId = null) {
+    try {
+      return await this.makeRequest('/VideoSession/create-payment-intent', {
+        method: 'POST',
+        body: JSON.stringify({ expertId }),
+      });
+    } catch (error) {
+      console.error('createVideoPaymentIntent error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * After Stripe payment succeeds, create a Daily.co room and save the session.
+   * Returns { sessionId, roomUrl, startTime, expiresAt, isActive, amountPaid, durationMinutes }
+   */
+  async createVideoSession(paymentIntentId, expertId = null) {
+    try {
+      return await this.makeRequest('/VideoSession/create', {
+        method: 'POST',
+        body: JSON.stringify({ paymentIntentId, expertId }),
+      });
+    } catch (error) {
+      console.error('createVideoSession error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Poll session status — returns isActive, isExpired, remainingSeconds, expiresAt
+   */
+  async getVideoSessionStatus(sessionId) {
+    try {
+      return await this.makeRequest(`/VideoSession/status/${sessionId}`, { method: 'GET' });
+    } catch (error) {
+      console.error('getVideoSessionStatus error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Mark session as ended (called when timer hits 0 or user clicks "End Call").
+   */
+  async endVideoSession(sessionId) {
+    try {
+      return await this.makeRequest('/VideoSession/end', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId }),
+      });
+    } catch (error) {
+      console.error('endVideoSession error:', error);
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // EXPERT SESSION BOOKING (NEW FEATURE)
+  // ==========================================
+
+  async createExpertSessionRequest(data) {
+    return await this.makeRequest('/ExpertSession/request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getExpertSessionSlots(requestId) {
+    return await this.makeRequest(`/ExpertSession/slots/${requestId}`, {
+      method: 'GET',
+    });
+  }
+
+  async confirmExpertSessionSlot(requestId, slotId) {
+    return await this.makeRequest('/ExpertSession/confirm-slot', {
+      method: 'POST',
+      body: JSON.stringify({ requestId, slotId }),
+    });
+  }
+
+  async handleExpertSessionPaymentSuccess(requestId, paymentIntentId) {
+    return await this.makeRequest('/ExpertSession/payment-success', {
+      method: 'POST',
+      body: JSON.stringify({ requestId, paymentIntentId }),
+    });
+  }
+
+  async getMyExpertSessions() {
+    return await this.makeRequest('/ExpertSession/my-sessions', {
+      method: 'GET',
+    });
+  }
+
+  async getMyExpertRequests() {
+    return await this.makeRequest('/ExpertSession/my-requests', {
+      method: 'GET',
+    });
+  }
+
+  async getExpertSessionNotifications(userId) {
+    return await this.makeRequest(`/ExpertSession/notifications/${userId}`, {
+      method: 'GET',
+    });
+  }
+
+  async markExpertSessionNotificationRead(notificationId) {
+    return await this.makeRequest('/ExpertSession/notification/read', {
+      method: 'POST',
+      body: JSON.stringify(notificationId),
+    });
+  }
 }
 
 const apiService = new ApiService();

@@ -55,6 +55,8 @@ builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ChangePasswordService>();
 builder.Services.AddScoped<StripeService>();
 
+builder.Services.AddScoped<ExpertSessionService>();
+
 // Phase 1 Wearables & Sandbox
 builder.Services.AddSingleton<IMockDataProvider, MockDataProvider>();
 builder.Services.AddScoped<IPetPaceService, PetPaceMockService>(); // Required for existing Stress/Bond services; mock hosted inserter remains disabled
@@ -74,6 +76,7 @@ builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IFitBarkService, FitBarkService>();
 builder.Services.AddScoped<IExpertQueryService, ExpertQueryService>();
 builder.Services.AddScoped<IAutoAnalysisService, AutoAnalysisService>();
+builder.Services.AddScoped<VideoSessionService>();
 
 // Fitbit Integration Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -110,6 +113,7 @@ builder.Services.AddHostedService<DailyVitalsSummaryService>();
 builder.Services.AddHostedService<FitbitPollingService>();
 builder.Services.AddHostedService<FitBarkSyncService>();
 builder.Services.AddHostedService<DatabaseInitializationService>();
+builder.Services.AddHostedService<ExpertSessionReminderWorker>();
 
 builder.Services.AddCors(options =>
 {

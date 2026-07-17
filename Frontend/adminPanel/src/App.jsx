@@ -24,6 +24,9 @@ import CharityPartnershipPage from './pages/CharityPartnershipPage';
 import CoursesAdminPage from './pages/CoursesAdminPage';
 import CourseContentAdminPage from './pages/CourseContentAdminPage';
 import LegacyProjectAdminPage from './pages/LegacyProjectAdminPage';
+import UpcomingSessionsPage from './pages/UpcomingSessionsPage';
+import AdminVideoCallPage from './pages/AdminVideoCallPage';
+
 function App() {
   return (
     <>
@@ -56,6 +59,8 @@ function App() {
           <Route path="/store" element={<StoreManagementPage />} />
           <Route path="/charity" element={<CharityPartnershipPage />} />
           <Route path="/legacy-project" element={<LegacyProjectAdminPage />} />
+          <Route path="/upcoming-sessions" element={<UpcomingSessionsPage />} />
+          <Route path="/video-call" element={<AdminVideoCallPage />} />
         </Routes>
       </Router>
     </>

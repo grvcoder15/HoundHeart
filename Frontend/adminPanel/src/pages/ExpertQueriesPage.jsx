@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -23,7 +24,10 @@ import {
     Snackbar,
     Alert,
     MenuItem,
-    InputAdornment
+    InputAdornment,
+    Tabs,
+    Tab,
+    Tooltip
 } from '@mui/material';
 import {
     Plus,
@@ -36,18 +40,59 @@ import {
     Zap,
     MessageSquare,
     ShoppingBag,
-    Search
+    Search,
+    Video,
+    CalendarDays
 } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import apiService from '../services/apiService';
 
+const getMinMaxDates = () => {
+    const now = new Date();
+    // Minimum 1 hour from now to avoid immediate past selection
+    const min = new Date(now.getTime() + 60 * 60 * 1000);
+    // Maximum 7 days from now
+    const max = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    const formatForInput = (d) => {
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    };
+    
+    return {
+        min: formatForInput(min),
+        max: formatForInput(max)
+    };
+};
+
 const ExpertQueriesPage = () => {
+    const navigate = useNavigate();
     const [queries, setQueries] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState(0);
+
+    // Session Requests State
+    const [sessionRequests, setSessionRequests] = useState([]);
+    const [sessionRequestsLoading, setSessionRequestsLoading] = useState(false);
+    const [slotDialog, setSlotDialog] = useState({ open: false, request: null });
+    const [proposedSlots, setProposedSlots] = useState(['', '', '']);
+    const [sendingSlots, setSendingSlots] = useState(false);
+    const [sessionRequestsError, setSessionRequestsError] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Update current time every minute for join button logic
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
     
     // Dialog state
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedQuery, setSelectedQuery] = useState(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [cancelRequest, setCancelRequest] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
+    const [cancelling, setCancelling] = useState(false);
+    const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [responseText, setResponseText] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -55,13 +100,111 @@ const ExpertQueriesPage = () => {
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
     // Filter state
-    const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [tempFilters, setTempFilters] = useState({ search: '', status: '', priority: '' });
     const [filters, setFilters] = useState({ search: '', status: '', priority: '' });
 
     useEffect(() => {
         fetchQueries();
+        fetchSessionRequests();
     }, []);
+
+    const fetchSessionRequests = async () => {
+        try {
+            setSessionRequestsLoading(true);
+            setSessionRequestsError('');
+            const res = await apiService.getExpertSessionRequests();
+            console.log('Session requests raw response:', res);
+            let list = [];
+            if (Array.isArray(res)) list = res;
+            else if (res?.data && Array.isArray(res.data)) list = res.data;
+            else if (res?.data) list = [res.data]; // single object fallback
+            console.log('Session requests parsed:', list);
+            setSessionRequests(list);
+        } catch (err) {
+            console.error('Failed to fetch session requests', err);
+            setSessionRequestsError(err?.message || 'Failed to load requests. Check console.');
+        } finally {
+            setSessionRequestsLoading(false);
+        }
+    };
+
+    const handleOpenSlotDialog = (request) => {
+        setSlotDialog({ open: true, request });
+        setProposedSlots(['', '', '']);
+    };
+
+    const handleOpenCancelDialog = (req) => {
+        setCancelRequest(req);
+        setCancelReason('');
+        setCancelDialogOpen(true);
+    };
+
+    const handleCloseCancelDialog = () => {
+        setCancelDialogOpen(false);
+        setCancelRequest(null);
+        setCancelReason('');
+    };
+
+    const handleCancelSession = async () => {
+        if (!cancelReason.trim()) return;
+        try {
+            setCancelling(true);
+            await apiService.cancelExpertSession(cancelRequest.requestId, cancelReason);
+            handleCloseCancelDialog();
+            fetchSessionRequests();
+        } catch (error) {
+            console.error('Failed to cancel session', error);
+            alert(error.message || 'Failed to cancel session');
+        } finally {
+            setCancelling(false);
+        }
+    };
+
+    // Safely convert a datetime-local string (local time) to a UTC ISO string
+    const localInputToUTC = (s) => {
+        // datetime-local gives e.g. "2026-07-15T16:02"
+        // Use explicit constructor to always treat as LOCAL time
+        const [datePart, timePart] = s.split('T');
+        const [yr, mo, dy] = datePart.split('-').map(Number);
+        const [hr, mn] = timePart.split(':').map(Number);
+        return new Date(yr, mo - 1, dy, hr, mn).toISOString();
+    };
+
+    const handleSendSlots = async () => {
+        const filled = proposedSlots.filter(s => s !== '');
+        if (filled.length < 1) {
+            showSnackbar('Please add at least one time slot', 'warning');
+            return;
+        }
+        try {
+            setSendingSlots(true);
+            const utcSlots = filled.map(s => localInputToUTC(s));
+            console.log('Sending slots (UTC):', utcSlots);
+            await apiService.sendExpertSessionSlots(
+                slotDialog.request.requestId,
+                utcSlots
+            );
+            showSnackbar('Slots sent to user successfully!', 'success');
+            setSlotDialog({ open: false, request: null });
+            fetchSessionRequests();
+        } catch (err) {
+            showSnackbar(err.message || 'Failed to send slots', 'error');
+        } finally {
+            setSendingSlots(false);
+        }
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Pending': return { bgcolor: '#fef3c7', color: '#92400e' };
+            case 'SlotsSent': return { bgcolor: '#dbeafe', color: '#1e40af' };
+            case 'Scheduled': return { bgcolor: '#d1fae5', color: '#065f46' };
+            case 'Completed': return { bgcolor: '#f0fdf4', color: '#166534' };
+            case 'Cancelled': 
+            case 'Expired': return { bgcolor: '#fee2e2', color: '#991b1b' };
+            default: return { bgcolor: '#f1f5f9', color: '#475569' };
+        }
+    };
 
     const fetchQueries = async () => {
         try {
@@ -211,36 +354,182 @@ const ExpertQueriesPage = () => {
                         Expert Queries
                     </Typography>
                     <Typography variant="body1" color="text.secondary" fontWeight="500">
-                        Review and manage expert queries
+                        Review and manage expert queries and video session requests
                     </Typography>
                 </Box>
             </Box>
 
-            <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-                gap: 3,
-                mb: 5,
-                width: '100%'
-            }}>
-                {stats.map((stat, i) => (
-                    <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 5, bgcolor: stat.color, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', overflow: 'hidden' }}>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                            <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600, textTransform: 'uppercase' }}>{stat.label}</Typography>
-                            <Typography variant="h4" fontWeight="800" sx={{ my: 1 }}>{stat.value}</Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <CheckCircle2 size={12} /> {stat.sub}
-                            </Typography>
-                        </Box>
-                        <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: 'rgba(255, 255, 255, 0.2)', display: 'flex' }}>
-                            {stat.icon}
-                        </Box>
-                        {/* Decorative Circle */}
-                        <Box sx={{ position: 'absolute', right: -20, bottom: -20, width: 100, height: 100, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
-                    </Paper>
-                ))}
+            {/* Tabs */}
+            <Box sx={{ mb: 3, borderBottom: '2px solid #e2e8f0' }}>
+                <Tabs
+                    value={activeTab}
+                    onChange={(e, v) => setActiveTab(v)}
+                    sx={{ '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: '0.95rem' } }}
+                >
+                    <Tab label={`Expert Q&A (${queries.length})`} icon={<MessageSquare size={16} />} iconPosition="start" />
+                    <Tab
+                        label={`Session Requests (${sessionRequests.filter(r => r.status === 'Pending').length} pending)`}
+                        icon={<Video size={16} />}
+                        iconPosition="start"
+                        sx={{ '& .MuiTab-root': { color: '#ef4444' } }}
+                    />
+                </Tabs>
             </Box>
 
+            {activeTab === 1 && (
+                <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', mb: 4 }}>
+                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" fontWeight="800">Video Session Requests</Typography>
+                        <Button onClick={fetchSessionRequests} sx={{ textTransform: 'none', fontWeight: 600 }}>Refresh</Button>
+                    </Box>
+
+                    {sessionRequestsLoading ? (
+                        <LinearProgress sx={{ borderRadius: 2 }} />
+                    ) : sessionRequestsError ? (
+                        <Box sx={{ textAlign: 'center', py: 4, color: '#dc2626' }}>
+                            <Typography fontWeight={700} mb={1}>⚠️ Error loading requests</Typography>
+                            <Typography variant="body2" sx={{ mb: 2, color: '#64748b' }}>{sessionRequestsError}</Typography>
+                            <Button variant="outlined" color="error" size="small" onClick={fetchSessionRequests}>Retry</Button>
+                        </Box>
+                    ) : sessionRequests.length === 0 ? (
+                        <Box sx={{ textAlign: 'center', py: 6, color: '#94a3b8' }}>
+                            <CalendarDays size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
+                            <Typography>No session requests yet.</Typography>
+                        </Box>
+                    ) : (
+                        <TableContainer>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>User</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>Problem</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>Preferred Timing</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>Status</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>Date</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 800, color: '#64748b' }}>Action</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {sessionRequests.map(req => (
+                                        <TableRow key={req.requestId} hover>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Avatar sx={{ width: 36, height: 36, bgcolor: '#8b5cf6', fontSize: '0.85rem', fontWeight: 700 }}>
+                                                        {(req.userName || 'U')[0].toUpperCase()}
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography fontWeight={700} variant="body2">{req.userName}</Typography>
+                                                        <Typography variant="caption" color="text.secondary">{req.userEmail}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {req.problemDescription}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip label={req.preferredTiming} size="small" sx={{ bgcolor: '#f1f5f9', fontWeight: 600 }} />
+                                            </TableCell>
+                                            <TableCell>
+                                                {(() => {
+                                                    let displayStatus = req.status;
+                                                    if (req.status === 'Scheduled' && req.scheduledDateTime) {
+                                                        const scheduledTime = new Date(req.scheduledDateTime + (req.scheduledDateTime.endsWith('Z') ? '' : 'Z'));
+                                                        const diffMinutes = (scheduledTime - currentTime) / 60000;
+                                                        if (diffMinutes < -60) displayStatus = 'Expired';
+                                                    }
+                                                    return (
+                                                        <Chip
+                                                            label={displayStatus}
+                                                            size="small"
+                                                            sx={{ fontWeight: 700, ...getStatusColor(displayStatus) }}
+                                                        />
+                                                    );
+                                                })()}
+                                            </TableCell>
+                                            <TableCell>
+                                                {req.status === 'Scheduled' && req.scheduledDateTime ? (
+                                                    <Box>
+                                                        <Typography variant="body2" fontWeight="700" color="success.main">
+                                                            {new Date(req.scheduledDateTime + (req.scheduledDateTime.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="success.main" fontWeight="600">
+                                                            {new Date(req.scheduledDateTime + (req.scheduledDateTime.endsWith('Z') ? '' : 'Z')).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </Typography>
+                                                    </Box>
+                                                ) : (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {new Date(req.createdAt + (req.createdAt.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                    {req.status === 'Pending' ? (
+                                                        <>
+                                                            <Button
+                                                                variant="contained"
+                                                                size="small"
+                                                                startIcon={<CalendarDays size={14} />}
+                                                                onClick={() => handleOpenSlotDialog(req)}
+                                                                sx={{ bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' }, textTransform: 'none', fontWeight: 700 }}
+                                                            >
+                                                                Send Slots
+                                                            </Button>
+                                                            <Button
+                                                                variant="outlined"
+                                                                color="error"
+                                                                size="small"
+                                                                onClick={() => handleOpenCancelDialog(req)}
+                                                                sx={{ textTransform: 'none', fontWeight: 700 }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </>
+                                                    ) : req.status === 'Scheduled' && req.scheduledDateTime ? (
+                                                        (() => {
+                                                            const scheduledTime = new Date(req.scheduledDateTime + (req.scheduledDateTime.endsWith('Z') ? '' : 'Z'));
+                                                            const diffMinutes = (scheduledTime - currentTime) / 60000;
+                                                            
+                                                            if (diffMinutes < -30) {
+                                                                return <Chip label="Expired" color="error" size="small" sx={{ fontWeight: 600 }} />;
+                                                            } else if (diffMinutes <= 5) {
+                                                                return (
+                                                                    <Button
+                                                                        variant="contained"
+                                                                        color="success"
+                                                                        size="small"
+                                                                        startIcon={<Video size={14} />}
+                                                                        onClick={() => navigate(`/video-call?url=${encodeURIComponent(req.meetingLink)}&scheduledTime=${scheduledTime.toISOString()}`)}
+                                                                        sx={{ textTransform: 'none', fontWeight: 700, animation: 'pulse 2s infinite' }}
+                                                                    >
+                                                                        Join
+                                                                    </Button>
+                                                                );
+                                                            } else {
+                                                                return <Chip label="Scheduled" size="small" sx={{ fontWeight: 600 }} />;
+                                                            }
+                                                        })()
+                                                    ) : req.status === 'Cancelled' ? (
+                                                        <Tooltip title={req.cancellationReason || 'No reason provided'}>
+                                                            <Chip label="Cancelled" color="error" size="small" sx={{ fontWeight: 600, cursor: 'help' }} />
+                                                        </Tooltip>
+                                                    ) : (
+                                                        <Chip label={req.status} size="small" sx={{ fontWeight: 600 }} />
+                                                    )}
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Paper>
+            )}
+
+            {activeTab === 0 && (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0' }}>
                 <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h6" fontWeight="800">Expert Query Management</Typography>
@@ -357,7 +646,66 @@ const ExpertQueriesPage = () => {
                     </Table>
                 </TableContainer>
             </Paper>
-            
+            )}
+
+            {/* Send Slots Dialog */}
+            <Dialog open={slotDialog.open} onClose={() => setSlotDialog({ open: false, request: null })} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarDays size={20} color="#8b5cf6" />
+                    Send Available Slots to {slotDialog.request?.userName}
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Box sx={{ mb: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={600}>Problem:</Typography>
+                        <Typography variant="body2">{slotDialog.request?.problemDescription}</Typography>
+                        <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ mt: 1 }}>Preferred Timing:</Typography>
+                        <Typography variant="body2">{slotDialog.request?.preferredTiming}</Typography>
+                    </Box>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2 }}>Propose up to 3 time slots:</Typography>
+                    {[0, 1, 2].map(i => (
+                        <Box key={i} sx={{ mb: 2 }}>
+                            <Typography variant="caption" fontWeight={600} color="text.secondary">Slot {i + 1}</Typography>
+                            <TextField
+                                fullWidth
+                                type="datetime-local"
+                                size="small"
+                                value={proposedSlots[i]}
+                                onChange={(e) => {
+                                    const updated = [...proposedSlots];
+                                    updated[i] = e.target.value;
+                                    setProposedSlots(updated);
+                                }}
+                                sx={{ mt: 0.5 }}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{
+                                    min: getMinMaxDates().min,
+                                    max: getMinMaxDates().max,
+                                    onKeyDown: (e) => e.preventDefault(), // Prevent manual typing
+                                    onClick: (e) => {
+                                        try {
+                                            if (e.target.showPicker) {
+                                                e.target.showPicker();
+                                            }
+                                        } catch (err) {}
+                                    }
+                                }}
+                            />
+                        </Box>
+                    ))}
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setSlotDialog({ open: false, request: null })} color="inherit">Cancel</Button>
+                    <Button
+                        onClick={handleSendSlots}
+                        variant="contained"
+                        disabled={sendingSlots}
+                        sx={{ bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' } }}
+                    >
+                        {sendingSlots ? 'Sending...' : 'Send to User'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Respond Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
                 <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -463,6 +811,38 @@ const ExpertQueriesPage = () => {
                         sx={{ bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' } }}
                     >
                         Apply Filters
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Cancel Request Dialog */}
+            <Dialog open={cancelDialogOpen} onClose={handleCloseCancelDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>Cancel Session Request</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Are you sure you want to cancel the session request for {cancelRequest?.userName}? This will notify the user.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label="Reason for Cancellation"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        placeholder="E.g., No available slots this week, topic outside expertise..."
+                        required
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3 }}>
+                    <Button onClick={handleCloseCancelDialog} color="inherit" disabled={cancelling}>Back</Button>
+                    <Button 
+                        onClick={handleCancelSession} 
+                        variant="contained" 
+                        color="error" 
+                        disabled={cancelling || !cancelReason.trim()}
+                        sx={{ fontWeight: 700 }}
+                    >
+                        {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}
                     </Button>
                 </DialogActions>
             </Dialog>
