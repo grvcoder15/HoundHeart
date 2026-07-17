@@ -58,6 +58,12 @@ namespace Hounded_Heart.Models.Data
         public DbSet<LegacyProjectAdminPhoto> LegacyProjectAdminPhotos { get; set; }
 
         public DbSet<TargetCycle> TargetCycles { get; set; }
+
+        // Expert Session Booking
+        public DbSet<ExpertSessionRequest> ExpertSessionRequests { get; set; }
+        public DbSet<ExpertSessionSlot> ExpertSessionSlots { get; set; }
+        public DbSet<ExpertSessionConfirmed> ExpertSessionConfirmeds { get; set; }
+        public DbSet<ExpertSessionNotification> ExpertSessionNotifications { get; set; }
         public DbSet<UserBreathingPreference> UserBreathingPreferences { get; set; }
         public DbSet<SacredGuide> SacredGuides { get; set; }
         public DbSet<SacredGuideWaitlist> SacredGuideWaitlists { get; set; }
@@ -99,6 +105,9 @@ namespace Hounded_Heart.Models.Data
         public DbSet<SyncScoreRecord> SyncScoreRecords { get; set; }
         public DbSet<WellnessAlert> WellnessAlerts { get; set; }
         public DbSet<WellnessCheck> WellnessChecks { get; set; }
+
+        // Video Consultation Sessions
+        public DbSet<VideoSession> VideoSessions { get; set; }
 
         // Daily Aggregated Data
         public DbSet<HumanDailySummary> HumanDailySummaries { get; set; }

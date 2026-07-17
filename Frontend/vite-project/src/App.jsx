@@ -38,6 +38,15 @@ import LegacyProjectPage from './Pages/LegacyProjectPage';
 import GriefSupportPage from './Pages/GriefSupportPage';
 import { NotificationPopupProvider } from './hooks/useNotificationPopup';
 import NotificationPopup from './components/NotificationPopup';
+import BookSession from './Pages/BookSession';
+import VideoCall from './Pages/VideoCall';
+import SessionEnded from './Pages/SessionEnded';
+import ExpertSessionNotificationPoller from './components/ExpertSessionNotificationPoller';
+
+import ExpertBookSessionPage from './Pages/ExpertBookSessionPage';
+import ExpertSessionSlotsPage from './Pages/ExpertSessionSlotsPage';
+import ExpertMySessionsPage from './Pages/ExpertMySessionsPage';
+import ExpertVideoCallPage from './Pages/ExpertVideoCallPage';
 
 // Pages that should NOT show the global Navbar
 const NO_NAVBAR_PATHS = ['/', '/login', '/signup', '/verify-email', '/welcome', '/profile-setup'];
@@ -65,6 +74,7 @@ const AppContent = () => {
   return (
     <>
       {showNavbar && <Navbar />}
+      {isEffectivelyAuthenticated && <ExpertSessionNotificationPoller />}
       <Routes>
         {/* Not under protected routing */}
         <Route path="/" element={<HoundHeartLandingPage />} />
@@ -100,6 +110,17 @@ const AppContent = () => {
         <Route path="/books" element={<ProtectedRoute><BooksLibraryPage /></ProtectedRoute>} />
         <Route path="/legacy-project" element={<ProtectedRoute><LegacyProjectPage /></ProtectedRoute>} />
         <Route path="/grief-support" element={<ProtectedRoute><GriefSupportPage /></ProtectedRoute>} />
+
+        {/* Video Consultation */}
+        <Route path="/book-session" element={<ProtectedRoute><BookSession /></ProtectedRoute>} />
+        <Route path="/video-call" element={<ProtectedRoute><VideoCall /></ProtectedRoute>} />
+        <Route path="/expert-video-call" element={<ProtectedRoute><ExpertVideoCallPage /></ProtectedRoute>} />
+        <Route path="/session-ended" element={<ProtectedRoute><SessionEnded /></ProtectedRoute>} />
+
+        {/* Expert Session Booking Feature */}
+        <Route path="/expert-book-session" element={<ProtectedRoute><ExpertBookSessionPage /></ProtectedRoute>} />
+        <Route path="/expert-session-slots/:id" element={<ProtectedRoute><ExpertSessionSlotsPage /></ProtectedRoute>} />
+        <Route path="/my-expert-sessions" element={<ProtectedRoute><ExpertMySessionsPage /></ProtectedRoute>} />
 
         {/* Public or informational pages */}
         <Route path="/help-center" element={<HelpCenterPage />} />

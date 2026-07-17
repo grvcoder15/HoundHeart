@@ -436,7 +436,7 @@ const AdminDashboardPage = () => {
             {/* Main Visuals Section */}
             {/* Charts Section */}
             <Grid container spacing={4} sx={{ mb: 4, width: '100%' }}>
-                <Grid item xs={12} lg={7}>
+                <Grid size={{ xs: 12, lg: 7 }}>
                     <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', height: '100%' }}>
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="h6" fontWeight="800">Community Growth</Typography>
@@ -482,7 +482,7 @@ const AdminDashboardPage = () => {
                         </Box>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} lg={5}>
+                <Grid size={{ xs: 12, lg: 5 }}>
                     <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', height: '100%' }}>
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="h6" fontWeight="800">Activity by Time</Typography>
@@ -517,7 +517,7 @@ const AdminDashboardPage = () => {
 
             {/* Bottom Row */}
             <Grid container spacing={4} sx={{ width: '100%' }}>
-                <Grid item xs={12} lg={4}>
+                <Grid size={{ xs: 12, lg: 4 }}>
                     <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', height: '100%' }}>
                         <Typography variant="h6" fontWeight="800" mb={4}>Trending Topics</Typography>
                         <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', mb: 6 }}>
@@ -542,7 +542,7 @@ const AdminDashboardPage = () => {
                         </Box>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} lg={8}>
+                <Grid size={{ xs: 12, lg: 8 }}>
                     <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', height: '100%' }}>
                         <Typography variant="h6" fontWeight="800" mb={4}>Recent Activity</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>

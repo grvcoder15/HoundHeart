@@ -1001,7 +1001,8 @@ const DashboardPage = () => {
       const stored = localStorage.getItem('dailyActivityCompletions');
       if (!stored) return new Set();
       const parsed = JSON.parse(stored);
-      const today = new Date().toISOString().split('T')[0];
+      const _n = new Date();
+      const today = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
       if (parsed.date !== today) {
         localStorage.removeItem('dailyActivityCompletions');
         return new Set(); // New day – reset
@@ -1012,7 +1013,8 @@ const DashboardPage = () => {
 
   const persistActivityCompletion = (activityId, completed) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const _n = new Date();
+      const today = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
       const stored = localStorage.getItem('dailyActivityCompletions');
       let completedIds = [];
       if (stored) {
@@ -1032,7 +1034,8 @@ const DashboardPage = () => {
   const clearStoredActivityCompletions = () => {
     try {
       // Keep date entry but wipe pending IDs since server is now source of truth
-      const today = new Date().toISOString().split('T')[0];
+      const _n = new Date();
+      const today = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
       localStorage.setItem('dailyActivityCompletions', JSON.stringify({ date: today, completedIds: [] }));
     } catch { /* silent */ }
   };
@@ -1909,8 +1912,10 @@ const DashboardPage = () => {
       const stored = localStorage.getItem('dailyChakraSync');
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      const today = new Date().toISOString().split('T')[0];
-      if (parsed.date !== today) {
+      // Use LOCAL date (not UTC) so IST users don't get reset at midnight UTC
+      const now = new Date();
+      const todayLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      if (parsed.date !== todayLocal) {
         localStorage.removeItem('dailyChakraSync');
         return null; // New day – reset to defaults
       }
@@ -2128,8 +2133,11 @@ const DashboardPage = () => {
           thirdEye: syncData_response.adjustedScores?.thirdEyeScore ?? syncData_response.adjustedScores?.ThirdEyeScore ?? thirdEyeChakra,
           crown: syncData_response.adjustedScores?.crownScore ?? syncData_response.adjustedScores?.CrownScore ?? crownChakra,
         };
+        // Use LOCAL date (not UTC) so IST users don't get reset at midnight UTC
+        const _now = new Date();
+        const _todayLocal = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}`;
         localStorage.setItem('dailyChakraSync', JSON.stringify({
-          date: new Date().toISOString().split('T')[0],
+          date: _todayLocal,
           values: finalValues
         }));
       }

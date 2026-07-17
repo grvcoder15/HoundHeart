@@ -1435,10 +1435,11 @@ namespace Hounded_Heart.Api.Controllers
                 new Claim(ClaimTypes.Email, emailAddress),               // allows accessing user's email
                 new Claim(ClaimTypes.Name, emailAddress)                 // (optional) for User.Identity.Name
             };
+            var durationInMinutes = int.TryParse(_configuration["Jwt:DurationInMinutes"], out var parsedDuration) ? parsedDuration : 120;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(15), // Access token short lived (15 mins)
+                Expires = DateTime.UtcNow.AddMinutes(durationInMinutes), // Uses configured duration (120 mins)
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),

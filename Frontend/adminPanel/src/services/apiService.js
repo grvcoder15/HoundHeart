@@ -32,6 +32,14 @@ class ApiService {
             const response = await fetch(url, finalOptions);
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    // Session expired or invalid token
+                    this.logout();
+                    sessionStorage.setItem('sessionExpiredMessage', 'Your session has expired. Please log in again.');
+                    window.location.href = '/login';
+                    return;
+                }
+
                 const contentType = response.headers.get('content-type') || '';
                 let errorData;
                 if (contentType.includes('application/json')) {
@@ -736,6 +744,201 @@ class ApiService {
     }
 
     async getLegacyUpdates(sectionKey) {
+        try {
+            const response = await this.getHealingCircles();
+            if (!response?.success || !response?.data) return null;
+
+            const circles = response.data;
+            const now = new Date();
+            const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+            const upcomingCount = circles.filter(c => {
+                const circleDate = new Date(c.time);
+                return circleDate > now;
+            }).length;
+
+            const thisMonthCount = circles.filter(c => {
+                const createdDate = new Date(c.createdOn);
+                return createdDate >= thisMonthStart && createdDate <= thisMonthEnd;
+            }).length;
+
+            const totalParticipants = circles.reduce((sum, c) => sum + (c.participantsCount || 0), 0);
+
+            return {
+                success: true,
+                data: {
+                    totalCircles: circles.length,
+                    totalParticipants,
+                    upcoming: upcomingCount,
+                    thisMonth: thisMonthCount
+                }
+            };
+        } catch (error) {
+            console.error('Error calculating healing circles stats:', error);
+            return null;
+        }
+    }
+
+    // ─── Pre-Registrations Admin APIs ──────────────────
+
+    async getPreRegistrations() {
+        try {
+            const response = await this.makeRequest('/preregister/admin/list');
+            console.log('Pre-registrations response:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching pre-registrations:', error);
+            throw error;
+        }
+    }
+
+    async markInvitesSent(emails) {
+        return this.makeRequest('/preregister/admin/mark-invites-sent', {
+            method: 'POST',
+            body: JSON.stringify({ Emails: emails })
+        });
+    }
+
+    async deletePreRegistration(preRegistrationId) {
+        return this.makeRequest(`/preregister/admin/${preRegistrationId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // ─── Course Content Admin APIs ─────────────────────
+
+    async getAdminCourses() {
+        return this.makeRequest('/admin/courses');
+    }
+
+    async getAdminCourse(courseId) {
+        return this.makeRequest(`/admin/courses/${courseId}`);
+    }
+
+    async getCourseContent(courseId, contentType) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}`);
+    }
+
+    async createCourseContent(courseId, contentType, data) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateCourseContent(courseId, contentType, itemId, data) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}/${itemId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteCourseContent(courseId, contentType, itemId) {
+        return this.makeRequest(`/admin/courses/${courseId}/${contentType}/${itemId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async uploadCourseFile(courseId, file, folder = 'general') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', folder);
+
+        const response = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Upload failed');
+        }
+        return response.json();
+    }
+    // ==========================================
+    // Tree Dedications Admin
+    // ==========================================
+
+    async getPendingTreeDedications() {
+        return await this.makeRequest('/TreeDedication/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveTreeDedications() {
+        return await this.makeRequest('/TreeDedication/admin/live', { method: 'GET' });
+    }
+
+    async updateTreeDedicationStatus(id, status) {
+        return await this.makeRequest(`/TreeDedication/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    async updateTreeDedicationStage(id, stage) {
+        return await this.makeRequest(`/TreeDedication/admin/${id}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify({ GrowthStage: stage })
+        });
+    }
+
+    // ==========================================
+    // Senior Dog Admin Submissions
+    // ==========================================
+
+    async getPendingSeniorDogSubmissions() {
+        return await this.makeRequest('/SeniorDogSubmission/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveSeniorDogSubmissions() {
+        return await this.makeRequest('/SeniorDogSubmission/live', { method: 'GET' });
+    }
+
+    async updateSeniorDogStatus(id, status) {
+        return await this.makeRequest(`/SeniorDogSubmission/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    // ==========================================
+    // Research Initiative Admin Submissions
+    // ==========================================
+
+    async getPendingResearchSubmissions() {
+        return await this.makeRequest('/ResearchSubmission/admin/pending', { method: 'GET' });
+    }
+
+    async getLiveResearchSubmissions() {
+        return await this.makeRequest('/ResearchSubmission/live', { method: 'GET' });
+    }
+
+    async updateResearchStatus(id, status) {
+        return await this.makeRequest(`/ResearchSubmission/admin/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ Status: status })
+        });
+    }
+
+    // ==========================================
+    // Legacy Project Admin Settings
+    // ==========================================
+
+    async getLegacyContent(sectionKey) {
+        return await this.makeRequest(`/LegacyProjectAdmin/content?sectionKey=${sectionKey}`, { method: 'GET' });
+    }
+
+    async updateLegacyContent(data) {
+        return await this.makeRequest('/LegacyProjectAdmin/content', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getLegacyUpdates(sectionKey) {
         return await this.makeRequest(`/LegacyProjectAdmin/updates?sectionKey=${sectionKey}`, { method: 'GET' });
     }
 
@@ -765,6 +968,42 @@ class ApiService {
         return await this.makeRequest(`/LegacyProjectAdmin/photos/${id}`, { method: 'DELETE' });
     }
 
+    // ─── Expert Session Booking Admin APIs ───────────────────────
+
+    async getExpertSessionRequests(statusFilter) {
+        const qs = statusFilter ? `?statusFilter=${statusFilter}` : '';
+        return this.makeRequest(`/ExpertSession/requests${qs}`);
+    }
+
+    async sendExpertSessionSlots(requestId, proposedSlots) {
+        return this.makeRequest('/ExpertSession/send-slots', {
+            method: 'POST',
+            body: JSON.stringify({ requestId, proposedSlots }),
+        });
+    }
+
+    async getAdminUpcomingSessions() {
+        return this.makeRequest('/ExpertSession/upcoming');
+    }
+
+    async getAdminExpertNotifications() {
+        return this.makeRequest('/ExpertSession/notifications/admin');
+    }
+
+    async markExpertSessionNotificationRead(notificationId) {
+        return this.makeRequest('/ExpertSession/notification/read', {
+            method: 'POST',
+            body: JSON.stringify(notificationId)
+        });
+    }
+
+    async cancelExpertSession(requestId, reason) {
+        return this.makeRequest('/ExpertSession/cancel', {
+            method: 'POST',
+            body: JSON.stringify({ requestId, reason })
+        });
+    }
 }
 
-export default new ApiService();
+const apiService = new ApiService();
+export default apiService;

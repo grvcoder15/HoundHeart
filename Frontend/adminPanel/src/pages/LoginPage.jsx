@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -78,7 +78,16 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [sessionExpiredMsg, setSessionExpiredMsg] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const msg = sessionStorage.getItem('sessionExpiredMessage');
+        if (msg) {
+            setSessionExpiredMsg(msg);
+            sessionStorage.removeItem('sessionExpiredMessage'); // clear after reading
+        }
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -176,6 +185,25 @@ const LoginPage = () => {
                                     Administrator Login
                                 </Typography>
                             </Box>
+
+                            {sessionExpiredMsg && (
+                                <Alert
+                                    severity="warning"
+                                    sx={{
+                                        mb: 2,
+                                        borderRadius: 2,
+                                        textAlign: 'left',
+                                        fontWeight: 600,
+                                        bgcolor: '#fffbeb',
+                                        border: '1px solid #f59e0b',
+                                        color: '#92400e'
+                                    }}
+                                    icon={<span style={{ fontSize: 18 }}>⏳</span>}
+                                >
+                                    <strong>Session Expired</strong><br />
+                                    {sessionExpiredMsg}
+                                </Alert>
+                            )}
 
                             {error && (
                                 <Alert severity="error" sx={{ mb: 3, borderRadius: 2, textAlign: 'left' }}>

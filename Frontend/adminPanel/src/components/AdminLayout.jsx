@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Drawer,
@@ -13,7 +13,9 @@ import {
     ListItemText,
     Avatar,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    Collapse,
+    Badge
 } from '@mui/material';
 import {
     LayoutDashboard,
@@ -29,7 +31,9 @@ import {
     Menu as MenuIcon,
     HelpCircle,
     Watch,
-    Heart
+    Heart,
+    Video,
+    X
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiService from '../services/apiService';
@@ -43,6 +47,86 @@ const AdminLayout = ({ children }) => {
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    // Notification bar state
+    const [adminNotifications, setAdminNotifications] = useState([]);
+    const [showNotifBar, setShowNotifBar] = useState(false);
+
+    // Helper to extract date from message
+    const getNotificationDate = (message) => {
+        if (!message) return null;
+        const match = message.match(/(\d{2})-(\d{2})-(\d{4})\s+(\d{1,2}:\d{2}(?:\s+[AP]M)?)/);
+        if (match) {
+            const [_, dd, mm, yyyy, time] = match;
+            let hours = 0;
+            let mins = 0;
+            const timeParts = time.match(/(\d+):(\d+)(?:\s+([AP]M))?/);
+            if (timeParts) {
+                hours = parseInt(timeParts[1], 10);
+                mins = parseInt(timeParts[2], 10);
+                if (timeParts[3] === 'PM' && hours < 12) hours += 12;
+                if (timeParts[3] === 'AM' && hours === 12) hours = 0;
+            }
+            return new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd), hours, mins).getTime();
+        }
+        return null;
+    };
+
+    useEffect(() => {
+        const pollAdminNotifications = async () => {
+            try {
+                const res = await apiService.getAdminExpertNotifications();
+                let notifs = [];
+                if (Array.isArray(res)) notifs = res;
+                else if (res?.data && Array.isArray(res.data)) notifs = res.data;
+                
+                if (notifs.length > 0) {
+                    // Filter out passed out dates
+                    let validNotifs = notifs.filter(n => {
+                        const t = getNotificationDate(n.message);
+                        if (t !== null && t < Date.now()) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    // Sort by earliest upcoming date first
+                    validNotifs.sort((a, b) => {
+                        const ta = getNotificationDate(a.message) || Infinity;
+                        const tb = getNotificationDate(b.message) || Infinity;
+                        return ta - tb;
+                    });
+
+                    // Show only 1
+                    if (validNotifs.length > 0) {
+                        setAdminNotifications([validNotifs[0]]);
+                        setShowNotifBar(true);
+                    } else {
+                        setShowNotifBar(false);
+                    }
+                } else {
+                    setShowNotifBar(false);
+                }
+            } catch (err) {
+                // Silently fail
+            }
+        };
+
+        pollAdminNotifications();
+        const interval = setInterval(pollAdminNotifications, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleDismissNotif = async (notifId) => {
+        try {
+            await apiService.markExpertSessionNotificationRead(notifId);
+            const remaining = adminNotifications.filter(n => n.notificationId !== notifId);
+            setAdminNotifications(remaining);
+            if (remaining.length === 0) setShowNotifBar(false);
+        } catch (err) {
+            console.error('Failed to mark notification read', err);
+        }
+    };
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -63,6 +147,7 @@ const AdminLayout = ({ children }) => {
         { divider: true },
         { text: 'Legacy Project', icon: <Heart size={18} />, path: '/legacy-project' },
         { text: 'Expert Queries', icon: <MessageSquare size={18} />, path: '/queries' },
+        { text: 'Upcoming Sessions', icon: <Video size={18} />, path: '/upcoming-sessions' },
         { text: 'Sacred Guide', icon: <BookOpen size={18} />, path: '/sacred-guide' },
         { text: 'Courses', icon: <BookOpen size={18} />, path: '/courses' },
         { text: 'FAQ Management', icon: <HelpCircle size={18} />, path: '/faq' },
@@ -115,7 +200,13 @@ const AdminLayout = ({ children }) => {
                                 }}
                             >
                                 <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
-                                    {item.icon}
+                                    {item.text === 'Expert Queries' && adminNotifications.length > 0 ? (
+                                        <Badge color="error" variant="dot" invisible={false}>
+                                            {item.icon}
+                                        </Badge>
+                                    ) : (
+                                        item.icon
+                                    )}
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={
@@ -162,7 +253,9 @@ const AdminLayout = ({ children }) => {
     );
 
     return (
-        <Box sx={{ display: 'flex', bgcolor: '#f8fafc', minHeight: '100vh', width: '100%' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', bgcolor: '#f8fafc', minHeight: '100vh', width: '100%' }}>
+
+            <Box sx={{ display: 'flex', flex: 1 }}>
             {/* Mobile hamburger — only on small screens */}
             {isMobile && (
                 <Box sx={{ position: 'fixed', top: 12, left: 12, zIndex: 1300 }}>
@@ -211,9 +304,36 @@ const AdminLayout = ({ children }) => {
                 }}
             >
                 <Box sx={{ maxWidth: '100%', width: '100%' }}>
+                    {/* Admin Notification Bar in Main Area (Dashboard Only) */}
+                    {showNotifBar && adminNotifications.length > 0 && location.pathname === '/dashboard' && (
+                        <Box sx={{ bgcolor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', px: 3, py: 1.5, mb: 3, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, width: '100%' }}>
+                                {adminNotifications.map(notif => (
+                                    <Box key={notif.notificationId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Typography variant="body2" fontWeight={700} sx={{ flexGrow: 1 }}>{notif.message}</Typography>
+                                        <Box
+                                            component="span"
+                                            onClick={() => { 
+                                                handleDismissNotif(notif.notificationId);
+                                                navigate('/queries'); 
+                                            }}
+                                            sx={{ textDecoration: 'underline', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                                        >
+                                            View Details
+                                        </Box>
+                                        <IconButton size="small" onClick={() => handleDismissNotif(notif.notificationId)} sx={{ color: '#ef4444', p: 0.5, '&:hover': { bgcolor: '#fee2e2' } }}>
+                                            <X size={16} />
+                                        </IconButton>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    )}
+
                     {children}
                 </Box>
             </Box>
+        </Box>
         </Box>
     );
 };
