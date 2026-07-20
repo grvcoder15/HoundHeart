@@ -106,6 +106,23 @@ const ExpertQueriesPage = () => {
     useEffect(() => {
         fetchQueries();
         fetchSessionRequests();
+
+        // Refetch every time user returns to this tab/page (e.g. after ending a session call)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchSessionRequests();
+            }
+        };
+        const handleFocus = () => fetchSessionRequests();
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchSessionRequests = async () => {
@@ -501,7 +518,7 @@ const ExpertQueriesPage = () => {
                                                                         color="success"
                                                                         size="small"
                                                                         startIcon={<Video size={14} />}
-                                                                        onClick={() => navigate(`/video-call?url=${encodeURIComponent(req.meetingLink)}&scheduledTime=${scheduledTime.toISOString()}`)}
+                                                                        onClick={() => navigate(`/video-call?url=${encodeURIComponent(req.meetingLink)}&scheduledTime=${scheduledTime.toISOString()}&sessionId=${req.sessionId}`)}
                                                                         sx={{ textTransform: 'none', fontWeight: 700, animation: 'pulse 2s infinite' }}
                                                                     >
                                                                         Join
@@ -511,6 +528,8 @@ const ExpertQueriesPage = () => {
                                                                 return <Chip label="Scheduled" size="small" sx={{ fontWeight: 600 }} />;
                                                             }
                                                         })()
+                                                    ) : req.status === 'Ended' ? (
+                                                        <Chip label="Session Ended" size="small" sx={{ fontWeight: 600, bgcolor: '#374151', color: '#9ca3af' }} />
                                                     ) : req.status === 'Cancelled' ? (
                                                         <Tooltip title={req.cancellationReason || 'No reason provided'}>
                                                             <Chip label="Cancelled" color="error" size="small" sx={{ fontWeight: 600, cursor: 'help' }} />

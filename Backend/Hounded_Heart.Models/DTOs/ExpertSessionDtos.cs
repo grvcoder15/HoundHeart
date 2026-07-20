@@ -22,6 +22,13 @@ namespace Hounded_Heart.Models.DTOs
         public Guid SlotId { get; set; }
     }
 
+    public class EndExpertSessionRequest
+    {
+        public Guid SessionId { get; set; }
+        public string EndedBy { get; set; } = string.Empty; // "admin" or "user"
+        public string? EndedByUserId { get; set; }
+    }
+
     public class PaymentSuccessRequest
     {
         public Guid RequestId { get; set; }
@@ -49,6 +56,7 @@ namespace Hounded_Heart.Models.DTOs
         // Populated when status is Scheduled
         public DateTime? ScheduledDateTime { get; set; }
         public string? MeetingLink { get; set; }
+        public Guid? SessionId { get; set; }
         
         // Populated when status is Cancelled
         public string? CancellationReason { get; set; }

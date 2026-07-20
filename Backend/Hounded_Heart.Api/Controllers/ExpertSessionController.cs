@@ -228,5 +228,34 @@ namespace Hounded_Heart.Api.Controllers
                 return StatusCode(500, ResponseHelper.Fail<object>(ex.Message));
             }
         }
+        // 11. End Session
+        [HttpPost("end")]
+        public async Task<IActionResult> EndSession([FromBody] EndExpertSessionRequest request)
+        {
+            try
+            {
+                await _expertSessionService.EndSessionAsync(request);
+                return Ok(ResponseHelper.Success<object>(null, "Session marked as ended."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<object>(ex.Message));
+            }
+        }
+
+        // 12. Get Session Status (for pre-join check)
+        [HttpGet("status/{sessionId}")]
+        public async Task<IActionResult> GetSessionStatus(Guid sessionId)
+        {
+            try
+            {
+                var status = await _expertSessionService.GetSessionStatusAsync(sessionId);
+                return Ok(ResponseHelper.Success(new { status }, "Status fetched."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ResponseHelper.Fail<object>(ex.Message));
+            }
+        }
     }
 }

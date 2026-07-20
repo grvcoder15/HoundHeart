@@ -12,11 +12,11 @@ namespace Hounded_Heart.Models.Data
 
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
-        public string DogSlug { get; set; }
+        public string DogSlug { get; set; } = string.Empty;
 
         public Guid? DogId { get; set; }
 
@@ -49,7 +49,7 @@ namespace Hounded_Heart.Models.Data
         public Guid Id { get; set; }
 
         [Required]
-        public string DogSlug { get; set; }
+        public string DogSlug { get; set; } = string.Empty;
 
         [Required]
         public DateTime ActivityDate { get; set; }

@@ -41,6 +41,7 @@ import TheScienceIcon from '../assets/images/The Science icon.svg';
 import EnergyHealingLogo from '../assets/images/Energy Healing_logo.svg';
 import TheScienceLogo from '../assets/images/The Science_logo.svg';
 import TransformLivesLogo from '../assets/images/Transform Your Lives Together_logo.svg';
+import TestimonialsSection from '../components/TestimonialsSection';
 
 // ─── Early Member Offer Banner ────────────────────────────────────────────────
 function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
@@ -1963,6 +1964,9 @@ const HoundHeartLandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Testimonials ───────────────────────────────────────────── */}
+      <TestimonialsSection />
 
       {/* Footer */}
       <footer className="bg-black text-white py-16">

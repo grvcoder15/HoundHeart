@@ -982,6 +982,17 @@ class ApiService {
         });
     }
 
+    async endExpertSession(data) {
+        return this.makeRequest('/ExpertSession/end', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getExpertSessionStatus(sessionId) {
+        return this.makeRequest(`/ExpertSession/status/${sessionId}`);
+    }
+
     async getAdminUpcomingSessions() {
         return this.makeRequest('/ExpertSession/upcoming');
     }

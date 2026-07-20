@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DailyIframe from '@daily-co/daily-js';
+import apiService from '../services/apiService';
+
+// Helper: safe sleep
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const ExpertVideoCallPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const url = searchParams.get('url');
     const scheduledTimeParam = searchParams.get('scheduledTime');
+    const sessionId = searchParams.get('sessionId');
 
     // Calculate initial time based on scheduledTime if available
     let initialTimeLeft = 15 * 60;
     if (scheduledTimeParam) {
         const scheduledTime = new Date(scheduledTimeParam);
-        const expiryTime = new Date(scheduledTime.getTime() + 30 * 60000); // Expiry is 30 mins after scheduled time
+        const expiryTime = new Date(scheduledTime.getTime() + 30 * 60000);
         const remainingSeconds = Math.floor((expiryTime.getTime() - Date.now()) / 1000);
         initialTimeLeft = Math.min(15 * 60, Math.max(0, remainingSeconds));
     }
@@ -20,12 +25,21 @@ const ExpertVideoCallPage = () => {
     const callFrameRef = useRef(null);
     const containerRef = useRef(null);
     const timerRef = useRef(null);
-    const [callStatus, setCallStatus] = useState('initializing'); // initializing, joined, left, error
+    const intentionalEndSignalReceivedAt = useRef(null);
+    const isEndingRef = useRef(false); // guard against double-end
+
+    const [callStatus, setCallStatus] = useState('checking'); // checking, initializing, joined, left, error, ended
     const [errorMsg, setErrorMsg] = useState('');
     const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
     const [timerRunning, setTimerRunning] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
     const [warningDismissed, setWarningDismissed] = useState(false);
+    const [toastMsg, setToastMsg] = useState(null);
+
+    const showToast = useCallback((msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 4500);
+    }, []);
 
     const formatTime = (secs) => {
         const m = Math.floor(Math.abs(secs) / 60).toString().padStart(2, '0');
@@ -33,48 +47,102 @@ const ExpertVideoCallPage = () => {
         return `${m}:${s}`;
     };
 
-    const handleLeave = useCallback(() => {
-        if (callFrameRef.current) {
-            callFrameRef.current.leave();
-            callFrameRef.current.destroy();
-            callFrameRef.current = null;
-        }
-        setCallStatus('left');
-        navigate(-1); // Go back to the previous page
-    }, [navigate]);
+    // ── Safe destroy helper ─────────────────────────────────────────
+    const destroyCallFrame = useCallback(() => {
+        const frame = callFrameRef.current;
+        if (!frame) return;
+        callFrameRef.current = null; // null out FIRST
+        try { frame.leave(); } catch (_) {}
+        try { frame.destroy(); } catch (_) {}
+    }, []);
 
+    // ── Navigate back ───────────────────────────────────────────────
+    const goBack = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        destroyCallFrame();
+        navigate(-1);
+    }, [destroyCallFrame, navigate]);
+
+    // ── End Session click (CORRECT ORDER) ──────────────────────────
+    const handleEndSessionClick = useCallback(async () => {
+        if (isEndingRef.current) return; // prevent double-click
+        isEndingRef.current = true;
+
+        // STEP 1: Call backend FIRST, await it
+        if (sessionId) {
+            try {
+                await apiService.endExpertSession({ sessionId, endedBy: 'user' });
+            } catch (err) {
+                console.error('Error marking session ended in DB:', err);
+                showToast('⚠️ Could not update session status, but leaving call.');
+            }
+        }
+
+        // STEP 2: Send intentional-end signal to the other participant
+        if (callFrameRef.current) {
+            try {
+                callFrameRef.current.sendAppMessage(
+                    { type: 'session-ended-intentionally', endedBy: 'user' }, '*'
+                );
+            } catch (e) {
+                console.warn('sendAppMessage failed (call may already be closing):', e);
+            }
+        }
+
+        // STEP 3: Wait for message to propagate, then destroy and navigate
+        await sleep(500);
+
+        if (timerRef.current) clearInterval(timerRef.current);
+        destroyCallFrame();
+        navigate(-1);
+    }, [sessionId, showToast, destroyCallFrame, navigate]);
+
+    // ── Session status pre-check & Daily.co setup ──────────────────
     useEffect(() => {
         if (!url) {
-            setErrorMsg("Meeting URL is missing");
+            setErrorMsg('Meeting URL is missing.');
             setCallStatus('error');
             return;
         }
 
-        let isActive = true; // guard against stale closures
+        let isActive = true;
 
-        const joinCall = async () => {
+        const init = async () => {
+            // Pre-check: if sessionId exists, verify the session is not already ended
+            if (sessionId) {
+                try {
+                    const res = await apiService.getExpertSessionStatus(sessionId);
+                    const status = res?.data?.status ?? res?.status;
+                    if (status === 'Ended') {
+                        if (isActive) setCallStatus('ended');
+                        return;
+                    }
+                } catch (err) {
+                    // Non-fatal: if status check fails just proceed to join
+                    console.warn('Session status check failed, proceeding to join:', err);
+                }
+            }
+
+            if (!isActive) return;
+            setCallStatus('initializing');
+
             try {
-                // Destroy any lingering Daily instance (e.g. from React Strict Mode double-mount)
+                // Clean up any lingering Daily instance
                 const existing = DailyIframe.getCallInstance();
                 if (existing) {
                     try { await existing.leave(); } catch (_) {}
-                    existing.destroy();
+                    try { existing.destroy(); } catch (_) {}
                 }
 
-                if (!isActive) return; // component unmounted during async cleanup above
+                if (!isActive) return;
 
                 const callFrame = DailyIframe.createFrame(containerRef.current, {
-                    // Pass url here so the iframe is initialized with the correct
-                    // Daily.co origin — prevents the postMessage origin mismatch
                     url,
                     iframeStyle: {
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        border: '0',
-                        borderRadius: '12px',
+                        top: 0, left: 0,
+                        width: '100%', height: '100%',
+                        border: '0', borderRadius: '12px',
                     },
                     showLeaveButton: true,
                     showFullscreenButton: true,
@@ -84,72 +152,112 @@ const ExpertVideoCallPage = () => {
                 callFrameRef.current = callFrame;
 
                 const checkParticipants = () => {
-                    const p = callFrame.participants();
-                    if (p && Object.keys(p).length >= 2) {
-                        setTimerRunning(true);
+                    try {
+                        const p = callFrameRef.current?.participants();
+                        if (p && Object.keys(p).length >= 2) setTimerRunning(true);
+                    } catch (_) {}
+                };
+
+                const onJoined = () => {
+                    if (isActive) setCallStatus('joined');
+                    checkParticipants();
+                };
+
+                const onParticipantLeft = () => {
+                    const now = Date.now();
+                    const timeSinceSignal = intentionalEndSignalReceivedAt.current
+                        ? now - intentionalEndSignalReceivedAt.current
+                        : Infinity;
+                    if (timeSinceSignal > 3000) {
+                        showToast('Connection lost. The other participant may have disconnected unexpectedly.');
                     }
                 };
 
-                callFrame.on('joined-meeting', () => {
-                    if (isActive) setCallStatus('joined');
-                    checkParticipants();
-                });
-                callFrame.on('participant-joined', checkParticipants);
-                callFrame.on('left-meeting', () => {
-                    if (isActive) handleLeave();
-                });
-                callFrame.on('error', (e) => {
+                const onAppMessage = (event) => {
+                    if (event.data?.type === 'session-ended-intentionally') {
+                        intentionalEndSignalReceivedAt.current = Date.now();
+                        if (event.data.endedBy === 'admin') {
+                            showToast('Admin has ended the session');
+                        } else {
+                            showToast('The other person has ended the session');
+                        }
+                        setTimeout(() => {
+                            if (isActive) {
+                                if (timerRef.current) clearInterval(timerRef.current);
+                                destroyCallFrame();
+                                navigate(-1);
+                            }
+                        }, 2000);
+                    }
+                };
+
+                const onLeftMeeting = () => {
+                    if (isActive && !isEndingRef.current) {
+                        goBack();
+                    }
+                };
+
+                const onError = (e) => {
                     console.error('Daily.co error:', e);
                     if (isActive) {
-                        setErrorMsg(e?.errorMsg || "Failed to load the meeting.");
+                        setErrorMsg(e?.errorMsg || 'Failed to load the meeting.');
                         setCallStatus('error');
                     }
-                });
+                };
+
+                callFrame.on('joined-meeting', onJoined);
+                callFrame.on('participant-joined', checkParticipants);
+                callFrame.on('participant-left', onParticipantLeft);
+                callFrame.on('app-message', onAppMessage);
+                callFrame.on('left-meeting', onLeftMeeting);
+                callFrame.on('error', onError);
 
                 await callFrame.join({ url });
             } catch (err) {
-                console.error("Error joining Daily.co call:", err);
+                console.error('Error joining Daily.co call:', err);
                 if (isActive) {
-                    setErrorMsg(err.message || "Failed to initialize video call.");
+                    setErrorMsg(err.message || 'Failed to initialize video call.');
                     setCallStatus('error');
                 }
             }
         };
 
-        joinCall();
+        init();
 
         return () => {
             isActive = false;
-            if (callFrameRef.current) {
-                try { callFrameRef.current.leave(); } catch (_) {}
-                callFrameRef.current.destroy();
-                callFrameRef.current = null;
+            if (timerRef.current) clearInterval(timerRef.current);
+            const frame = callFrameRef.current;
+            callFrameRef.current = null;
+            if (frame) {
+                try { frame.leave(); } catch (_) {}
+                try { frame.destroy(); } catch (_) {}
             }
         };
-    }, [url, handleLeave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [url, sessionId]);
 
+    // ── Timer countdown ─────────────────────────────────────────────
     useEffect(() => {
         if (!timerRunning) return;
 
         timerRef.current = setInterval(() => {
-            setTimeLeft(prev => {
+            setTimeLeft((prev) => {
                 const next = prev - 1;
                 if (next === 5 * 60 && !warningDismissed) {
-                        setShowWarning(true);
-                    }
-                    if (next <= 0) {
-                        clearInterval(timerRef.current);
-                        handleLeave();
-                        return 0;
-                    }
+                    setShowWarning(true);
+                }
+                if (next <= 0) {
+                    clearInterval(timerRef.current);
+                    handleEndSessionClick();
+                    return 0;
+                }
                 return next;
             });
         }, 1000);
 
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-        };
-    }, [timerRunning, warningDismissed, handleLeave]);
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    }, [timerRunning, warningDismissed, handleEndSessionClick]);
 
     const timerColor = timeLeft <= 5 * 60
         ? timeLeft <= 60 ? 'text-red-500' : 'text-yellow-500'
@@ -158,13 +266,30 @@ const ExpertVideoCallPage = () => {
         ? timeLeft <= 60 ? 'bg-red-500' : 'bg-yellow-500'
         : 'bg-green-400';
 
+    // ── "Session already ended" screen ──────────────────────────────
+    if (callStatus === 'ended') {
+        return (
+            <div className="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center gap-4 z-[9999]">
+                <span className="text-6xl">🔒</span>
+                <h2 className="text-white text-2xl font-bold">This session has already ended</h2>
+                <p className="text-slate-400">This session was marked as ended. You cannot rejoin.</p>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="mt-4 px-6 py-2 border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white font-semibold rounded-lg transition"
+                >
+                    Return to My Sessions
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 bg-slate-900 flex flex-col z-[9999]">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 bg-slate-900/80 backdrop-blur-md border-b border-white/10">
                 <div className="flex items-center gap-4">
-                    <button 
-                        onClick={handleLeave}
+                    <button
+                        onClick={goBack}
                         className="flex items-center text-slate-400 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,9 +314,10 @@ const ExpertVideoCallPage = () => {
                         <span className="text-white/40 text-xs uppercase tracking-wider font-semibold">left</span>
                     </div>
 
-                    <button 
-                        onClick={handleLeave}
-                        className="px-5 py-2 bg-red-600/90 hover:bg-red-500 text-white font-bold rounded-lg transition shadow-lg shadow-red-500/20"
+                    <button
+                        onClick={handleEndSessionClick}
+                        disabled={isEndingRef.current}
+                        className="px-5 py-2 bg-red-600/90 hover:bg-red-500 disabled:opacity-50 text-white font-bold rounded-lg transition shadow-lg shadow-red-500/20"
                     >
                         End Session
                     </button>
@@ -200,10 +326,12 @@ const ExpertVideoCallPage = () => {
 
             {/* Video Container */}
             <div className="flex-1 relative p-4">
-                {callStatus === 'initializing' && (
+                {(callStatus === 'checking' || callStatus === 'initializing') && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                         <div className="w-12 h-12 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
-                        <p className="text-slate-400 font-semibold">Connecting to secure session...</p>
+                        <p className="text-slate-400 font-semibold">
+                            {callStatus === 'checking' ? 'Verifying session...' : 'Connecting to secure session...'}
+                        </p>
                     </div>
                 )}
 
@@ -214,8 +342,8 @@ const ExpertVideoCallPage = () => {
                         </svg>
                         <h2 className="text-red-500 font-bold text-xl">Connection Failed</h2>
                         <p className="text-slate-400">{errorMsg}</p>
-                        <button 
-                            onClick={handleLeave}
+                        <button
+                            onClick={() => navigate(-1)}
                             className="mt-4 px-6 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-semibold rounded-lg transition"
                         >
                             Return to Dashboard
@@ -223,16 +351,16 @@ const ExpertVideoCallPage = () => {
                     </div>
                 )}
 
-                <div 
-                    ref={containerRef} 
-                    className={`absolute inset-4 transition-opacity duration-300 shadow-2xl rounded-xl overflow-hidden bg-black ${(callStatus === 'joined' || callStatus === 'initializing') ? 'opacity-100' : 'opacity-0'}`}
+                <div
+                    ref={containerRef}
+                    className={`absolute inset-4 transition-opacity duration-300 shadow-2xl rounded-xl overflow-hidden bg-black ${callStatus === 'joined' ? 'opacity-100' : 'opacity-0'}`}
                 />
             </div>
 
             {/* 5-min Warning Modal */}
             {showWarning && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[10000] backdrop-blur-sm p-4">
-                    <div className="bg-slate-900 border border-yellow-500/30 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl transform transition-all scale-100">
+                    <div className="bg-slate-900 border border-yellow-500/30 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
                         <div className="text-5xl mb-4 animate-bounce">⏰</div>
                         <h2 className="text-yellow-500 text-2xl font-extrabold mb-2">5 Minutes Left</h2>
                         <p className="text-slate-300 mb-8 leading-relaxed text-sm">
@@ -260,6 +388,14 @@ const ExpertVideoCallPage = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Custom Toast */}
+            {toastMsg && (
+                <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl border border-slate-600 z-[10001] flex items-center gap-3 min-w-[280px] max-w-[480px]">
+                    <span className="text-xl">ℹ️</span>
+                    <span className="font-semibold">{toastMsg}</span>
                 </div>
             )}
         </div>
