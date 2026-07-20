@@ -116,6 +116,17 @@ namespace Hounded_Heart.Models.Data
         [Column("UserReminderSent")]
         public bool UserReminderSent { get; set; } = false;
 
+        [MaxLength(255)]
+        [Column("EndedBy")]
+        public string? EndedBy { get; set; }
+
+        [MaxLength(255)]
+        [Column("EndedByUserId")]
+        public string? EndedByUserId { get; set; }
+
+        [Column("EndedAt")]
+        public DateTime? EndedAt { get; set; }
+
         [ForeignKey(nameof(RequestId))]
         public ExpertSessionRequest Request { get; set; } = null!;
 

@@ -2821,6 +2821,19 @@ class ApiService {
     });
   }
 
+  async endExpertSession(data) {
+    return await this.makeRequest('/ExpertSession/end', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getExpertSessionStatus(sessionId) {
+    return await this.makeRequest(`/ExpertSession/status/${sessionId}`, {
+      method: 'GET',
+    });
+  }
+
   async getExpertSessionNotifications(userId) {
     return await this.makeRequest(`/ExpertSession/notifications/${userId}`, {
       method: 'GET',

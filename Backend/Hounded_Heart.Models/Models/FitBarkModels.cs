@@ -215,16 +215,16 @@ namespace Hounded_Heart.Models.Models
         public int Id { get; set; }
 
         [JsonPropertyName("date")]
-        public string Date { get; set; }
+        public string Date { get; set; } = string.Empty;
 
         [JsonPropertyName("dog_slug")]
-        public string DogSlug { get; set; }
+        public string DogSlug { get; set; } = string.Empty;
 
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         [JsonPropertyName("user")]
-        public FitBarkUserProfile User { get; set; }
+        public FitBarkUserProfile User { get; set; } = new FitBarkUserProfile();
     }
 
     public class FitBarkUserRelationsResponse

@@ -108,6 +108,7 @@ namespace Hounded_Heart.Services.Services
                 }).ToList(),
                 ScheduledDateTime = r.ConfirmedSession?.ScheduledDateTime,
                 MeetingLink = r.ConfirmedSession?.MeetingLink,
+                SessionId = r.ConfirmedSession?.SessionId,
                 CancellationReason = r.CancellationReason
             }).ToList();
         }
@@ -140,6 +141,7 @@ namespace Hounded_Heart.Services.Services
                 }).ToList(),
                 ScheduledDateTime = r.ConfirmedSession?.ScheduledDateTime,
                 MeetingLink = r.ConfirmedSession?.MeetingLink,
+                SessionId = r.ConfirmedSession?.SessionId,
                 CancellationReason = r.CancellationReason
             }).ToList();
         }
@@ -313,11 +315,71 @@ namespace Hounded_Heart.Services.Services
 
             // Email both
             var adminEmail = _configuration["AdminEmail"] ?? "admin@houndheart.com";
-            await _emailService.SendEmailAsync(sessionReq.UserEmail, "Session Confirmed & Scheduled", 
-                $"<p>Your session is confirmed for {slotDisplay}.</p><p>Join link: {roomUrl}</p>");
-            
-            await _emailService.SendEmailAsync(adminEmail, "Session Confirmed by User", 
-                $"<p>{sessionReq.UserName} has paid and confirmed their session for {slotDisplay}.</p>");
+
+            // --- USER EMAIL ---
+            var userEmailBody = $@"
+<!DOCTYPE html>
+<html>
+<body style='font-family: Arial, sans-serif; background:#f4f4f4; padding:20px;'>
+  <div style='max-width:600px; margin:auto; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>
+    <div style='background:#1a1a2e; padding:24px; text-align:center;'>
+      <h1 style='color:#fff; margin:0; font-size:22px;'>🐾 HoundHeart Expert Session</h1>
+    </div>
+    <div style='padding:30px;'>
+      <h2 style='color:#1a1a2e;'>Session Confirmed! ✅</h2>
+      <p style='color:#444;'>Hi <strong>{sessionReq.UserName}</strong>,</p>
+      <p style='color:#444;'>Your expert session has been successfully booked and payment received. Here are your session details:</p>
+      <div style='background:#f0f4ff; border-left:4px solid #4f46e5; padding:16px; border-radius:6px; margin:20px 0;'>
+        <p style='margin:6px 0; color:#333;'>📅 <strong>Date &amp; Time:</strong> {slotDisplay}</p>
+        <p style='margin:6px 0; color:#333;'>💳 <strong>Amount Paid:</strong> $30.00</p>
+        <p style='margin:6px 0; color:#333;'>⏱️ <strong>Duration:</strong> 15 Minutes</p>
+      </div>
+      <p style='color:#444;'>Your meeting link will be ready when the session starts. You will also receive a reminder email 15 minutes before your session begins.</p>
+      <p style='color:#888; font-size:13px;'>If you have any questions, reply to this email or contact us at info@houndheartwellness.com</p>
+      <p style='color:#444; margin-top:30px;'>With love, <br/><strong>The HoundHeart Team 🐾</strong></p>
+    </div>
+    <div style='background:#f4f4f4; text-align:center; padding:14px; font-size:12px; color:#999;'>
+      © 2026 HoundHeart Wellness. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>";
+
+            // --- ADMIN EMAIL ---
+            var adminEmailBody = $@"
+<!DOCTYPE html>
+<html>
+<body style='font-family: Arial, sans-serif; background:#f4f4f4; padding:20px;'>
+  <div style='max-width:600px; margin:auto; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>
+    <div style='background:#1a1a2e; padding:24px; text-align:center;'>
+      <h1 style='color:#fff; margin:0; font-size:22px;'>🐾 HoundHeart Admin Alert</h1>
+    </div>
+    <div style='padding:30px;'>
+      <h2 style='color:#1a1a2e;'>📅 New Session Booked &amp; Paid</h2>
+      <p style='color:#444;'>A user has selected their time slot and completed payment. Please be ready for the session!</p>
+      <div style='background:#f0f4ff; border-left:4px solid #4f46e5; padding:16px; border-radius:6px; margin:20px 0;'>
+        <p style='margin:6px 0; color:#333;'>👤 <strong>User Name:</strong> {sessionReq.UserName}</p>
+        <p style='margin:6px 0; color:#333;'>📧 <strong>User Email:</strong> {sessionReq.UserEmail}</p>
+        <p style='margin:6px 0; color:#333;'>📅 <strong>Chosen Time Slot:</strong> {slotDisplay}</p>
+        <p style='margin:6px 0; color:#333;'>⏱️ <strong>Session Duration:</strong> 15 Minutes</p>
+        <p style='margin:6px 0; color:#333;'>💳 <strong>Amount Paid:</strong> $30.00</p>
+      </div>
+      <div style='background:#fff8e1; border-left:4px solid #f59e0b; padding:16px; border-radius:6px; margin:20px 0;'>
+        <p style='margin:6px 0; color:#333;'>📝 <strong>User's Problem Description:</strong></p>
+        <p style='margin:6px 0; color:#555; font-style:italic;'>{sessionReq.ProblemDescription}</p>
+      </div>
+      <p style='color:#d00; font-weight:bold;'>⚠️ Please make sure you join the session on time. The user is paying $30 for 15 minutes — be punctual!</p>
+      <p style='color:#444;'>You will receive an automatic reminder email 15 minutes before the session starts with your meeting link.</p>
+    </div>
+    <div style='background:#f4f4f4; text-align:center; padding:14px; font-size:12px; color:#999;'>
+      © 2026 HoundHeart Wellness Admin Panel
+    </div>
+  </div>
+</body>
+</html>";
+
+            await _emailService.SendEmailAsync(sessionReq.UserEmail, "✅ Your HoundHeart Expert Session is Confirmed!", userEmailBody);
+            await _emailService.SendEmailAsync(adminEmail, $"📅 New Session Booked — {sessionReq.UserName} | {slotDisplay}", adminEmailBody);
 
             return new ExpertSessionConfirmedDto
             {
@@ -475,6 +537,47 @@ namespace Hounded_Heart.Services.Services
             var adminEmail = _configuration["AdminEmail"] ?? "admin@houndheart.com";
             await _emailService.SendEmailAsync(adminEmail, "Expert Session Cancelled", 
                 $"<p><b>{sessionReq.UserName}</b> has cancelled their expert session request.</p><p><b>Reason:</b> {request.Reason}</p>");
+        }
+
+        // End Session
+        public async Task EndSessionAsync(EndExpertSessionRequest request)
+        {
+            var session = await _context.ExpertSessionConfirmeds
+                .FirstOrDefaultAsync(s => s.SessionId == request.SessionId);
+
+            if (session == null)
+                throw new Exception("Session not found.");
+
+            if (session.Status == "Ended")
+                return; // Idempotent: already ended
+
+            // Update the confirmed session
+            session.Status = "Ended";
+            session.EndedBy = request.EndedBy;
+            session.EndedByUserId = request.EndedByUserId;
+            session.EndedAt = DateTime.UtcNow;
+
+            // Also update the parent request so the admin list reflects the correct status
+            var parentRequest = await _context.ExpertSessionRequests
+                .FirstOrDefaultAsync(r => r.RequestId == session.RequestId);
+            if (parentRequest != null)
+                parentRequest.Status = "Ended";
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        // Get Session Status (lightweight pre-join check)
+        public async Task<string> GetSessionStatusAsync(Guid sessionId)
+        {
+            var session = await _context.ExpertSessionConfirmeds
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session == null)
+                throw new Exception("Session not found.");
+
+            return session.Status;
         }
     }
 }
