@@ -11,26 +11,52 @@ const TESTIMONIALS = [
     location: 'Oregon',
     featured: true,
     hasRating: true,
+    avatar: 'https://i.pravatar.cc/150?u=anastasia',
     quote: [
-      `I spent years researching nervous system regulation while living with CPTSD, fibromyalgia, and chronic fatigue syndrome. I was amazed by how closely HoundHeart aligns with what I have learned through experience. My first dog taught me years ago that our nervous systems co-regulate, long before I knew there was a scientific term for it.`,
-      `One day I noticed that whenever I calmed myself through breathing, my dog would immediately relax as well. Over time, she became my earliest indicator that I was becoming stressed, often before I noticed it myself. Since then, I have experienced the same connection with my other pets.`,
-      `After only a few days of practicing the HoundHeart exercises, all of us felt more relaxed, connected, and in tune. I slept deeply, woke fully rested and calm, and experienced a level of relaxation that is extremely rare for me. Thank you for that.`,
-      `I am very impressed with how HoundHeart explains these subtle, almost mystical experiences with solid science. It brings together nervous system regulation, co-regulation, and practical daily exercises in a way that is easy to understand and apply.`,
-      `You are doing important work. HoundHeart has renewed my commitment to making these practices part of my daily life, and I'm excited to become part of the HoundHeart community.`,
+      `I spent years researching nervous system regulation while living with CPTSD, fibromyalgia, and chronic fatigue syndrome. I was amazed by how closely HoundHeart aligns with what I have learned through experience. I’m up to chapter 9 so far and the exercises align with techniques I’ve worked with. I’ve been on a “quest” to heal the CPTSD that I’ve had for a very long time and it wasn’t until I had a dog over 15 years ago that I started to notice the co-regulation relationship. I didn’t know what it was called until recently, but nonetheless she, (Nelly), was the first dog to teach me this.`,
+      `I would notice her acting up, getting fidgety or visibly uncomfortable but it took me a few days to realize that this happened when I was thinking about worrisome things or in a lot of physical pain and getting upset over that. So one day I experimented with a breathing technique I’d learned in my yoga practice.`,
+      `When I calmed myself through breathing, my dog would immediately relax as well. Over time, she became my earliest indicator that I was becoming stressed, often before I noticed it myself. Since then, I have experienced the same connection with my other pets.`
     ],
   },
   {
     id: 2,
+    name: 'Brandon',
+    location: 'California',
+    featured: false,
+    hasRating: false,
+    avatar: 'https://i.pravatar.cc/150?u=brandon',
+    quote: [
+      `I joined the HoundHeart beta because my dog, Trevor, has always been anxious. Storms, trucks, even small things would set him off. What I didn’t realize was how much our nervous systems were feeding off each other. The co-regulation practices were simple enough that I actually used them, and the effects were obvious.`,
+      `The slow-breathing work helped me shift out of that wired, sympathetic state, and he responded almost immediately with calmer breathing and less pacing. The intentional-touch routine clearly boosted oxytocin for both of us. After about a week I noticed Trevor was sleeping better, and so did I.`,
+      `We were both happier and the whole house felt different. HoundHeart is the first thing that made Trevor's anxiety feel like a shared pattern we could improve together, instead of a problem I had to fix on my own in him.`
+    ],
+  },
+  {
+    id: 3,
     name: 'Ruthie',
     location: 'California',
     featured: false,
     hasRating: false,
+    avatar: 'https://i.pravatar.cc/150?u=ruthie',
     quote: [
       `My older son and I have been more involved with it. Happily, he is applying the sing song way to talk to the dogs and breathing. I've noticed much softer tone and the affection my son receives from all three dogs. They trust him more, but not yet so cuddly but he is getting some leans and eye contact.`,
       `The younger kids are seeing the better difference in Domino's barking. As a result of our mindfulness, softer tone and being quiet, Tuck is responding more to their commands and Domino is barking less.`,
-      `Still reading. The dogs have made it through a basement renovation and we are keeping their activity a priority.`,
+      `Still reading. The dogs have made it through a basement renovation and we are keeping their activity a priority.`
     ],
   },
+  {
+    id: 4,
+    name: 'Caleb',
+    location: 'California',
+    featured: false,
+    hasRating: false,
+    avatar: 'https://i.pravatar.cc/150?u=caleb',
+    quote: [
+      `I signed up for the HoundHeart beta even though I don’t have a dog right now. My apartment doesn’t allow pets, which sucks because I grew up with a dog and still miss that connection every day. But the price and location are good and they have a gym. So I figured I’d just read the book for now and see what the whole idea was about. I wasn’t expecting much, but the book grabbed me immediately.`,
+      `It’s engaging, surprisingly emotional, and packed with science I never knew existed. I had no idea there were actual links between human and dog physiology like oxytocin shifts, autonomic patterns, heart rate variability and all that. The way the book explains co-regulation made me rethink my entire childhood with my dog.`,
+      `Someone finally put words and biology to something I always felt but couldn’t explain. Even without a dog right now, the book made me feel connected again. Reading this book was one of the most interesting and hopeful things I’ve done. I already browsed the shelter website. I'll find a way to get a dog.`
+    ],
+  }
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,9 +175,7 @@ const FeaturedCard = ({ testimonial }) => {
 
           {/* Author */}
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-fuchsia-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white">
-              <span className="text-white font-bold text-2xl">{testimonial.name[0]}</span>
-            </div>
+            <img src={testimonial.avatar} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white" />
             <div>
               <p className="font-extrabold text-gray-900 text-xl">{testimonial.name}</p>
               <p className="text-purple-600 font-semibold">{testimonial.location}</p>
@@ -166,40 +190,68 @@ const FeaturedCard = ({ testimonial }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Regular Card
 // ─────────────────────────────────────────────────────────────────────────────
-const RegularCard = ({ testimonial, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 28 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-60px' }}
-    transition={{ duration: 0.55, ease: 'easeOut', delay }}
-    className="relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100/50 p-6 sm:p-8 flex flex-col max-w-2xl mx-auto w-full"
-  >
-    {testimonial.hasRating && <Stars />}
+const RegularCard = ({ testimonial, delay = 0 }) => {
+  const [expanded, setExpanded] = useState(false);
+  const visibleParagraphs = expanded ? testimonial.quote : testimonial.quote.slice(0, 1);
+  const hasMore = testimonial.quote.length > 1;
 
-    <div className="space-y-4 flex-1">
-      {testimonial.quote.map((para, i) => (
-        <p key={i} className="text-gray-600 leading-relaxed text-[0.95rem]">
-          {i === 0 && <span className="text-purple-400 font-serif text-lg mr-1 italic">"</span>}
-          {para}
-          {i === testimonial.quote.length - 1 && (
-            <span className="text-purple-400 font-serif text-lg ml-1 italic">"</span>
-          )}
-        </p>
-      ))}
-    </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.55, ease: 'easeOut', delay }}
+      className="relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100/50 p-6 sm:p-8 flex flex-col w-[300px] sm:w-[380px] flex-shrink-0 snap-center"
+    >
+      {testimonial.hasRating && <Stars />}
 
-    {/* Author */}
-    <div className="mt-8 flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center flex-shrink-0">
-        <span className="text-gray-600 font-bold text-sm">{testimonial.name[0]}</span>
+      <div className="space-y-4 flex-1">
+        <AnimatePresence initial={false}>
+          {visibleParagraphs.map((para, i) => (
+            <motion.p
+              key={i}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-gray-600 leading-relaxed text-[0.95rem]"
+            >
+              {i === 0 && <span className="text-purple-400 font-serif text-lg mr-1 italic">"</span>}
+              {para}
+              {(!hasMore || expanded) && i === testimonial.quote.length - 1 && (
+                <span className="text-purple-400 font-serif text-lg ml-1 italic">"</span>
+              )}
+            </motion.p>
+          ))}
+        </AnimatePresence>
       </div>
-      <div>
-        <p className="font-bold text-gray-800 text-sm">{testimonial.name}</p>
-        <p className="text-gray-500 text-xs font-medium">{testimonial.location}</p>
+
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-4 flex items-center gap-1.5 text-purple-500 font-semibold hover:text-fuchsia-600 transition-colors group/btn text-sm"
+        >
+          {expanded ? 'Read less' : 'Read full story'}
+          <svg 
+            className={`w-3.5 h-3.5 transform transition-transform duration-300 ${expanded ? 'rotate-180' : 'group-hover/btn:translate-y-0.5'}`} 
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Author */}
+      <div className="mt-8 flex items-center gap-3">
+        <img src={testimonial.avatar} alt={testimonial.name} className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 flex-shrink-0" />
+        <div>
+          <p className="font-bold text-gray-800 text-sm">{testimonial.name}</p>
+          <p className="text-gray-500 text-xs font-medium">{testimonial.location}</p>
+        </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main exported section
@@ -220,7 +272,7 @@ const TestimonialsSection = () => {
         <div className="absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full bg-indigo-200/40 mix-blend-multiply filter blur-[100px] opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12">
 
         {/* Section heading */}
         <motion.div
@@ -231,27 +283,27 @@ const TestimonialsSection = () => {
           className="text-center mb-16 sm:mb-24"
         >
           <span className="inline-flex items-center gap-2 bg-purple-100/80 backdrop-blur text-purple-700 text-sm font-bold uppercase tracking-wider px-4 py-1.5 rounded-full mb-6 border border-purple-200">
-            Beta Tester Testimonials
+            Real Stories. Real Results.
           </span>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
             What Our{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-600">
-              Community
+              Founding Members
             </span>{' '}
-            Says
+            Say
           </h2>
           <p className="text-gray-600 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-            Real experiences from people who have discovered the healing power of the human–dog bond.
+            Discover how HoundHeart is helping people strengthen their bond with their dogs while improving mind-body health.
           </p>
         </motion.div>
 
         {/* Featured Card */}
         {featured && <FeaturedCard testimonial={featured} />}
 
-        {/* Regular Cards Grid */}
+        {/* Regular Cards Grid (Horizontal scroll) */}
         {regular.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
+          <div className="flex flex-nowrap gap-6 overflow-x-auto pb-8 scrollbar-hide px-4 md:px-8 xl:justify-center snap-x snap-mandatory">
             {regular.map((t, i) => (
               <RegularCard key={t.id} testimonial={t} delay={i * 0.15} />
             ))}
