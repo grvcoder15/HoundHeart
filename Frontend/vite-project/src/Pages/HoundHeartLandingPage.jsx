@@ -1907,7 +1907,7 @@ const HoundHeartLandingPage = () => {
           />
 
           {/* Pricing Cards */}
-          <div className={`grid grid-cols-1 gap-8 max-w-6xl mx-auto ${plans.length === 1
+          <div className={`grid grid-cols-1 gap-8 max-w-6xl mx-auto mt-16 md:mt-24 ${plans.length === 1
               ? 'md:grid-cols-1 max-w-md'
               : plans.length === 2
                 ? 'md:grid-cols-2 max-w-4xl'
