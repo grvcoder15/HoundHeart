@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Country, State, City } from 'country-state-city';
 import apiService from '../services/apiService';
@@ -90,7 +90,7 @@ function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
                         fontWeight: 700,
                         fontSize: 13,
                         letterSpacing: 0.4,
-                    }}>🎉 Early Member Pricing</span>
+                    }}>🎉 Founding Member Pricing</span>
                     <span style={{
                         background: '#fff',
                         color: '#7c3aed',
@@ -99,24 +99,29 @@ function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
                         fontWeight: 800,
                         fontSize: 13,
                     }}>Save {savingsPct}%</span>
-                    {/* {slotsLeft > 0 && (
-                        <span style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            borderRadius: 99,
-                            padding: '4px 14px',
-                            fontWeight: 600,
-                            fontSize: 13,
-                        }}>🔥 Only {slotsLeft} spots left</span>
-                    )} */}
                 </div>
-                <p style={{ margin: 0, fontSize: 14, opacity: 0.95, fontStyle: 'italic', lineHeight: 1.5, maxWidth: '90%' }}>
-                    🔒 Lock in this discounted price for as long as you stay subscribed — early members keep their rate forever.
+                <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8, lineHeight: 1.2 }}>
+                    Become one of the first members to help shape HoundHeart.
+                </h3>
+                <p style={{ opacity: 0.9, fontSize: 15, marginBottom: 0, maxWidth: 500 }}>
+                    As a Founding Member, you will:
+                </p>
+                <ul style={{ paddingLeft: 20, marginTop: 8, fontSize: 14, opacity: 0.9, listStyleType: 'disc' }}>
+                    <li>Lock in your discounted membership price for life, as long as you remain subscribed.</li>
+                    <li>Receive early access to new features, courses, and tools.</li>
+                    <li>Help shape HoundHeart through your feedback and suggestions.</li>
+                    <li>Be invited to share your experiences and success stories.</li>
+                    <li>Receive a permanent Founding Member badge on your profile.</li>
+                    <li>Be encouraged to share HoundHeart with friends and family who may benefit.</li>
+                </ul>
+                <p style={{ opacity: 0.8, fontSize: 12, marginTop: 16, fontStyle: 'italic', maxWidth: 500 }}>
+                    Founding Member status is limited to the first 1,000 members. Once all Founding Memberships are claimed, the program will permanently close.
                 </p>
             </div>
 
             {/* Right side: Pricing and Button */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-                <div style={{ fontSize: 11, opacity: 0.85, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Early Member Price</div>
+                <div style={{ fontSize: 11, opacity: 0.85, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Founding Member Price</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
                     <span style={{ textDecoration: 'line-through', opacity: 0.7, fontSize: 18, fontWeight: 600 }}>
                         ${Number(regularPrice).toFixed(2)}
@@ -173,6 +178,15 @@ const HoundHeartLandingPage = () => {
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [isVisible, setIsVisible] = useState({});
 
+  const featureCardsRef = useRef(null);
+
+  const scrollFeatures = (direction) => {
+    if (featureCardsRef.current) {
+      const scrollAmount = direction === 'left' ? -350 : 350;
+      featureCardsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const [offerConfig, setOfferConfig] = useState({
     isActive: true,
     endDateUtc: '2026-07-31T00:00:00Z',
@@ -222,16 +236,16 @@ const HoundHeartLandingPage = () => {
       planId: 'free-member',
       tierLevel: 'free',
       planName: 'Free Member',
-      description: 'Essential access to begin your HoundHeart journey',
+      description: 'Forever',
       badge: undefined,
       monthlyPrice: 0,
       yearlyPrice: 0,
       yearlyOnly: false,
       features: [
-        'Create and manage account',
+        'Create and manage your account',
         'Create and manage dog profile(s)',
-        'Basic app access',
-        'Access to newsletter and announcements',
+        'Basic platform access',
+        'Access to newsletters and announcements',
         'Purchase books and merchandise'
       ]
     },
@@ -239,17 +253,16 @@ const HoundHeartLandingPage = () => {
       planId: 'houndheart-plus',
       tierLevel: 'plus',
       planName: 'HoundHeart Plus',
-      description: 'Advanced wellness and connection tools for dedicated members',
+      description: 'Includes all Free Member features, plus:',
       badge: 'Most Popular',
       monthlyPrice: offerConfig?.monthlyPrice || 9.99,
       yearlyPrice: offerConfig?.yearlyPrice || 79.99,
       yearlyOnly: false,
       features: [
-        'Includes all Free Member features',
-        'Full app access',
+        'Full platform access',
         'Full Bonded Score access',
-        'Wellness tracking tools',
-        'Free digital and audio book',
+        'Mind-body health tracking tools',
+        'Free digital and audiobook',
         'Travel directory access',
         'Partner discounts and wearable connection'
       ]
@@ -258,16 +271,15 @@ const HoundHeartLandingPage = () => {
       planId: 'houndheart-premium',
       tierLevel: 'premium',
       planName: 'HoundHeart Premium',
-      description: 'The complete premium lifestyle package for top-tier members',
+      description: 'Includes all HoundHeart Plus features, plus:',
       badge: 'Best Value',
       monthlyPrice: null,
       yearlyPrice: 149.99,
       yearlyOnly: true,
       features: [
-        'Includes all HoundHeart Plus features',
-        'Paperback HoundHeart book',
+        'Paperback HoundHeart book autographed by Author',
         'Official HoundHeart T-shirt',
-        'Partner Discounts on travel, hotels & vacations',
+        'Partner discounts on travel, hotels, and vacations',
         'Premium Member badge in profile'
       ]
     }
@@ -596,14 +608,14 @@ const HoundHeartLandingPage = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">About HoundHeart™</h2>
-          <h2 className="text-xl text-gray-600">Discover the power of energetic harmony with your dog.</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Why HoundHeart™?</h2>
+          <h2 className="text-xl text-gray-600 max-w-4xl mx-auto">HoundHeart helps you unlock the remarkable emotional and physical health benefits of the human–dog bond through science, mindful practices, and shared experiences.</h2>
 
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex justify-center mb-12">
-          <div className="flex bg-gray-100 rounded-full p-1">
+        <div className="flex justify-center mb-12 w-full overflow-x-auto pb-4 scrollbar-hide px-4">
+          <div className="flex bg-gray-100 rounded-full p-1 min-w-max mx-auto">
             <button
               onClick={() => setActiveTab('philosophy')}
               className={`px-8 py-3 rounded-full font-medium transition-all duration-300 ${activeTab === 'philosophy'
@@ -620,7 +632,7 @@ const HoundHeartLandingPage = () => {
                 : 'text-gray-700 hover:text-gray-900'
                 }`}
             >
-              Energy Healing
+              How It Works
             </button>
             <button
               onClick={() => setActiveTab('science')}
@@ -664,13 +676,10 @@ const HoundHeartLandingPage = () => {
               {activeTab === 'philosophy' && (
                 <div>
                   <p className="text-gray-700 leading-relaxed text-lg">
-                    At HoundHeart™, we believe your dog is more than a companion. Dogs are naturally energetic healers
-                    who feel each moment in the raw, full-bodied joy of now and radiate the highest vibrations of love,
-                    trust, gratitude, duty, and loyalty.
+                    Your dog is far more than a companion. Dogs live fully in the present moment and naturally express love, trust, loyalty, gratitude, and acceptance. They have an extraordinary ability to calm us, comfort us, and help us find emotional balance.
                   </p>
-                  <p className="text-gray-700 leading-relaxed text-lg">
-                    Your dog's natural gift gives you access to energetic harmony, the root of a power to synergistically
-                    heal you inside. That synergy benefits you both in ways science is only beginning to understand.
+                  <p className="text-gray-700 leading-relaxed text-lg mt-4">
+                    At the heart of HoundHeart™ is the remarkable human–dog bond and its power to nurture both body and spirit. Science is beginning to explain many of these benefits through nervous system co-regulation and other physiological mechanisms, confirming what millions of dog owners have experienced for generations.
                   </p>
                 </div>
               )}
@@ -1437,7 +1446,7 @@ const HoundHeartLandingPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Deepen Your Bond with Your Dog,
+            Unlock the Health Benefits of the
           </motion.span>
           <br />
           <motion.span
@@ -1446,7 +1455,7 @@ const HoundHeartLandingPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            Spiritually & Emotionally
+            Human–Dog Bond
           </motion.span>
         </motion.h1>
 
@@ -1457,8 +1466,7 @@ const HoundHeartLandingPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
         >
-          Discover the spiritual connection between you and your canine companion through guided Nerve Center practices,
-          mindful journaling, and a supportive community of fellow dog lovers.
+          Discover how your relationship with your dog can improve emotional and physical well-being through guided Nerve Center practices, personalized insights, and a supportive community.
         </motion.p>
 
         {/* Hero Content - Side by Side Layout like reference image */}
@@ -1615,56 +1623,65 @@ const HoundHeartLandingPage = () => {
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Transform Your Connection</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Discover the Health Benefits</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our platform offers unique tools and practices designed to enhance the spiritual bond between you and your dog.
+              Explore the tools, insights, and guided practices that help you and your dog improve mind-body health while strengthening the remarkable bond you already share.
             </p>
           </div>
 
-
-          {/* Feature Cards - All 5 cards in horizontal layout */}
-          <div className="flex flex-nowrap gap-4 justify-center overflow-x-auto pb-4 scrollbar-hide">
-            {/* Card 1: Bonded Score Tracking */}
+          {/* Feature Cards - All 6 cards in horizontal layout */}
+          <div className="relative group/carousel">
+            <button 
+              onClick={() => scrollFeatures('left')}
+              className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-20 bg-white/95 backdrop-blur shadow-[0_8px_20px_rgba(0,0,0,0.1)] p-3.5 rounded-full text-gray-700 hover:text-purple-600 hover:bg-white hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden sm:flex items-center justify-center border border-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <div ref={featureCardsRef} className="flex flex-nowrap gap-4 sm:gap-6 justify-start overflow-x-auto pb-8 px-4 md:px-8 snap-x snap-mandatory scrollbar-hide scroll-smooth">
+              {/* Card 1: Bonded Score (FEATURED HIGHLIGHT) */}
             <div
               id="card-1"
               data-animate
-              className={`bg-white rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group flex-shrink-0 w-56 ${isVisible['card-1'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl shadow-2xl p-5 sm:p-6 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.5)] transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[260px] sm:w-[280px] snap-center ${isVisible['card-1'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               style={{ transitionDelay: '0.1s' }}
             >
-              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={BondedScoreIcon} alt="Bonded Score Tracking" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <div className="absolute top-0 right-0 bg-white text-pink-600 text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-3xl uppercase tracking-wider shadow-sm">
+                Recommended
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors duration-300">Bonded Score Tracking</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                Monitor and strengthen your spiritual connection with your dog through guided practices and mindful moments.
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-white/30 transition-colors duration-300">
+                <img src={BondedScoreIcon} alt="Bonded Score" className="w-10 h-10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300 brightness-0 invert" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Bonded Score™</h3>
+              <p className="text-pink-50 mb-6 text-[15px] leading-relaxed font-medium">
+                Measure and strengthen the connection you share with your dog through guided activities, health tracking, and personalized insights.
               </p>
               <button
-                onClick={() => handleTryNow('Bonded Score Tracking')}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                onClick={() => handleTryNow('Bonded Score')}
+                className="inline-flex items-center text-white hover:text-pink-100 font-bold text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all duration-300 group-hover:pr-3"
               >
-                Try Now →
+                Try Now <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </div>
 
-            {/* Card 2: Chakra Rituals */}
+            {/* Card 2: Nerve Center Exercises */}
             <div
               id="card-2"
               data-animate
-              className={`bg-white rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group flex-shrink-0 w-56 ${isVisible['card-2'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-orange-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-2'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               style={{ transitionDelay: '0.2s' }}
             >
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-orange-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={ChakraRitualsIcon} alt="Nerve Center Rituals" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-orange-200/50">
+                <img src={ChakraRitualsIcon} alt="Nerve Center Exercises" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">Nerve Center Rituals</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                Experience guided meditation and energy alignment practices designed for you and your canine companion.
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300 leading-tight">Nerve Center Exercises</h3>
+              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                Practice guided breathing, mindfulness, and co-regulation exercises designed to help calm both you and your dog.
               </p>
               <button
-                onClick={() => handleTryNow('Nerve Center Rituals')}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                onClick={() => handleTryNow('Nerve Center Exercises')}
+                className="text-orange-500 hover:text-orange-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
               >
                 Try Now →
               </button>
@@ -1674,69 +1691,101 @@ const HoundHeartLandingPage = () => {
             <div
               id="card-3"
               data-animate
-              className={`bg-white rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group flex-shrink-0 w-56 ${isVisible['card-3'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-purple-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-3'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               style={{ transitionDelay: '0.3s' }}
             >
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={LegacyJournalIcon} alt="Legacy Journal" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-fuchsia-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-purple-200/50">
+                <img src={LegacyJournalIcon} alt="Legacy Journal" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300">Legacy Journal</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                Preserve precious memories, write letters to your dog, and create a lasting digital legacy of your bond.
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300 leading-tight">Legacy Journal</h3>
+              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                Capture special moments, write letters to your dog, and preserve the story of your journey together for years to come.
               </p>
               <button
                 onClick={() => handleTryNow('Legacy Journal')}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                className="text-purple-500 hover:text-purple-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
               >
                 Try Now →
               </button>
             </div>
 
-            {/* Card 4: Healing Circles */}
+            {/* Card 4: Community Center */}
             <div
               id="card-4"
               data-animate
-              className={`bg-white rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group flex-shrink-0 w-56 ${isVisible['card-4'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-teal-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-4'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               style={{ transitionDelay: '0.4s' }}
             >
-              <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-teal-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={HealingCirclesIcon} alt="Healing Circles" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-teal-200/50">
+                <img src={HealingCirclesIcon} alt="Community Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors duration-300">Healing Circles</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                Join our supportive community for live healing sessions and connect with other spiritual dog lovers.
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors duration-300 leading-tight">Community Center</h3>
+              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                Connect with fellow HoundHeart™ members, share experiences, learn from others, and participate in live discussions and events.
               </p>
               <button
-                onClick={() => handleTryNow('Healing Circles')}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                onClick={() => handleTryNow('Community Center')}
+                className="text-teal-500 hover:text-teal-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
               >
                 Try Now →
               </button>
             </div>
 
-            {/* Card 5: Wellness Insights */}
+            {/* Card 5: Health Insights */}
             <div
               id="card-5"
               data-animate
-              className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group flex-shrink-0 w-56 opacity-100 translate-y-0"
+              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-pink-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-5'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.5s' }}
             >
-              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-200 transition-colors duration-300 group-hover:scale-110">
-                <img src={WellnessInsightsIcon} alt="Wellness Insights" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+              <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-pink-200/50">
+                <img src={WellnessInsightsIcon} alt="Health Insights" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors duration-300">Wellness Insights</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                AI-powered analysis of stress patterns and wellness recommendations.
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors duration-300 leading-tight">Health Insights</h3>
+              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                Receive personalized insights that identify health patterns, track progress, and recommend activities to strengthen the human–dog bond.
               </p>
               <button
-                onClick={() => handleTryNow('Wellness Insights')}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                onClick={() => handleTryNow('Health Insights')}
+                className="text-pink-500 hover:text-pink-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
               >
                 Try Now →
               </button>
             </div>
+
+            {/* Card 6: Science Center */}
+            <div
+              id="card-6"
+              data-animate
+              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-blue-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-6'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
+              style={{ transitionDelay: '0.6s' }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-blue-200/50">
+                <img src={TheScienceIcon} alt="Science Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 leading-tight">Science Center</h3>
+              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                Explore the latest research on nervous system co-regulation, oxytocin, cortisol, heart rate variability, and the growing science behind the health benefits of the human–dog bond.
+              </p>
+              <button
+                onClick={() => handleTryNow('Science Center')}
+                className="text-blue-500 hover:text-blue-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+              >
+                Try Now →
+              </button>
+            </div>
+            </div>
+            
+            <button 
+              onClick={() => scrollFeatures('right')}
+              className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-20 bg-white/95 backdrop-blur shadow-[0_8px_20px_rgba(0,0,0,0.1)] p-3.5 rounded-full text-gray-700 hover:text-purple-600 hover:bg-white hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden sm:flex items-center justify-center border border-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
         </div>
       </section>
@@ -1826,7 +1875,10 @@ const HoundHeartLandingPage = () => {
             className={`text-center mb-16 transition-all duration-1000 ${isVisible['pricing-header'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
           >
-            <h2 className="text-4xl font-bold text-gray-900">Online Pricing</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Membership Plans</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Choose the membership that best fits your journey.
+            </p>
           </div>
 
           {/* Billing Toggle Header */}
@@ -1868,9 +1920,9 @@ const HoundHeartLandingPage = () => {
                 return (
                   <div
                     key={plan.planId}
-                    className={`relative rounded-2xl border-2 p-5 transition-all hover:shadow-xl ${isPopular
-                      ? 'border-purple-500 shadow-lg bg-gradient-to-br from-purple-50 to-white'
-                      : 'border-gray-200 bg-white'
+                    className={`relative rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:shadow-2xl flex flex-col ${isPopular
+                      ? 'border-[3px] border-purple-500 shadow-[0_20px_50px_-15px_rgba(124,58,237,0.4)] bg-gradient-to-br from-purple-50/50 to-white md:scale-105 z-10'
+                      : 'border-2 border-gray-100 bg-white mt-0 md:mt-4'
                       }`}
                   >
                     {plan.badge && (
@@ -1913,7 +1965,7 @@ const HoundHeartLandingPage = () => {
                       <div className="flex items-baseline justify-center gap-1">
                         {plan.isOfferActive && (
                           <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1 relative -top-1">
-                            Early Member
+                            Founding Member
                           </span>
                         )}
                         <span className="text-3xl font-bold text-gray-900">
@@ -1932,16 +1984,16 @@ const HoundHeartLandingPage = () => {
                     </div>
 
                     {/* Features */}
-                    <ul className="space-y-2.5 mb-5">
+                    <ul className="space-y-3 mb-8 flex-1">
                       {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs">
+                        <li key={idx} className="flex items-start gap-3 text-sm">
                           <svg
-                            className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                            className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                           </svg>
                           <span className="text-gray-700 leading-snug">{feature}</span>
                         </li>
@@ -1951,9 +2003,11 @@ const HoundHeartLandingPage = () => {
                     {/* CTA Button */}
                     <button
                       onClick={handlePricingCardClick}
-                      className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 ${isPopular
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl'
-                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                      className={`w-full py-3.5 px-4 rounded-xl font-bold transition-all duration-300 text-sm tracking-wide ${isPopular
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] hover:shadow-xl hover:-translate-y-1'
+                        : isFree 
+                          ? 'border-2 border-purple-300 text-purple-700 hover:border-purple-500 hover:bg-purple-50 bg-transparent'
+                          : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
                         }`}
                     >
                       {isFree ? 'Start Free' : plan.tierLevel === 'premium' ? 'Get Premium' : 'Get Plus'}
