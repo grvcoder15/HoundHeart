@@ -11,7 +11,7 @@ const TESTIMONIALS = [
     location: 'Oregon',
     featured: true,
     hasRating: true,
-    avatar: 'https://i.pravatar.cc/150?u=anastasia',
+    avatar: 'https://ui-avatars.com/api/?name=Anastasia&background=d8b4fe&color=6b21a8&rounded=true&bold=true',
     quote: [
       `I spent years researching nervous system regulation while living with CPTSD, fibromyalgia, and chronic fatigue syndrome. I was amazed by how closely HoundHeart aligns with what I have learned through experience. I’m up to chapter 9 so far and the exercises align with techniques I’ve worked with. I’ve been on a “quest” to heal the CPTSD that I’ve had for a very long time and it wasn’t until I had a dog over 15 years ago that I started to notice the co-regulation relationship. I didn’t know what it was called until recently, but nonetheless she, (Nelly), was the first dog to teach me this.`,
       `I would notice her acting up, getting fidgety or visibly uncomfortable but it took me a few days to realize that this happened when I was thinking about worrisome things or in a lot of physical pain and getting upset over that. So one day I experimented with a breathing technique I’d learned in my yoga practice.`,
@@ -24,7 +24,7 @@ const TESTIMONIALS = [
     location: 'California',
     featured: false,
     hasRating: false,
-    avatar: 'https://i.pravatar.cc/150?u=brandon',
+    avatar: 'https://ui-avatars.com/api/?name=Brandon&background=fed7aa&color=c2410c&rounded=true&bold=true',
     quote: [
       `I joined the HoundHeart beta because my dog, Trevor, has always been anxious. Storms, trucks, even small things would set him off. What I didn’t realize was how much our nervous systems were feeding off each other. The co-regulation practices were simple enough that I actually used them, and the effects were obvious.`,
       `The slow-breathing work helped me shift out of that wired, sympathetic state, and he responded almost immediately with calmer breathing and less pacing. The intentional-touch routine clearly boosted oxytocin for both of us. After about a week I noticed Trevor was sleeping better, and so did I.`,
@@ -37,7 +37,7 @@ const TESTIMONIALS = [
     location: 'California',
     featured: false,
     hasRating: false,
-    avatar: 'https://i.pravatar.cc/150?u=ruthie',
+    avatar: 'https://ui-avatars.com/api/?name=Ruthie&background=a7f3d0&color=047857&rounded=true&bold=true',
     quote: [
       `My older son and I have been more involved with it. Happily, he is applying the sing song way to talk to the dogs and breathing. I've noticed much softer tone and the affection my son receives from all three dogs. They trust him more, but not yet so cuddly but he is getting some leans and eye contact.`,
       `The younger kids are seeing the better difference in Domino's barking. As a result of our mindfulness, softer tone and being quiet, Tuck is responding more to their commands and Domino is barking less.`,
@@ -50,7 +50,7 @@ const TESTIMONIALS = [
     location: 'California',
     featured: false,
     hasRating: false,
-    avatar: 'https://i.pravatar.cc/150?u=caleb',
+    avatar: 'https://ui-avatars.com/api/?name=Caleb&background=bfdbfe&color=1d4ed8&rounded=true&bold=true',
     quote: [
       `I signed up for the HoundHeart beta even though I don’t have a dog right now. My apartment doesn’t allow pets, which sucks because I grew up with a dog and still miss that connection every day. But the price and location are good and they have a gym. So I figured I’d just read the book for now and see what the whole idea was about. I wasn’t expecting much, but the book grabbed me immediately.`,
       `It’s engaging, surprisingly emotional, and packed with science I never knew existed. I had no idea there were actual links between human and dog physiology like oxytocin shifts, autonomic patterns, heart rate variability and all that. The way the book explains co-regulation made me rethink my entire childhood with my dog.`,
