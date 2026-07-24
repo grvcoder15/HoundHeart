@@ -1619,7 +1619,7 @@ const HoundHeartLandingPage = () => {
       </>
 
       {/* Transform Your Connection Section */}
-      <section id="transform-section" className="py-20 bg-gray-50 relative">
+      <section id="transform-section" className="pt-20 bg-gray-50 relative">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center mb-16">

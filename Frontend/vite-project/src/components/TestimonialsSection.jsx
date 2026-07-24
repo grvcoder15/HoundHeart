@@ -263,7 +263,7 @@ const TestimonialsSection = () => {
   return (
     <section
       id="testimonials"
-      className="relative py-20 sm:py-32 overflow-hidden bg-gray-50"
+      className="relative  sm:py-20 overflow-hidden bg-gray-50"
     >
       {/* Background blobs for visual interest */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
