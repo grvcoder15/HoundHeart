@@ -1793,6 +1793,10 @@ const HoundHeartLandingPage = () => {
       {/* Community Highlights Section */}
 
 
+      {/* ── Testimonials ───────────────────────────────────────────── */}
+      <TestimonialsSection />
+
+
       {/* Ready to Begin Your Journey Section */}
       <section
         id="ready-section"
@@ -2018,9 +2022,6 @@ const HoundHeartLandingPage = () => {
           </div>
         </div>
       </section>
-
-      {/* ── Testimonials ───────────────────────────────────────────── */}
-      <TestimonialsSection />
 
       {/* Footer */}
       <footer className="bg-black text-white py-16">
