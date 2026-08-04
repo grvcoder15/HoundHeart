@@ -1451,7 +1451,7 @@ const HoundHeartLandingPage = () => {
 >
   <video
     ref={videoRef}
-    src="/houndheart-video.mp4"
+    src="https://t3.storageapi.dev/reserved-drum-6yjidedugw9/marketing-video/HoundHeart-Video.mp4"
     className="object-cover block"
     style={{
       height: '80vh',

@@ -224,3 +224,6 @@ credentials.json
 # Old gitignore backup
 .gitignore_backend
 
+# Large local video assets (served from CDN instead)
+Frontend/vite-project/public/houndheart-video.mp4
+Frontend/vite-project/dist/assets/*.mp4
