@@ -1452,15 +1452,16 @@ const HoundHeartLandingPage = () => {
   <video
     ref={videoRef}
     src="/houndheart-video.mp4"
-    className="object-cover block"   // 👈 object-fill se stretch ho raha tha, cover better rahega
+    className="object-cover block"
     style={{
       height: '80vh',
-      width: 'calc(100% - 48px)',   // 👈 48px total = 24px har side (12px se badha diya)
-      margin: '0 24px',              // 👈 sides margin bhi 24px kar diya
+      width: 'calc(100% - 48px)',
+      margin: '0 24px',
       display: 'block',
     }}
     autoPlay
     loop
+    preload="auto"
     playsInline
   />
 
