@@ -1415,7 +1415,24 @@ const HoundHeartLandingPage = () => {
   // Hero Section Component
   const HeroSection = () => {
     const [isMuted, setIsMuted] = React.useState(false);
+    const [videoUrl, setVideoUrl] = React.useState(null);
     const videoRef = React.useRef(null);
+
+    useEffect(() => {
+      // Fetch the presigned URL for the video from the backend
+      const fetchVideo = async () => {
+        try {
+          const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
+          if (response && response.data && response.data.url) {
+            setVideoUrl(response.data.url);
+          }
+        } catch (error) {
+          console.error("Failed to fetch marketing video url", error);
+        }
+      };
+      fetchVideo();
+    }, []);
+
     const toggleMute = () => {
       if (videoRef.current) {
         videoRef.current.muted = !videoRef.current.muted;
@@ -1444,26 +1461,32 @@ const HoundHeartLandingPage = () => {
    {/* Full-width Video Presentation */}
 <motion.div
   className="w-full mb-10 shadow-lg relative"   // 👈 overflow-hidden hata sakte hain agar black bg chahiye to bg-black rakho
-  style={{ maxHeight: '2000vh' }}
+  style={{ maxHeight: '2000vh', minHeight: '80vh', backgroundColor: '#f3f4f6' }}
   initial={{ opacity: 0, y: 20 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ duration: 0.8 }}
 >
-  <video
-    ref={videoRef}
-    src="https://t3.storageapi.dev/reserved-drum-6yjidedugw9/marketing-video/HoundHeart-Video.mp4"
-    className="object-cover block"   // 👈 object-fill se stretch ho raha tha, cover better rahega
-    style={{
-      height: '80vh',
-      width: 'calc(100% - 48px)',   // 👈 48px total = 24px har side (12px se badha diya)
-      margin: '0 24px',              // 👈 sides margin bhi 24px kar diya
-      display: 'block',
-    }}
-    autoPlay
-    loop
-    preload="auto"
-    playsInline
-  />
+  {videoUrl ? (
+    <video
+      ref={videoRef}
+      src={videoUrl}
+      className="object-cover block"   // 👈 object-fill se stretch ho raha tha, cover better rahega
+      style={{
+        height: '80vh',
+        width: 'calc(100% - 48px)',   // 👈 48px total = 24px har side (12px se badha diya)
+        margin: '0 24px',              // 👈 sides margin bhi 24px kar diya
+        display: 'block',
+      }}
+      autoPlay
+      loop
+      preload="auto"
+      playsInline
+    />
+  ) : (
+    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p>Loading video...</p>
+    </div>
+  )}
 
   {/* Mute / Unmute Button */}
   <button
