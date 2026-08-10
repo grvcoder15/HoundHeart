@@ -1415,19 +1415,32 @@ const HoundHeartLandingPage = () => {
   // Hero Section Component
   const HeroSection = () => {
     const [isMuted, setIsMuted] = React.useState(false);
-    const [videoUrl, setVideoUrl] = React.useState(null);
+    const [videoUrl, setVideoUrl] = React.useState(() => {
+      // On component mount, immediately load from sessionStorage if available
+      // This makes every repeat visit within 7 days completely instant
+      const cached = sessionStorage.getItem('hh_video_url');
+      const cachedAt = sessionStorage.getItem('hh_video_url_ts');
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (cached && cachedAt && (Date.now() - Number(cachedAt)) < sevenDays) {
+        return cached;
+      }
+      return null;
+    });
     const videoRef = React.useRef(null);
 
     useEffect(() => {
-      // Fetch the presigned URL for the video from the backend
+      // Only fetch if we don't already have a valid cached URL
+      if (videoUrl) return;
       const fetchVideo = async () => {
         try {
           const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
           if (response && response.data && response.data.url) {
+            sessionStorage.setItem('hh_video_url', response.data.url);
+            sessionStorage.setItem('hh_video_url_ts', String(Date.now()));
             setVideoUrl(response.data.url);
           }
         } catch (error) {
-          console.error("Failed to fetch marketing video url", error);
+          console.error('Failed to fetch marketing video url', error);
         }
       };
       fetchVideo();
@@ -1470,60 +1483,36 @@ const HoundHeartLandingPage = () => {
     <video
       ref={videoRef}
       src={videoUrl}
-      className="object-cover block"   // 👈 object-fill se stretch ho raha tha, cover better rahega
+      className="object-cover block"
       style={{
         height: '80vh',
-        width: 'calc(100% - 48px)',   // 👈 48px total = 24px har side (12px se badha diya)
-        margin: '0 24px',              // 👈 sides margin bhi 24px kar diya
+        width: 'calc(100% - 48px)',
+        margin: '0 24px',
         display: 'block',
       }}
       autoPlay
-      loop
+      controls
       preload="auto"
       playsInline
     />
   ) : (
-    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p>Loading video...</p>
+    <div style={{
+      height: '80vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '16px',
+      background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%)'
+    }}>
+      <svg style={{ animation: 'spin 1s linear infinite', width: 40, height: 40 }} viewBox="0 0 24 24" fill="none">
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        <circle cx="12" cy="12" r="10" stroke="#a855f7" strokeWidth="3" strokeDasharray="40" strokeDashoffset="15" strokeLinecap="round"/>
+      </svg>
+      <p style={{ color: '#7c3aed', fontWeight: 500, fontSize: '1rem' }}>Loading video…</p>
     </div>
   )}
 
-  {/* Mute / Unmute Button */}
-  <button
-    onClick={toggleMute}
-    title={isMuted ? 'Unmute' : 'Mute'}
-    style={{
-      position: 'absolute',
-      bottom: '16px',
-      right: '16px',
-      background: 'rgba(0,0,0,0.65)',
-      border: '2px solid rgba(255,255,255,0.85)',
-      borderRadius: '50%',
-      width: '48px',
-      height: '48px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      backdropFilter: 'blur(6px)',
-      zIndex: 10,
-      transition: 'background 0.2s, transform 0.15s',
-    }}
-    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.85)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.65)'; e.currentTarget.style.transform = 'scale(1)'; }}
-  >
-    {isMuted ? (
-      /* Muted icon */
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
-        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-      </svg>
-    ) : (
-      /* Unmuted icon */
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
-        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-      </svg>
-    )}
-  </button>
 </motion.div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

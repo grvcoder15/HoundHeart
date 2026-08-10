@@ -15,7 +15,8 @@ class ApiService {
       endpoint.includes('/Account/MailSendchangespassword') ||
       endpoint.includes('/Account/VerifyOtp') ||
       endpoint.includes('/Account/refresh') ||
-      endpoint.includes('/PreRegister');
+      endpoint.includes('/PreRegister') ||
+      endpoint.includes('/PublicAssets');
   }
 
   parseJwtPayload(token) {
