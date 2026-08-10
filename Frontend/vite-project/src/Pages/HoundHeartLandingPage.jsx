@@ -45,115 +45,115 @@ import TestimonialsSection from '../components/TestimonialsSection';
 
 // ─── Early Member Offer Banner ────────────────────────────────────────────────
 function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
-    if (!offerConfig?.isActive) return null;
+  if (!offerConfig?.isActive) return null;
 
-    const earlyPrice  = billingPeriod === 'yearly' ? offerConfig.yearlyPrice  : offerConfig.monthlyPrice;
-    const regularPrice = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
-    const savingsPct  = regularPrice > 0 ? Math.round((1 - earlyPrice / regularPrice) * 100) : 0;
-    const slotsLeft   = offerConfig.slotsRemaining ?? 0;
+  const earlyPrice = billingPeriod === 'yearly' ? offerConfig.yearlyPrice : offerConfig.monthlyPrice;
+  const regularPrice = billingPeriod === 'yearly' ? offerConfig.regularYearlyPrice : offerConfig.regularMonthlyPrice;
+  const savingsPct = regularPrice > 0 ? Math.round((1 - earlyPrice / regularPrice) * 100) : 0;
+  const slotsLeft = offerConfig.slotsRemaining ?? 0;
 
-    return (
-        <div id="early-member-banner" style={{
-            background: 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
-            color: '#fff',
-            borderRadius: 16,
-            padding: '24px 32px',
-            marginBottom: 24,
-            boxShadow: '0 8px 32px rgba(124,58,237,0.3)',
-            position: 'relative',
-            overflow: 'hidden',
-            maxWidth: '1152px', // matches max-w-6xl
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '24px'
-        }}>
-            {/* shimmer stripe */}
-            <div style={{
-                position: 'absolute', top: 0, left: '-60%', width: '40%', height: '100%',
-                background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',
-                animation: 'shimmer 2.5s infinite',
-                pointerEvents: 'none'
-            }} />
-            <style>{`@keyframes shimmer{0%{left:-60%}100%{left:120%}}`}</style>
+  return (
+    <div id="early-member-banner" style={{
+      background: 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+      color: '#fff',
+      borderRadius: 16,
+      padding: '24px 32px',
+      marginBottom: 24,
+      boxShadow: '0 8px 32px rgba(124,58,237,0.3)',
+      position: 'relative',
+      overflow: 'hidden',
+      maxWidth: '1152px', // matches max-w-6xl
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      display: 'flex',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '24px'
+    }}>
+      {/* shimmer stripe */}
+      <div style={{
+        position: 'absolute', top: 0, left: '-60%', width: '40%', height: '100%',
+        background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',
+        animation: 'shimmer 2.5s infinite',
+        pointerEvents: 'none'
+      }} />
+      <style>{`@keyframes shimmer{0%{left:-60%}100%{left:120%}}`}</style>
 
-            {/* Left side: Badges and Text */}
-            <div style={{ flex: '1 1 400px' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                    <span style={{
-                        background: 'rgba(255,255,255,0.25)',
-                        borderRadius: 99,
-                        padding: '4px 14px',
-                        fontWeight: 700,
-                        fontSize: 13,
-                        letterSpacing: 0.4,
-                    }}>🎉 Founding Member Pricing</span>
-                    <span style={{
-                        background: '#fff',
-                        color: '#7c3aed',
-                        borderRadius: 99,
-                        padding: '4px 14px',
-                        fontWeight: 800,
-                        fontSize: 13,
-                    }}>Save {savingsPct}%</span>
-                </div>
-                <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8, lineHeight: 1.2 }}>
-                    Become one of the first members to help shape HoundHeart.
-                </h3>
-                <p style={{ opacity: 0.9, fontSize: 15, marginBottom: 0, maxWidth: 500 }}>
-                    As a Founding Member, you will:
-                </p>
-                <ul style={{ paddingLeft: 20, marginTop: 8, fontSize: 14, opacity: 0.9, listStyleType: 'disc' }}>
-                    <li>Lock in your discounted membership price for life, as long as you remain subscribed.</li>
-                    <li>Receive early access to new features, courses, and tools.</li>
-                    <li>Help shape HoundHeart through your feedback and suggestions.</li>
-                    <li>Be invited to share your experiences and success stories.</li>
-                    <li>Receive a permanent Founding Member badge on your profile.</li>
-                    <li>Be encouraged to share HoundHeart with friends and family who may benefit.</li>
-                </ul>
-                <p style={{ opacity: 0.8, fontSize: 12, marginTop: 16, fontStyle: 'italic', maxWidth: 500 }}>
-                    Founding Member status is limited to the first 1,000 members. Once all Founding Memberships are claimed, the program will permanently close.
-                </p>
-            </div>
-
-            {/* Right side: Pricing and Button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-                <div style={{ fontSize: 11, opacity: 0.85, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Founding Member Price</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-                    <span style={{ textDecoration: 'line-through', opacity: 0.7, fontSize: 18, fontWeight: 600 }}>
-                        ${Number(regularPrice).toFixed(2)}
-                    </span>
-                    <span style={{ fontSize: 36, fontWeight: 900, lineHeight: 1 }}>
-                        ${Number(earlyPrice).toFixed(2)}
-                    </span>
-                    <span style={{ fontSize: 14, opacity: 0.85, fontWeight: 600 }}>/{billingPeriod === 'yearly' ? 'yr' : 'mo'}</span>
-                </div>
-                <button
-                    id="early-member-claim-btn"
-                    onClick={onClaim}
-                    style={{
-                        background: '#fff',
-                        color: '#7c3aed',
-                        border: 'none',
-                        borderRadius: 99,
-                        padding: '12px 28px',
-                        fontWeight: 800,
-                        fontSize: 15,
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-                        transition: 'transform 0.15s, box-shadow 0.15s'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)'; }}
-                >
-                    🚀 Claim Early Pricing
-                </button>
-            </div>
+      {/* Left side: Badges and Text */}
+      <div style={{ flex: '1 1 400px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <span style={{
+            background: 'rgba(255,255,255,0.25)',
+            borderRadius: 99,
+            padding: '4px 14px',
+            fontWeight: 700,
+            fontSize: 13,
+            letterSpacing: 0.4,
+          }}>🎉 Founding Member Pricing</span>
+          <span style={{
+            background: '#fff',
+            color: '#7c3aed',
+            borderRadius: 99,
+            padding: '4px 14px',
+            fontWeight: 800,
+            fontSize: 13,
+          }}>Save {savingsPct}%</span>
         </div>
-    );
+        <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8, lineHeight: 1.2 }}>
+          Become one of the first members to help shape HoundHeart.
+        </h3>
+        <p style={{ opacity: 0.9, fontSize: 15, marginBottom: 0, maxWidth: 500 }}>
+          As a Founding Member, you will:
+        </p>
+        <ul style={{ paddingLeft: 20, marginTop: 8, fontSize: 14, opacity: 0.9, listStyleType: 'disc' }}>
+          <li>Lock in your discounted membership price for life, as long as you remain subscribed.</li>
+          <li>Receive early access to new features, courses, and tools.</li>
+          <li>Help shape HoundHeart through your feedback and suggestions.</li>
+          <li>Be invited to share your experiences and success stories.</li>
+          <li>Receive a permanent Founding Member badge on your profile.</li>
+          <li>Be encouraged to share HoundHeart with friends and family who may benefit.</li>
+        </ul>
+        <p style={{ opacity: 0.8, fontSize: 12, marginTop: 16, fontStyle: 'italic', maxWidth: 500 }}>
+          Founding Member status is limited to the first 1,000 members. Once all Founding Memberships are claimed, the program will permanently close.
+        </p>
+      </div>
+
+      {/* Right side: Pricing and Button */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+        <div style={{ fontSize: 11, opacity: 0.85, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Founding Member Price</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
+          <span style={{ textDecoration: 'line-through', opacity: 0.7, fontSize: 18, fontWeight: 600 }}>
+            ${Number(regularPrice).toFixed(2)}
+          </span>
+          <span style={{ fontSize: 36, fontWeight: 900, lineHeight: 1 }}>
+            ${Number(earlyPrice).toFixed(2)}
+          </span>
+          <span style={{ fontSize: 14, opacity: 0.85, fontWeight: 600 }}>/{billingPeriod === 'yearly' ? 'yr' : 'mo'}</span>
+        </div>
+        <button
+          id="early-member-claim-btn"
+          onClick={onClaim}
+          style={{
+            background: '#fff',
+            color: '#7c3aed',
+            border: 'none',
+            borderRadius: 99,
+            padding: '12px 28px',
+            fontWeight: 800,
+            fontSize: 15,
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+            transition: 'transform 0.15s, box-shadow 0.15s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)'; }}
+        >
+          🚀 Claim Early Pricing
+        </button>
+      </div>
+    </div>
+  );
 }
 
 const HoundHeartLandingPage = () => {
@@ -1018,7 +1018,7 @@ const HoundHeartLandingPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-sm">
                 <div className="bg-white/70 border border-purple-100 rounded-xl p-3 text-gray-700">
                   <p className="font-semibold text-gray-900">Official HoundHeart Merchandise</p>
-                  <p>Free Members: $30.00 <br/> Plus Members: $12.00 (Membership Benefit)</p>
+                  <p>Free Members: $30.00 <br /> Plus Members: $12.00 (Membership Benefit)</p>
                 </div>
                 <div className="bg-white/70 border border-purple-100 rounded-xl p-3 text-gray-700">
                   <p className="font-semibold text-gray-900">Shipping</p>
@@ -1414,210 +1414,244 @@ const HoundHeartLandingPage = () => {
 
   // Hero Section Component
   const HeroSection = () => {
-    const [isMuted, setIsMuted] = React.useState(false);
-    const [videoUrl, setVideoUrl] = React.useState(() => {
-      // On component mount, immediately load from sessionStorage if available
-      // This makes every repeat visit within 7 days completely instant
-      const cached = sessionStorage.getItem('hh_video_url');
-      const cachedAt = sessionStorage.getItem('hh_video_url_ts');
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      if (cached && cachedAt && (Date.now() - Number(cachedAt)) < sevenDays) {
-        return cached;
-      }
-      return null;
-    });
-    const videoRef = React.useRef(null);
+    // const [isMuted, setIsMuted] = React.useState(false);
+    // const [videoUrl, setVideoUrl] = React.useState(() => {
+    //   // On component mount, immediately load from sessionStorage if available
+    //   // This makes every repeat visit within 7 days completely instant
+    //   const cached = sessionStorage.getItem('hh_video_url');
+    //   const cachedAt = sessionStorage.getItem('hh_video_url_ts');
+    //   const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    //   if (cached && cachedAt && (Date.now() - Number(cachedAt)) < sevenDays) {
+    //     return cached;
+    //   }
+    //   return null;
+    // });
+    // const videoRef = React.useRef(null);
 
-    useEffect(() => {
-      // Only fetch if we don't already have a valid cached URL
-      if (videoUrl) return;
-      const fetchVideo = async () => {
-        try {
-          const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
-          if (response && response.data && response.data.url) {
-            sessionStorage.setItem('hh_video_url', response.data.url);
-            sessionStorage.setItem('hh_video_url_ts', String(Date.now()));
-            setVideoUrl(response.data.url);
-          }
-        } catch (error) {
-          console.error('Failed to fetch marketing video url', error);
-        }
-      };
-      fetchVideo();
-    }, []);
+    // useEffect(() => {
+    //   // Only fetch if we don't already have a valid cached URL
+    //   if (videoUrl) return;
+    //   const fetchVideo = async () => {
+    //     try {
+    //       const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
+    //       if (response && response.data && response.data.url) {
+    //         sessionStorage.setItem('hh_video_url', response.data.url);
+    //         sessionStorage.setItem('hh_video_url_ts', String(Date.now()));
+    //         setVideoUrl(response.data.url);
+    //       }
+    //     } catch (error) {
+    //       console.error('Failed to fetch marketing video url', error);
+    //     }
+    //   };
+    //   fetchVideo();
+    // }, []);
 
-    const toggleMute = () => {
-      if (videoRef.current) {
-        videoRef.current.muted = !videoRef.current.muted;
-        setIsMuted(videoRef.current.muted);
-      }
-    };
+    // const toggleMute = () => {
+    //   if (videoRef.current) {
+    //     videoRef.current.muted = !videoRef.current.muted;
+    //     setIsMuted(videoRef.current.muted);
+    //   }
+    // };
     return (
-    <section className="relative bg-gradient-to-b from-white to-purple-50 pt-2 pb-0 overflow-hidden">
-      {/* Animated floating particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-2 h-2 bg-purple-300 rounded-full animate-pulse opacity-60"></div>
-        <div className="absolute top-40 right-20 w-3 h-3 bg-pink-300 rounded-full animate-bounce opacity-40" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-40 left-20 w-2 h-2 bg-blue-300 rounded-full animate-pulse opacity-50" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-60 right-40 w-1 h-1 bg-purple-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.5s' }}></div>
-      </div>
+      <section className="relative bg-gradient-to-b from-white to-purple-50 pt-2 pb-0 overflow-hidden">
+        {/* Animated floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-10 w-2 h-2 bg-purple-300 rounded-full animate-pulse opacity-60"></div>
+          <div className="absolute top-40 right-20 w-3 h-3 bg-pink-300 rounded-full animate-bounce opacity-40" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-40 left-20 w-2 h-2 bg-blue-300 rounded-full animate-pulse opacity-50" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-60 right-40 w-1 h-1 bg-purple-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.5s' }}></div>
+        </div>
 
-      {/* Subtle curved lines in background - positioned like in your image */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-64 opacity-10">
-        <svg viewBox="0 0 400 200" className="w-full h-full">
-          <path d="M0,150 Q100,100 200,150 T400,150" stroke="#8b5cf6" strokeWidth="1" fill="none" className="animate-pulse" />
-          <path d="M0,180 Q100,130 200,180 T400,180" stroke="#ec4899" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '1s' }} />
-          <path d="M0,160 Q100,110 200,160 T400,160" stroke="#a855f7" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '2s' }} />
-        </svg>
-      </div>
+        {/* Subtle curved lines in background - positioned like in your image */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-64 opacity-10">
+          <svg viewBox="0 0 400 200" className="w-full h-full">
+            <path d="M0,150 Q100,100 200,150 T400,150" stroke="#8b5cf6" strokeWidth="1" fill="none" className="animate-pulse" />
+            <path d="M0,180 Q100,130 200,180 T400,180" stroke="#ec4899" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '1s' }} />
+            <path d="M0,160 Q100,110 200,160 T400,160" stroke="#a855f7" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '2s' }} />
+          </svg>
+        </div>
 
-   {/* Full-width Video Presentation */}
-<motion.div
-  className="w-full mb-10 shadow-lg relative"   // 👈 overflow-hidden hata sakte hain agar black bg chahiye to bg-black rakho
-  style={{ maxHeight: '2000vh', minHeight: '80vh', backgroundColor: '#f3f4f6' }}
+        {/* Full-width Video Presentation */}
+        {/* <motion.div
+          className="w-full mb-10 shadow-lg relative"   // 👈 overflow-hidden hata sakte hain agar black bg chahiye to bg-black rakho
+          style={{ maxHeight: '2000vh', minHeight: '80vh', backgroundColor: '#f3f4f6' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          {videoUrl ? (
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="object-cover block"
+              style={{
+                height: '80vh',
+                width: 'calc(100% - 48px)',
+                margin: '0 24px',
+                display: 'block',
+              }}
+              autoPlay
+              controls
+              preload="auto"
+              playsInline
+            />
+          ) : (
+            <div style={{
+              height: '80vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '16px',
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%)'
+            }}>
+              <svg style={{ animation: 'spin 1s linear infinite', width: 40, height: 40 }} viewBox="0 0 24 24" fill="none">
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                <circle cx="12" cy="12" r="10" stroke="#a855f7" strokeWidth="3" strokeDasharray="40" strokeDashoffset="15" strokeLinecap="round" />
+              </svg>
+              <p style={{ color: '#7c3aed', fontWeight: 500, fontSize: '1rem' }}>Loading video…</p>
+            </div>
+          )}
+
+        </motion.div> */}
+
+       <motion.div
+  className="w-full mb-10 shadow-lg relative"
+  style={{ minHeight: '80vh', backgroundColor: '#f3f4f6' }}
   initial={{ opacity: 0, y: 20 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ duration: 0.8 }}
 >
-  {videoUrl ? (
-    <video
-      ref={videoRef}
-      src={videoUrl}
-      className="object-cover block"
-      style={{
-        height: '80vh',
-        width: 'calc(100% - 48px)',
-        margin: '0 24px',
-        display: 'block',
-      }}
-      autoPlay
-      controls
-      preload="auto"
-      playsInline
-    />
-  ) : (
-    <div style={{
+  <div
+    style={{
+      position: 'relative',
+      width: 'calc(100% - 48px)',
+      margin: '0 24px',
+      aspectRatio: '16 / 9',
       height: '80vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '16px',
-      background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%)'
-    }}>
-      <svg style={{ animation: 'spin 1s linear infinite', width: 40, height: 40 }} viewBox="0 0 24 24" fill="none">
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-        <circle cx="12" cy="12" r="10" stroke="#a855f7" strokeWidth="3" strokeDasharray="40" strokeDashoffset="15" strokeLinecap="round"/>
-      </svg>
-      <p style={{ color: '#7c3aed', fontWeight: 500, fontSize: '1rem' }}>Loading video…</p>
-    </div>
-  )}
-
+      maxHeight: '80vh',
+    }}
+  >
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/IlkH95f9P-Y?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&loop=1&playlist=IlkH95f9P-Y"
+      title="HoundHeart Marketing Video"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        border: 'none',
+      }}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    />
+  </div>
 </motion.div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* Main Title with Gradient - exactly as in your image */}
-        <motion.h1
-          className="text-5xl lg:text-6xl font-bold mb-6 text-center"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <motion.span
-            className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 bg-clip-text text-transparent"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+          {/* Main Title with Gradient - exactly as in your image */}
+          <motion.h1
+            className="text-5xl lg:text-6xl font-bold mb-6 text-center"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Unlock the Health Benefits of the
-          </motion.span>
-          <br />
-          <motion.span
-            className="text-purple-600"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            Human–Dog Bond
-          </motion.span>
-        </motion.h1>
+            <motion.span
+              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 bg-clip-text text-transparent"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Unlock the Health Benefits of the
+            </motion.span>
+            <br />
+            <motion.span
+              className="text-purple-600"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              Human–Dog Bond
+            </motion.span>
+          </motion.h1>
 
-        {/* Subtitle - exact text from your image */}
-        <motion.p
-          className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed text-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-        >
-          Discover how your relationship with your dog can improve emotional and physical well-being through guided Nerve Center practices, personalized insights, and a supportive community.
-        </motion.p>
-
-        {/* Hero Content - Side by Side Layout like reference image */}
-        <div className="flex items-center justify-center relative">
-          {/* Dog Icon from assets - Left Side */}
-          <motion.div
-            className="flex-shrink-0 relative z-12"
-            initial={{ opacity: 0, x: -100, rotate: -10 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, type: "spring", stiffness: 100 }}
-            whileHover={{ scale: 1.05, rotate: 5 }}
+          {/* Subtitle - exact text from your image */}
+          <motion.p
+            className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
           >
-            <div className="w-58 h-58 flex items-center justify-center px-10 py-10">
-              <motion.img
-                src={DogIcon}
-                alt="Cute dog"
-                className="w-75 h-75 py-18 object-contain cursor-pointer"
+            Discover how your relationship with your dog can improve emotional and physical well-being through guided Nerve Center practices, personalized insights, and a supportive community.
+          </motion.p>
+
+          {/* Hero Content - Side by Side Layout like reference image */}
+          <div className="flex items-center justify-center relative">
+            {/* Dog Icon from assets - Left Side */}
+            <motion.div
+              className="flex-shrink-0 relative z-12"
+              initial={{ opacity: 0, x: -100, rotate: -10 }}
+              animate={{ opacity: 1, x: 0, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.5, type: "spring", stiffness: 100 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
+            >
+              <div className="w-58 h-58 flex items-center justify-center px-10 py-10">
+                <motion.img
+                  src={DogIcon}
+                  alt="Cute dog"
+                  className="w-75 h-75 py-18 object-contain cursor-pointer"
+                  animate={{
+                    y: [0, -10, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                />
+              </div>
+            </motion.div>
+
+            {/* CTA Button - Right Side with moderate overlap like reference image */}
+            <motion.div
+              className="flex-shrink-0 relative z-20 -ml-16 mt-11"
+              initial={{ opacity: 0, x: 100, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.7, type: "spring", stiffness: 100 }}
+            >
+              <motion.button
+                onClick={handleGetStarted}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-4 rounded-full text-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg relative overflow-hidden group"
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                }}
+                whileTap={{ scale: 0.95 }}
                 animate={{
-                  y: [0, -10, 0],
+                  boxShadow: [
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                  ]
                 }}
                 transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
+                  boxShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
                 }}
-                whileHover={{ scale: 1.1 }}
-              />
-            </div>
-          </motion.div>
-
-          {/* CTA Button - Right Side with moderate overlap like reference image */}
-          <motion.div
-            className="flex-shrink-0 relative z-20 -ml-16 mt-11"
-            initial={{ opacity: 0, x: 100, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.7, type: "spring", stiffness: 100 }}
-          >
-            <motion.button
-              onClick={handleGetStarted}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-4 rounded-full text-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg relative overflow-hidden group"
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-              }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: [
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                  "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-                ]
-              }}
-              transition={{
-                boxShadow: {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-              }}
-            >
-              <span className="relative z-10">Begin Your Journey</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </motion.button>
-          </motion.div>
+              >
+                <span className="relative z-10">Begin Your Journey</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </motion.button>
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
     );
   };
 
@@ -1680,7 +1714,7 @@ const HoundHeartLandingPage = () => {
 
               <div className="flex items-center space-x-2 group">
                 <svg className="w-5 h-5 text-gray-600 group-hover:text-purple-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <button
                   onClick={handleLogin}
@@ -1716,7 +1750,7 @@ const HoundHeartLandingPage = () => {
 
           {/* Feature Cards - All 6 cards in horizontal layout */}
           <div className="relative group/carousel">
-            <button 
+            <button
               onClick={() => scrollFeatures('left')}
               className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 z-20 bg-white/95 backdrop-blur shadow-[0_8px_20px_rgba(0,0,0,0.1)] p-3.5 rounded-full text-gray-700 hover:text-purple-600 hover:bg-white hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden sm:flex items-center justify-center border border-gray-100"
             >
@@ -1724,148 +1758,148 @@ const HoundHeartLandingPage = () => {
             </button>
             <div ref={featureCardsRef} className="flex flex-nowrap gap-4 sm:gap-6 justify-start overflow-x-auto pb-8 px-4 md:px-8 snap-x snap-mandatory scrollbar-hide scroll-smooth">
               {/* Card 1: Bonded Score (FEATURED HIGHLIGHT) */}
-            <div
-              id="card-1"
-              data-animate
-              className={`bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl shadow-2xl p-5 sm:p-6 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.5)] transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[260px] sm:w-[280px] snap-center ${isVisible['card-1'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.1s' }}
-            >
-              <div className="absolute top-0 right-0 bg-white text-pink-600 text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-3xl uppercase tracking-wider shadow-sm">
-                Recommended
-              </div>
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-white/30 transition-colors duration-300">
-                <img src={BondedScoreIcon} alt="Bonded Score" className="w-10 h-10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300 brightness-0 invert" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Bonded Score™</h3>
-              <p className="text-pink-50 mb-6 text-[15px] leading-relaxed font-medium">
-                Measure and strengthen the connection you share with your dog through guided activities, health tracking, and personalized insights.
-              </p>
-              <button
-                onClick={() => handleTryNow('Bonded Score')}
-                className="inline-flex items-center text-white hover:text-pink-100 font-bold text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all duration-300 group-hover:pr-3"
+              <div
+                id="card-1"
+                data-animate
+                className={`bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl shadow-2xl p-5 sm:p-6 hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.5)] transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[260px] sm:w-[280px] snap-center ${isVisible['card-1'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.1s' }}
               >
-                Try Now <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-              </button>
+                <div className="absolute top-0 right-0 bg-white text-pink-600 text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-3xl uppercase tracking-wider shadow-sm">
+                  Recommended
+                </div>
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-white/30 transition-colors duration-300">
+                  <img src={BondedScoreIcon} alt="Bonded Score" className="w-10 h-10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300 brightness-0 invert" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Bonded Score™</h3>
+                <p className="text-pink-50 mb-6 text-[15px] leading-relaxed font-medium">
+                  Measure and strengthen the connection you share with your dog through guided activities, health tracking, and personalized insights.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Bonded Score')}
+                  className="inline-flex items-center text-white hover:text-pink-100 font-bold text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all duration-300 group-hover:pr-3"
+                >
+                  Try Now <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+
+              {/* Card 2: Nerve Center Exercises */}
+              <div
+                id="card-2"
+                data-animate
+                className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-orange-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-2'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.2s' }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-orange-200/50">
+                  <img src={ChakraRitualsIcon} alt="Nerve Center Exercises" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300 leading-tight">Nerve Center Exercises</h3>
+                <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                  Practice guided breathing, mindfulness, and co-regulation exercises designed to help calm both you and your dog.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Nerve Center Exercises')}
+                  className="text-orange-500 hover:text-orange-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+                >
+                  Try Now →
+                </button>
+              </div>
+
+              {/* Card 3: Legacy Journal */}
+              <div
+                id="card-3"
+                data-animate
+                className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-purple-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-3'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.3s' }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-fuchsia-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-purple-200/50">
+                  <img src={LegacyJournalIcon} alt="Legacy Journal" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300 leading-tight">Legacy Journal</h3>
+                <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                  Capture special moments, write letters to your dog, and preserve the story of your journey together for years to come.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Legacy Journal')}
+                  className="text-purple-500 hover:text-purple-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+                >
+                  Try Now →
+                </button>
+              </div>
+
+              {/* Card 4: Community Center */}
+              <div
+                id="card-4"
+                data-animate
+                className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-teal-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-4'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.4s' }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-teal-200/50">
+                  <img src={HealingCirclesIcon} alt="Community Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors duration-300 leading-tight">Community Center</h3>
+                <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                  Connect with fellow HoundHeart™ members, share experiences, learn from others, and participate in live discussions and events.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Community Center')}
+                  className="text-teal-500 hover:text-teal-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+                >
+                  Try Now →
+                </button>
+              </div>
+
+              {/* Card 5: Health Insights */}
+              <div
+                id="card-5"
+                data-animate
+                className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-pink-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-5'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.5s' }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-pink-200/50">
+                  <img src={WellnessInsightsIcon} alt="Health Insights" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors duration-300 leading-tight">Health Insights</h3>
+                <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                  Receive personalized insights that identify health patterns, track progress, and recommend activities to strengthen the human–dog bond.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Health Insights')}
+                  className="text-pink-500 hover:text-pink-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+                >
+                  Try Now →
+                </button>
+              </div>
+
+              {/* Card 6: Science Center */}
+              <div
+                id="card-6"
+                data-animate
+                className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-blue-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-6'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                style={{ transitionDelay: '0.6s' }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-blue-200/50">
+                  <img src={TheScienceIcon} alt="Science Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 leading-tight">Science Center</h3>
+                <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
+                  Explore the latest research on nervous system co-regulation, oxytocin, cortisol, heart rate variability, and the growing science behind the health benefits of the human–dog bond.
+                </p>
+                <button
+                  onClick={() => handleTryNow('Science Center')}
+                  className="text-blue-500 hover:text-blue-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
+                >
+                  Try Now →
+                </button>
+              </div>
             </div>
 
-            {/* Card 2: Nerve Center Exercises */}
-            <div
-              id="card-2"
-              data-animate
-              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-orange-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-2'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.2s' }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-orange-200/50">
-                <img src={ChakraRitualsIcon} alt="Nerve Center Exercises" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300 leading-tight">Nerve Center Exercises</h3>
-              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
-                Practice guided breathing, mindfulness, and co-regulation exercises designed to help calm both you and your dog.
-              </p>
-              <button
-                onClick={() => handleTryNow('Nerve Center Exercises')}
-                className="text-orange-500 hover:text-orange-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
-              >
-                Try Now →
-              </button>
-            </div>
-
-            {/* Card 3: Legacy Journal */}
-            <div
-              id="card-3"
-              data-animate
-              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-purple-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-3'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.3s' }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-fuchsia-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-purple-200/50">
-                <img src={LegacyJournalIcon} alt="Legacy Journal" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300 leading-tight">Legacy Journal</h3>
-              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
-                Capture special moments, write letters to your dog, and preserve the story of your journey together for years to come.
-              </p>
-              <button
-                onClick={() => handleTryNow('Legacy Journal')}
-                className="text-purple-500 hover:text-purple-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
-              >
-                Try Now →
-              </button>
-            </div>
-
-            {/* Card 4: Community Center */}
-            <div
-              id="card-4"
-              data-animate
-              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-teal-100 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-4'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.4s' }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-teal-200/50">
-                <img src={HealingCirclesIcon} alt="Community Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors duration-300 leading-tight">Community Center</h3>
-              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
-                Connect with fellow HoundHeart™ members, share experiences, learn from others, and participate in live discussions and events.
-              </p>
-              <button
-                onClick={() => handleTryNow('Community Center')}
-                className="text-teal-500 hover:text-teal-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
-              >
-                Try Now →
-              </button>
-            </div>
-
-            {/* Card 5: Health Insights */}
-            <div
-              id="card-5"
-              data-animate
-              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-pink-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-5'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.5s' }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-pink-200/50">
-                <img src={WellnessInsightsIcon} alt="Health Insights" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors duration-300 leading-tight">Health Insights</h3>
-              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
-                Receive personalized insights that identify health patterns, track progress, and recommend activities to strengthen the human–dog bond.
-              </p>
-              <button
-                onClick={() => handleTryNow('Health Insights')}
-                className="text-pink-500 hover:text-pink-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
-              >
-                Try Now →
-              </button>
-            </div>
-
-            {/* Card 6: Science Center */}
-            <div
-              id="card-6"
-              data-animate
-              className={`bg-white rounded-3xl border border-gray-100 shadow-xl p-5 sm:p-6 hover:shadow-2xl hover:border-blue-200 transition-all duration-500 transform hover:-translate-y-2 group flex-shrink-0 w-[240px] sm:w-[250px] snap-center ${isVisible['card-6'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.6s' }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-blue-200/50">
-                <img src={TheScienceIcon} alt="Science Center" className="w-10 h-10 group-hover:rotate-12 transition-transform duration-300" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 leading-tight">Science Center</h3>
-              <p className="text-gray-600 mb-6 text-[14.5px] leading-relaxed">
-                Explore the latest research on nervous system co-regulation, oxytocin, cortisol, heart rate variability, and the growing science behind the health benefits of the human–dog bond.
-              </p>
-              <button
-                onClick={() => handleTryNow('Science Center')}
-                className="text-blue-500 hover:text-blue-600 font-bold text-sm group-hover:translate-x-2 transition-all duration-300"
-              >
-                Try Now →
-              </button>
-            </div>
-            </div>
-            
-            <button 
+            <button
               onClick={() => scrollFeatures('right')}
               className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 z-20 bg-white/95 backdrop-blur shadow-[0_8px_20px_rgba(0,0,0,0.1)] p-3.5 rounded-full text-gray-700 hover:text-purple-600 hover:bg-white hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden sm:flex items-center justify-center border border-gray-100"
             >
@@ -1997,113 +2031,113 @@ const HoundHeartLandingPage = () => {
 
           {/* Pricing Cards */}
           <div className={`grid grid-cols-1 gap-8 max-w-6xl mx-auto mt-16 md:mt-24 ${plans.length === 1
-              ? 'md:grid-cols-1 max-w-md'
-              : plans.length === 2
-                ? 'md:grid-cols-2 max-w-4xl'
-                : 'md:grid-cols-3'
+            ? 'md:grid-cols-1 max-w-md'
+            : plans.length === 2
+              ? 'md:grid-cols-2 max-w-4xl'
+              : 'md:grid-cols-3'
             }`}>
             {plans.map((plan) => {
-                const isFree = plan.price === 0;
-                const isPopular = plan.badge === 'Most Popular';
+              const isFree = plan.price === 0;
+              const isPopular = plan.badge === 'Most Popular';
 
-                return (
-                  <div
-                    key={plan.planId}
-                    className={`relative rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:shadow-2xl flex flex-col ${isPopular
-                      ? 'border-[3px] border-purple-500 shadow-[0_20px_50px_-15px_rgba(124,58,237,0.4)] bg-gradient-to-br from-purple-50/50 to-white md:scale-105 z-10'
-                      : 'border-2 border-gray-100 bg-white mt-0 md:mt-4'
-                      }`}
-                  >
-                    {plan.badge && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-xs font-bold">
-                        {plan.badge}
+              return (
+                <div
+                  key={plan.planId}
+                  className={`relative rounded-3xl p-6 sm:p-8 transition-all duration-300 hover:shadow-2xl flex flex-col ${isPopular
+                    ? 'border-[3px] border-purple-500 shadow-[0_20px_50px_-15px_rgba(124,58,237,0.4)] bg-gradient-to-br from-purple-50/50 to-white md:scale-105 z-10'
+                    : 'border-2 border-gray-100 bg-white mt-0 md:mt-4'
+                    }`}
+                >
+                  {plan.badge && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-xs font-bold">
+                      {plan.badge}
+                    </div>
+                  )}
+
+                  {/* Icon */}
+                  <div className={`w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center ${isFree ? 'bg-gray-100' : 'bg-gradient-to-br from-purple-600 to-pink-600'
+                    }`}>
+                    {isFree ? (
+                      <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    ) : isPopular ? (
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Plan Name */}
+                  <h3 className="text-lg font-bold text-center text-gray-900 mb-1">
+                    {plan.planName}
+                  </h3>
+                  <p className="text-xs text-center text-gray-600 mb-3">{plan.description}</p>
+
+                  {/* Price */}
+                  <div className="mb-4 text-center">
+                    {plan.originalPrice && (
+                      <div className="text-gray-400 line-through text-xs mb-1">
+                        {plan.isOfferActive ? 'Regular: ' : ''}${plan.originalPrice}{plan.isOfferActive ? (billingPeriod === 'yearly' ? '/yr' : '/mo') : ''}
                       </div>
                     )}
-
-                    {/* Icon */}
-                    <div className={`w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center ${isFree ? 'bg-gray-100' : 'bg-gradient-to-br from-purple-600 to-pink-600'
-                      }`}>
-                      {isFree ? (
-                        <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      ) : isPopular ? (
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
+                    <div className="flex items-baseline justify-center gap-1">
+                      {plan.isOfferActive && (
+                        <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1 relative -top-1">
+                          Founding Member
+                        </span>
                       )}
+                      <span className="text-3xl font-bold text-gray-900">
+                        ${plan.price}
+                      </span>
+                      <span className="text-gray-600 text-xs">
+                        {plan.billingLabel}
+                      </span>
                     </div>
-
-                    {/* Plan Name */}
-                    <h3 className="text-lg font-bold text-center text-gray-900 mb-1">
-                      {plan.planName}
-                    </h3>
-                    <p className="text-xs text-center text-gray-600 mb-3">{plan.description}</p>
-
-                    {/* Price */}
-                    <div className="mb-4 text-center">
-                      {plan.originalPrice && (
-                        <div className="text-gray-400 line-through text-xs mb-1">
-                          {plan.isOfferActive ? 'Regular: ' : ''}${plan.originalPrice}{plan.isOfferActive ? (billingPeriod === 'yearly' ? '/yr' : '/mo') : ''}
-                        </div>
-                      )}
-                      <div className="flex items-baseline justify-center gap-1">
-                        {plan.isOfferActive && (
-                          <span className="text-xs font-semibold text-purple-600 bg-purple-50 rounded-full px-2 py-0.5 mr-1 relative -top-1">
-                            Founding Member
-                          </span>
-                        )}
-                        <span className="text-3xl font-bold text-gray-900">
-                          ${plan.price}
-                        </span>
-                        <span className="text-gray-600 text-xs">
-                          {plan.billingLabel}
-                        </span>
+                    {/* Savings text */}
+                    {plan.savingsText && (
+                      <div className="text-sm font-semibold text-green-600 mt-1">
+                        {plan.savingsText}
                       </div>
-                      {/* Savings text */}
-                      {plan.savingsText && (
-                        <div className="text-sm font-semibold text-green-600 mt-1">
-                          {plan.savingsText}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Features */}
-                    <ul className="space-y-3 mb-8 flex-1">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-sm">
-                          <svg
-                            className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-gray-700 leading-snug">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* CTA Button */}
-                    <button
-                      onClick={handlePricingCardClick}
-                      className={`w-full py-3.5 px-4 rounded-xl font-bold transition-all duration-300 text-sm tracking-wide ${isPopular
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] hover:shadow-xl hover:-translate-y-1'
-                        : isFree 
-                          ? 'border-2 border-purple-300 text-purple-700 hover:border-purple-500 hover:bg-purple-50 bg-transparent'
-                          : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-                        }`}
-                    >
-                      {isFree ? 'Start Free' : plan.tierLevel === 'premium' ? 'Get Premium' : 'Get Plus'}
-                    </button>
+                    )}
                   </div>
-                );
-              })}
+
+                  {/* Features */}
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm">
+                        <svg
+                          className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-gray-700 leading-snug">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={handlePricingCardClick}
+                    className={`w-full py-3.5 px-4 rounded-xl font-bold transition-all duration-300 text-sm tracking-wide ${isPopular
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] hover:shadow-xl hover:-translate-y-1'
+                      : isFree
+                        ? 'border-2 border-purple-300 text-purple-700 hover:border-purple-500 hover:bg-purple-50 bg-transparent'
+                        : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                      }`}
+                  >
+                    {isFree ? 'Start Free' : plan.tierLevel === 'premium' ? 'Get Premium' : 'Get Plus'}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
