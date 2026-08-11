@@ -156,6 +156,356 @@ function EarlyMemberBanner({ offerConfig, billingPeriod, onClaim }) {
   );
 }
 
+  // Hero Section Component
+  const HeroSection = ({ onGetStarted }) => {
+    const [isMuted, setIsMuted] = React.useState(false);
+    const [videoUrl, setVideoUrl] = React.useState(() => {
+      //   // On component mount, immediately load from sessionStorage if available
+      //   // This makes every repeat visit within 7 days completely instant
+      const cached = sessionStorage.getItem('hh_video_url');
+      const cachedAt = sessionStorage.getItem('hh_video_url_ts');
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (cached && cachedAt && (Date.now() - Number(cachedAt)) < sevenDays) {
+        return cached;
+      }
+      return null;
+    });
+    const videoRef = React.useRef(null);
+
+    useEffect(() => {
+      //   // Only fetch if we don't already have a valid cached URL
+      if (videoUrl) return;
+      const fetchVideo = async () => {
+        try {
+          const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
+          if (response && response.data && response.data.url) {
+            sessionStorage.setItem('hh_video_url', response.data.url);
+            sessionStorage.setItem('hh_video_url_ts', String(Date.now()));
+            setVideoUrl(response.data.url);
+          }
+        } catch (error) {
+          console.error('Failed to fetch marketing video url', error);
+        }
+      };
+      fetchVideo();
+    }, []);
+
+    const [isPlaying, setIsPlaying] = React.useState(true);
+    const [currentTime, setCurrentTime] = React.useState(0);
+    const [duration, setDuration] = React.useState(0);
+
+    const togglePlay = () => {
+      if (videoRef.current) {
+        if (videoRef.current.paused) {
+          videoRef.current.play();
+          setIsPlaying(true);
+        } else {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        }
+      }
+    };
+
+    const toggleMute = () => {
+      if (videoRef.current) {
+        videoRef.current.muted = !videoRef.current.muted;
+        setIsMuted(videoRef.current.muted);
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      if (videoRef.current) {
+        setCurrentTime(videoRef.current.currentTime);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      if (videoRef.current) {
+        setDuration(videoRef.current.duration);
+      }
+    };
+
+    const handleSeek = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickPosition = e.clientX - rect.left;
+      const seekTime = (clickPosition / rect.width) * duration;
+      if (videoRef.current) {
+        videoRef.current.currentTime = seekTime;
+      }
+    };
+
+    const formatTime = (timeInSeconds) => {
+      if (!timeInSeconds || isNaN(timeInSeconds)) return "0:00";
+      const minutes = Math.floor(timeInSeconds / 60);
+      const seconds = Math.floor(timeInSeconds % 60);
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+    return (
+      <section className="relative bg-gradient-to-b from-white to-purple-50 pt-2 pb-0 overflow-hidden">
+        {/* Animated floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-10 w-2 h-2 bg-purple-300 rounded-full animate-pulse opacity-60"></div>
+          <div className="absolute top-40 right-20 w-3 h-3 bg-pink-300 rounded-full animate-bounce opacity-40" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-40 left-20 w-2 h-2 bg-blue-300 rounded-full animate-pulse opacity-50" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-60 right-40 w-1 h-1 bg-purple-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.5s' }}></div>
+        </div>
+
+        {/* Subtle curved lines in background - positioned like in your image */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-64 opacity-10">
+          <svg viewBox="0 0 400 200" className="w-full h-full">
+            <path d="M0,150 Q100,100 200,150 T400,150" stroke="#8b5cf6" strokeWidth="1" fill="none" className="animate-pulse" />
+            <path d="M0,180 Q100,130 200,180 T400,180" stroke="#ec4899" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '1s' }} />
+            <path d="M0,160 Q100,110 200,160 T400,160" stroke="#a855f7" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '2s' }} />
+          </svg>
+        </div>
+
+        {/* Full-width Video Presentation */}
+        {/* <motion.div
+          className="w-full mb-10 shadow-lg relative"   // 👈 overflow-hidden hata sakte hain agar black bg chahiye to bg-black rakho
+          style={{ maxHeight: '2000vh', minHeight: '80vh', backgroundColor: '#f3f4f6' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          {videoUrl ? (
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="object-cover block"
+              style={{
+                height: '80vh',
+                width: 'calc(100% - 48px)',
+                margin: '0 24px',
+                display: 'block',
+              }}
+              autoPlay
+              controls
+              preload="auto"
+              playsInline
+            />
+          ) : (
+            <div style={{
+              height: '80vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '16px',
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%)'
+            }}>
+              <svg style={{ animation: 'spin 1s linear infinite', width: 40, height: 40 }} viewBox="0 0 24 24" fill="none">
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                <circle cx="12" cy="12" r="10" stroke="#a855f7" strokeWidth="3" strokeDasharray="40" strokeDashoffset="15" strokeLinecap="round" />
+              </svg>
+              <p style={{ color: '#7c3aed', fontWeight: 500, fontSize: '1rem' }}>Loading video…</p>
+            </div>
+          )}
+
+        </motion.div> */}
+
+        <motion.div
+          className="w-full mb-10 shadow-lg relative group"
+          style={{ minHeight: '80vh', backgroundColor: '#f3f4f6' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: 'calc(100% - 48px)',
+              margin: '0 24px',
+              aspectRatio: '16 / 9',
+              height: '80vh',
+              maxHeight: '80vh',
+            }}
+          >
+            <video
+              ref={videoRef}
+              src="/houndheart-video.mp4"
+              autoPlay
+              loop
+              muted={isMuted}
+              playsInline
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            {/* Overlay Gradient for better visibility of controls */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            {/* Clickable Area for Play/Pause across entire video */}
+            <div 
+              className="absolute inset-0 cursor-pointer z-0"
+              onClick={togglePlay}
+            />
+
+            {/* Center Play/Pause Button */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <button
+                onClick={togglePlay}
+                className="bg-black/40 hover:bg-black/60 text-white p-5 rounded-full backdrop-blur-sm transition-all pointer-events-auto shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-white/20"
+                aria-label={isPlaying ? 'Pause video' : 'Play video'}
+              >
+                {isPlaying ? (
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                ) : (
+                  <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                )}
+              </button>
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+              <div className="flex items-center justify-between text-white text-sm font-semibold tracking-wide mb-3 px-1">
+                <div>
+                  <span>{formatTime(currentTime)}</span>
+                  <span className="text-white/60 mx-1">/</span>
+                  <span className="text-white/60">{formatTime(duration)}</span>
+                </div>
+                <button
+                  onClick={toggleMute}
+                  className="hover:text-pink-500 transition-colors"
+                  aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                >
+                  {isMuted ? (
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                  )}
+                </button>
+              </div>
+
+              {/* Progress Bar */}
+              <div 
+                className="w-full h-1.5 bg-white/30 cursor-pointer relative rounded-full group/progress"
+                onClick={handleSeek}
+              >
+                <div 
+                  className="h-full bg-pink-600 relative rounded-full"
+                  style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
+                >
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-pink-600 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-[0_0_8px_rgba(219,39,119,0.8)]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+          {/* Main Title with Gradient - exactly as in your image */}
+          <motion.h1
+            className="text-5xl lg:text-6xl font-bold mb-6 text-center"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <motion.span
+              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 bg-clip-text text-transparent"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Unlock the Health Benefits of the
+            </motion.span>
+            <br />
+            <motion.span
+              className="text-purple-600"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              Human–Dog Bond
+            </motion.span>
+          </motion.h1>
+
+          {/* Subtitle - exact text from your image */}
+          <motion.p
+            className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            Discover how your relationship with your dog can improve emotional and physical well-being through guided Nerve Center practices, personalized insights, and a supportive community.
+          </motion.p>
+
+          {/* Hero Content - Side by Side Layout like reference image */}
+          <div className="flex items-center justify-center relative">
+            {/* Dog Icon from assets - Left Side */}
+            <motion.div
+              className="flex-shrink-0 relative z-12"
+              initial={{ opacity: 0, x: -100, rotate: -10 }}
+              animate={{ opacity: 1, x: 0, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.5, type: "spring", stiffness: 100 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
+            >
+              <div className="w-58 h-58 flex items-center justify-center px-10 py-10">
+                <motion.img
+                  src={DogIcon}
+                  alt="Cute dog"
+                  className="w-75 h-75 py-18 object-contain cursor-pointer"
+                  animate={{
+                    y: [0, -10, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                />
+              </div>
+            </motion.div>
+
+            {/* CTA Button - Right Side with moderate overlap like reference image */}
+            <motion.div
+              className="flex-shrink-0 relative z-20 -ml-16 mt-11"
+              initial={{ opacity: 0, x: 100, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.7, type: "spring", stiffness: 100 }}
+            >
+              <motion.button
+                onClick={onGetStarted}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-4 rounded-full text-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg relative overflow-hidden group"
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                animate={{
+                  boxShadow: [
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                  ]
+                }}
+                transition={{
+                  boxShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
+              >
+                <span className="relative z-10">Begin Your Journey</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+
 const HoundHeartLandingPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('philosophy');
@@ -1412,249 +1762,6 @@ const HoundHeartLandingPage = () => {
     </div>
   );
 
-  // Hero Section Component
-  const HeroSection = () => {
-    // const [isMuted, setIsMuted] = React.useState(false);
-    // const [videoUrl, setVideoUrl] = React.useState(() => {
-    //   // On component mount, immediately load from sessionStorage if available
-    //   // This makes every repeat visit within 7 days completely instant
-    //   const cached = sessionStorage.getItem('hh_video_url');
-    //   const cachedAt = sessionStorage.getItem('hh_video_url_ts');
-    //   const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    //   if (cached && cachedAt && (Date.now() - Number(cachedAt)) < sevenDays) {
-    //     return cached;
-    //   }
-    //   return null;
-    // });
-    // const videoRef = React.useRef(null);
-
-    // useEffect(() => {
-    //   // Only fetch if we don't already have a valid cached URL
-    //   if (videoUrl) return;
-    //   const fetchVideo = async () => {
-    //     try {
-    //       const response = await apiService.makeRequest('/PublicAssets/marketing-video', { method: 'GET' });
-    //       if (response && response.data && response.data.url) {
-    //         sessionStorage.setItem('hh_video_url', response.data.url);
-    //         sessionStorage.setItem('hh_video_url_ts', String(Date.now()));
-    //         setVideoUrl(response.data.url);
-    //       }
-    //     } catch (error) {
-    //       console.error('Failed to fetch marketing video url', error);
-    //     }
-    //   };
-    //   fetchVideo();
-    // }, []);
-
-    // const toggleMute = () => {
-    //   if (videoRef.current) {
-    //     videoRef.current.muted = !videoRef.current.muted;
-    //     setIsMuted(videoRef.current.muted);
-    //   }
-    // };
-    return (
-      <section className="relative bg-gradient-to-b from-white to-purple-50 pt-2 pb-0 overflow-hidden">
-        {/* Animated floating particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-2 h-2 bg-purple-300 rounded-full animate-pulse opacity-60"></div>
-          <div className="absolute top-40 right-20 w-3 h-3 bg-pink-300 rounded-full animate-bounce opacity-40" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-40 left-20 w-2 h-2 bg-blue-300 rounded-full animate-pulse opacity-50" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-60 right-40 w-1 h-1 bg-purple-400 rounded-full animate-bounce opacity-60" style={{ animationDelay: '0.5s' }}></div>
-        </div>
-
-        {/* Subtle curved lines in background - positioned like in your image */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-64 opacity-10">
-          <svg viewBox="0 0 400 200" className="w-full h-full">
-            <path d="M0,150 Q100,100 200,150 T400,150" stroke="#8b5cf6" strokeWidth="1" fill="none" className="animate-pulse" />
-            <path d="M0,180 Q100,130 200,180 T400,180" stroke="#ec4899" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '1s' }} />
-            <path d="M0,160 Q100,110 200,160 T400,160" stroke="#a855f7" strokeWidth="1" fill="none" className="animate-pulse" style={{ animationDelay: '2s' }} />
-          </svg>
-        </div>
-
-        {/* Full-width Video Presentation */}
-        {/* <motion.div
-          className="w-full mb-10 shadow-lg relative"   // 👈 overflow-hidden hata sakte hain agar black bg chahiye to bg-black rakho
-          style={{ maxHeight: '2000vh', minHeight: '80vh', backgroundColor: '#f3f4f6' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          {videoUrl ? (
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="object-cover block"
-              style={{
-                height: '80vh',
-                width: 'calc(100% - 48px)',
-                margin: '0 24px',
-                display: 'block',
-              }}
-              autoPlay
-              controls
-              preload="auto"
-              playsInline
-            />
-          ) : (
-            <div style={{
-              height: '80vh',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '16px',
-              background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%)'
-            }}>
-              <svg style={{ animation: 'spin 1s linear infinite', width: 40, height: 40 }} viewBox="0 0 24 24" fill="none">
-                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                <circle cx="12" cy="12" r="10" stroke="#a855f7" strokeWidth="3" strokeDasharray="40" strokeDashoffset="15" strokeLinecap="round" />
-              </svg>
-              <p style={{ color: '#7c3aed', fontWeight: 500, fontSize: '1rem' }}>Loading video…</p>
-            </div>
-          )}
-
-        </motion.div> */}
-
-       <motion.div
-  className="w-full mb-10 shadow-lg relative"
-  style={{ minHeight: '80vh', backgroundColor: '#f3f4f6' }}
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.8 }}
->
-  <div
-    style={{
-      position: 'relative',
-      width: 'calc(100% - 48px)',
-      margin: '0 24px',
-      aspectRatio: '16 / 9',
-      height: '80vh',
-      maxHeight: '80vh',
-    }}
-  >
-    <iframe
-      src="https://www.youtube-nocookie.com/embed/IlkH95f9P-Y?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1&loop=1&playlist=IlkH95f9P-Y"
-      title="HoundHeart Marketing Video"
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        border: 'none',
-      }}
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowFullScreen
-    />
-  </div>
-</motion.div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-
-          {/* Main Title with Gradient - exactly as in your image */}
-          <motion.h1
-            className="text-5xl lg:text-6xl font-bold mb-6 text-center"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <motion.span
-              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 bg-clip-text text-transparent"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              Unlock the Health Benefits of the
-            </motion.span>
-            <br />
-            <motion.span
-              className="text-purple-600"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              Human–Dog Bond
-            </motion.span>
-          </motion.h1>
-
-          {/* Subtitle - exact text from your image */}
-          <motion.p
-            className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed text-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            Discover how your relationship with your dog can improve emotional and physical well-being through guided Nerve Center practices, personalized insights, and a supportive community.
-          </motion.p>
-
-          {/* Hero Content - Side by Side Layout like reference image */}
-          <div className="flex items-center justify-center relative">
-            {/* Dog Icon from assets - Left Side */}
-            <motion.div
-              className="flex-shrink-0 relative z-12"
-              initial={{ opacity: 0, x: -100, rotate: -10 }}
-              animate={{ opacity: 1, x: 0, rotate: 0 }}
-              transition={{ duration: 0.8, delay: 0.5, type: "spring", stiffness: 100 }}
-              whileHover={{ scale: 1.05, rotate: 5 }}
-            >
-              <div className="w-58 h-58 flex items-center justify-center px-10 py-10">
-                <motion.img
-                  src={DogIcon}
-                  alt="Cute dog"
-                  className="w-75 h-75 py-18 object-contain cursor-pointer"
-                  animate={{
-                    y: [0, -10, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  whileHover={{ scale: 1.1 }}
-                />
-              </div>
-            </motion.div>
-
-            {/* CTA Button - Right Side with moderate overlap like reference image */}
-            <motion.div
-              className="flex-shrink-0 relative z-20 -ml-16 mt-11"
-              initial={{ opacity: 0, x: 100, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.7, type: "spring", stiffness: 100 }}
-            >
-              <motion.button
-                onClick={handleGetStarted}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-4 rounded-full text-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg relative overflow-hidden group"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                animate={{
-                  boxShadow: [
-                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-                  ]
-                }}
-                transition={{
-                  boxShadow: {
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }
-                }}
-              >
-                <span className="relative z-10">Begin Your Journey</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.button>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -1731,7 +1838,7 @@ const HoundHeartLandingPage = () => {
       {/* Content Order: Always show Hero Section first, then other sections */}
       <>
         {/* Hero Section Always First */}
-        <HeroSection />
+        <HeroSection onGetStarted={handleGetStarted} />
 
         {/* About Section */}
         <AboutSection />
@@ -2249,3 +2356,4 @@ const HoundHeartLandingPage = () => {
 };
 
 export default HoundHeartLandingPage;
+
